@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#6200EE</color>
+    <color name="colorPrimaryDark">#3700B3</color>
+    <color name="colorAccent">#03DAC5</color>
+    <color name="icActive">#FFFFFFFF</color>
+    <color name="icFocused">#DDFFFFFF</color>
+    <color name="icPressed">#AAFFFFFF</color>
+    <color name="backgroundColorCardView">#fff176</color>
+    <color name="textColorCardView">#3e2733</color>
+
+    <color name="backgroundColorToolbar">#ce93d8</color>
+
+    <color name="backgroundColorAddContainer">#f3e5f5</color>
+    <color name="backgroundColorAddEditText">#fff8e1</color>
+    <color name="textColorAddEditText">#263238</color> <!--통일하는것도  갠춘할듯!-->
+    <color name="textColorHintAddEditText">#3e2723</color>
+
+</resources>

@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <FrameLayout
+        android:id="@+id/frame_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        tools:context="com.elliot.kim.kotlin.dimcatcamnote.MainActivity">
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/card_view"
+            android:layout_gravity="center"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal"
+                android:background="@color/backgroundColorCardView">
+
+                <ImageView
+                    android:id="@+id/image_view_thumbnail"
+                    android:layout_width="40dp"
+                    android:layout_height="match_parent"
+                    android:layout_margin="2dp"/>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical" >
+
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="32dp"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:id="@+id/image_view_logo"
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:layout_margin="4dp" />
+
+                        <TextView
+                            android:id="@+id/text_view_title"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:layout_marginStart="8dp"
+                            android:layout_toEndOf="@id/image_view_logo"
+                            android:gravity="center"
+                            android:textColor="@color/backgroundColorCardView"
+                            android:textSize="20sp"
+                            android:textStyle="bold"/>
+
+                        <ImageView
+                            android:id="@+id/image_view_done"
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:layout_toStartOf="@id/image_view_alarm"
+                            android:layout_marginBottom="6dp"
+                            android:layout_marginTop="6dp"
+                            android:visibility="invisible"/>
+
+                        <ImageView
+                            android:id="@+id/image_view_alarm"
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:layout_alignParentEnd="true"
+                            android:layout_marginBottom="6dp"
+                            android:layout_marginEnd="6dp"
+                            android:layout_marginTop="6dp"
+                            android:visibility="invisible"/>
+
+                    </RelativeLayout>
+
+                    <TextView
+                        android:id="@+id/text_view_time"
+                        android:layout_width="match_parent"
+                        android:layout_height="28dp"
+                        android:paddingEnd="8dp"
+                        android:paddingStart="8dp"
+                        android:textColor="@color/textColorCardView"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
+
+    </FrameLayout>
+
+</layout>

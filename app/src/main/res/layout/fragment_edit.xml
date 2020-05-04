@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context="com.elliot.kim.kotlin.dimcatcamnote.MainActivity"
+        android:orientation="vertical"
+        android:background="@color/backgroundColorAddEditText"
+        android:focusable="true"
+        android:id="@+id/edit_note_container" >
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/tool_bar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="@color/backgroundColorAddEditText"
+            app:popupTheme="@style/AppTheme.PopupOverlay" >
+
+        </androidx.appcompat.widget.Toolbar>
+
+        <TextView
+            android:id="@+id/text_view_date"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/tool_bar"
+            android:padding="4dp"
+            android:layout_marginBottom="2dp"
+            android:background="@color/backgroundColorAddEditText"
+            android:textColor="@color/textColorHintAddEditText"/>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_below="@id/text_view_date" >
+
+            <EditText
+                android:id="@+id/edit_text_content"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:textSize="20sp"
+                android:gravity="top"
+                android:background="@color/backgroundColorAddEditText"
+                android:textColor="@color/textColorHintAddEditText"
+                android:autofillHints="" />
+
+            <TextView
+                android:id="@+id/focus_block"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:focusable="true"/>
+
+        </RelativeLayout>
+
+    </RelativeLayout>
+
+</layout>

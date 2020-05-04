@@ -1,0 +1,2 @@
+rootProject.name='DimCatCamNote'
+include ':app'
