@@ -9,14 +9,14 @@ interface NoteDao {
     fun getAll(): LiveData<MutableList<Note>>
 
     @Insert
-    fun insert(camNote: Note)
+    fun insert(note: Note)
 
     @Update
-    fun update(camNote: Note)
+    fun update(note: Note)
 
     @Delete
-    fun delete(camNote: Note)
+    fun delete(note: Note)
 
-    @Query("SELECT * FROM Note WHERE id LIKE :id")
-    fun findNoteByNumber(id: Int): Note
+    @Query("SELECT * FROM note WHERE id LIKE :id")
+    fun findNoteById(id: Int): Note
 }

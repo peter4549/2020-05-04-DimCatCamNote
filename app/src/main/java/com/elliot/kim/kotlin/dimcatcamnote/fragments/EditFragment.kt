@@ -1,4 +1,4 @@
-package com.elliot.kim.kotlin.dimcatcamnote
+package com.elliot.kim.kotlin.dimcatcamnote.fragments
 
 import android.annotation.SuppressLint
 import android.content.DialogInterface
@@ -6,10 +6,14 @@ import android.os.Bundle
 import android.view.*
 import android.view.GestureDetector.SimpleOnGestureListener
 import android.view.View.OnTouchListener
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
+import com.elliot.kim.kotlin.dimcatcamnote.MainActivity
+import com.elliot.kim.kotlin.dimcatcamnote.Note
+import com.elliot.kim.kotlin.dimcatcamnote.R
 import com.elliot.kim.kotlin.dimcatcamnote.databinding.FragmentEditBinding
 
 class EditFragment : Fragment() {
@@ -19,12 +23,11 @@ class EditFragment : Fragment() {
     private lateinit var note: Note
     private lateinit var originContent: String
 
-    private val alarmFragment = AlarmFragment()
     private var isEditMode = false
 
     fun setNote(note: Note) {
         this.note = note
-        originContent = note.content ?: ""
+        originContent = note.content
     }
 
     override fun onCreateView(
@@ -37,6 +40,7 @@ class EditFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding = FragmentEditBinding.bind(view)
+        textViewTime = binding.textViewTime
 
         (activity as MainActivity).setSupportActionBar(binding.toolBar)
         (activity as AppCompatActivity).supportActionBar?.setDisplayHomeAsUpEnabled(true)
@@ -122,7 +126,8 @@ class EditFragment : Fragment() {
                     binding.editTextContent.isFocusable = false
 
                     if (isContentChanged) {
-                        note.editTime =  MainActivity.getCurrentTime()
+                        note.editTime =
+                            MainActivity.getCurrentTime()
                         note.content = binding.editTextContent.text.toString()
                         (activity as MainActivity).viewModel.update(note)
 
@@ -139,11 +144,13 @@ class EditFragment : Fragment() {
             R.id.menu_alarm -> if (note.alarmTime == null)
                 startAlarmFragment(note)
             else {
-                //activity.cancelAlarm(note, false)
-                setTimeText(note)
+                (activity as MainActivity).cancelAlarm(note, false)
+                setTimeText(
+                    note
+                )
             }
             R.id.menu_change_alarm -> startAlarmFragment(note)
-            //R.id.menu_share -> activity.share(note)
+            R.id.menu_share -> (activity as MainActivity).share(note)
             R.id.menu_done -> {
                 note.isDone = !note.isDone
                 (activity as MainActivity).viewModel.update(note)
@@ -164,18 +171,17 @@ class EditFragment : Fragment() {
         builder.setTitle("노트 수정")
         builder.setMessage("지금까지 편집한 내용을 저장하시겠습니까?")
         builder.setPositiveButton("저장") { _: DialogInterface?, _: Int ->
-            //activity.updateNote(note)
+            (activity as MainActivity).viewModel.update(note)
+
             Toast.makeText(context, "노트가 수정되었습니다.", Toast.LENGTH_SHORT).show()
             //activity.originalOnBackPressed()
-        }.setNeutralButton("계속쓰기",
-            DialogInterface.OnClickListener { dialog: DialogInterface?, id: Int -> }
-        )
-        builder.setNegativeButton("아니요",
-            DialogInterface.OnClickListener { dialog: DialogInterface?, id: Int ->
-                Toast.makeText(context, "저장되지 않았습니다.", Toast.LENGTH_SHORT).show()
-                //activity.originalOnBackPressed()
-            }
-        )
+        }.setNeutralButton("계속쓰기"
+        ) { _: DialogInterface?, _: Int -> }
+        builder.setNegativeButton("아니요"
+        ) { _: DialogInterface?, _: Int ->
+            Toast.makeText(context, "저장되지 않았습니다.", Toast.LENGTH_SHORT).show()
+            //activity.originalOnBackPressed()
+        }
         builder.create()
         builder.show()
     }
@@ -196,25 +202,41 @@ class EditFragment : Fragment() {
         binding.editTextContent.setText(note.content)
         binding.editTextContent.isEnabled = false
 
-        setTimeText(note)
-    }
-
-    private fun setTimeText(note: Note) {
-        var timeText = "최초 작성일: " + MainActivity.timeToString(note.creationTime)
-        if (note.editTime != null) timeText += "\n최근 수정일: ${MainActivity.timeToString(note.editTime)}"
-        if (note.alarmTime != null) timeText += "\n알림 시간: ${MainActivity.timeToString(note.alarmTime)}"
-        binding.textViewDate.text = timeText
+        setTimeText(
+            note
+        )
     }
 
 
 
     private fun startAlarmFragment(note: Note) {
-        //(activity as MainActivity).alarmFragment.setNote(note)
+        (activity as MainActivity).alarmFragment.setNote(note)
         (activity as MainActivity).supportFragmentManager.beginTransaction().addToBackStack(null)
-            .setCustomAnimations(R.anim.slide_up, R.anim.slide_down)
-            .replace(R.id.edit_note_container,
+            .setCustomAnimations(
+                R.anim.slide_up,
+                R.anim.slide_down
+            )
+            .replace(
+                R.id.edit_note_container,
                 (activity as MainActivity).alarmFragment).commit()
     }
 
     fun isContentChanged() = originContent != binding.editTextContent.text.toString()
+
+    companion object {
+        lateinit var textViewTime: TextView
+
+        fun setTimeText(note: Note) {
+            var timeText = "최초 작성일: " + MainActivity.timeToString(
+                note.creationTime
+            )
+            if (note.editTime != null) timeText += "\n최근 수정일: ${MainActivity.timeToString(
+                note.editTime
+            )}"
+            if (note.alarmTime != null) timeText += "\n알림 시간: ${MainActivity.timeToString(
+                note.alarmTime
+            )}"
+            textViewTime.text = timeText
+        }
+    }
 }

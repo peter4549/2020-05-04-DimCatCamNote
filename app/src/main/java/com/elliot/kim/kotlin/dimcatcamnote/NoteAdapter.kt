@@ -1,6 +1,7 @@
 package com.elliot.kim.kotlin.dimcatcamnote
 
 import android.content.Context
+import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -26,19 +27,24 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val note: Note = notesFiltered[position]
 
-        val title: String = note.title ?: ""
+        val title: String = note.title
         val creationTime: Long = note.creationTime
         val uri: String? = note.uri  // 호출시점에 널 체크, 널이면 기본화면 표시
-        val content: String = note.content ?: ""
+        val content: String = note.content
         val editTime: Long? = note.editTime ?: creationTime
         val alarmTime: Long? = note.alarmTime // 호출 시점에 널 체크. 널이면 텍스트 gone, 있으면표시
 
-        var time: String = if (true)
-            "${R.string.creation_time}: $creationTime"
+        val time: String = if (editTime != null)
+            "${context?.getString(R.string.creation_time)}: ${MainActivity.timeToString(creationTime)}"
         else
-            "${R.string.edit_time}: $editTime"
+            "${context?.getString(R.string.edit_time)}: ${MainActivity.timeToString(editTime)}"
 
-        holder.binding.textViewTime.text = MainActivity.timeToString(creationTime)
+        holder.binding.textViewTitle.text = title
+        holder.binding.textViewTime.text = time
+        holder.binding.textViewContent.text = content
+
+        if (note.uri != null)
+            holder.binding.imageViewThumbnail.setImageURI(Uri.parse(note.uri))
 
         holder.binding.cardView.setOnClickListener {
             (context as MainActivity).startEditFragment(note)

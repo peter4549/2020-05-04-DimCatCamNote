@@ -14,8 +14,7 @@
             android:id="@+id/card_view"
             android:layout_gravity="center"
             android:layout_width="match_parent"
-            android:layout_height="60dp"
-            android:clickable="true"
+            android:layout_height="100dp"
             android:focusable="true"
             android:foreground="?attr/selectableItemBackground">
 
@@ -27,25 +26,30 @@
 
                 <ImageView
                     android:id="@+id/image_view_thumbnail"
-                    android:layout_width="40dp"
+                    android:layout_width="60dp"
                     android:layout_height="match_parent"
                     android:layout_margin="2dp"/>
 
                 <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:orientation="vertical" >
 
                     <RelativeLayout
                         android:layout_width="match_parent"
-                        android:layout_height="32dp"
-                        android:orientation="horizontal">
+                        android:layout_height="32dp">
 
                         <ImageView
                             android:id="@+id/image_view_logo"
-                            android:layout_width="32dp"
-                            android:layout_height="32dp"
-                            android:layout_margin="4dp" />
+                            android:layout_width="34dp"
+                            android:layout_height="28dp"
+                            android:layout_marginStart="4dp"
+                            android:layout_marginLeft="4dp"
+                            android:layout_marginTop="4dp"
+                            android:layout_marginEnd="4dp"
+                            android:layout_marginRight="4dp"
+                            android:layout_marginBottom="4dp"
+                            android:src="@drawable/check_mark"/>
 
                         <TextView
                             android:id="@+id/text_view_title"
@@ -54,28 +58,28 @@
                             android:layout_marginStart="8dp"
                             android:layout_toEndOf="@id/image_view_logo"
                             android:gravity="center"
-                            android:textColor="@color/backgroundColorCardView"
+                            android:textColor="@color/textColorCardView"
                             android:textSize="20sp"
-                            android:textStyle="bold"/>
+                            android:textStyle="bold" />
 
                         <ImageView
                             android:id="@+id/image_view_done"
                             android:layout_width="32dp"
                             android:layout_height="32dp"
-                            android:layout_toStartOf="@id/image_view_alarm"
-                            android:layout_marginBottom="6dp"
                             android:layout_marginTop="6dp"
-                            android:visibility="invisible"/>
+                            android:layout_marginBottom="6dp"
+                            android:layout_toStartOf="@id/image_view_alarm"
+                            android:visibility="invisible" />
 
                         <ImageView
                             android:id="@+id/image_view_alarm"
                             android:layout_width="32dp"
                             android:layout_height="32dp"
                             android:layout_alignParentEnd="true"
-                            android:layout_marginBottom="6dp"
-                            android:layout_marginEnd="6dp"
                             android:layout_marginTop="6dp"
-                            android:visibility="invisible"/>
+                            android:layout_marginEnd="6dp"
+                            android:layout_marginBottom="6dp"
+                            android:visibility="invisible" />
 
                     </RelativeLayout>
 
@@ -83,6 +87,16 @@
                         android:id="@+id/text_view_time"
                         android:layout_width="match_parent"
                         android:layout_height="28dp"
+                        android:paddingEnd="8dp"
+                        android:paddingStart="8dp"
+                        android:textColor="@color/textColorCardView"
+                        android:textSize="16sp"
+                        android:textStyle="italic" />
+
+                    <TextView
+                        android:id="@+id/text_view_content"
+                        android:layout_width="match_parent"
+                        android:layout_height="40dp"
                         android:paddingEnd="8dp"
                         android:paddingStart="8dp"
                         android:textColor="@color/textColorCardView"

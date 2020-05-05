@@ -11,13 +11,11 @@ class MainViewModel(application: Application): AndroidViewModel(application) {
     private val database = Room.databaseBuilder(
         application,
         AppDatabase::class.java,
-        "dim_cat_notes"
+        MainActivity.DATABASE_NAME
     ).fallbackToDestructiveMigration().build()
 
     private val job = Job()
     private val scope = CoroutineScope(Dispatchers.IO + job)
-
-    var camNotes = getAll()
 
     var targetNote: Note? = null
 

@@ -1,4 +1,4 @@
-package com.elliot.kim.kotlin.dimcatcamnote
+package com.elliot.kim.kotlin.dimcatcamnote.fragments
 
 import android.content.DialogInterface
 import android.os.Bundle
@@ -7,6 +7,9 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
+import com.elliot.kim.kotlin.dimcatcamnote.MainActivity
+import com.elliot.kim.kotlin.dimcatcamnote.Note
+import com.elliot.kim.kotlin.dimcatcamnote.R
 import com.elliot.kim.kotlin.dimcatcamnote.databinding.FragmentAddBinding
 
 class AddFragment : Fragment() {
@@ -60,7 +63,9 @@ class AddFragment : Fragment() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             android.R.id.home -> finish(BACK_PRESSED)
-            R.id.save -> finish(SAVE)
+            R.id.save -> finish(
+                SAVE
+            )
         }
         return super.onOptionsItemSelected(item)
     }
@@ -92,7 +97,11 @@ class AddFragment : Fragment() {
         if (title == "") title = if (content.length > 16) content.substring(0, 16)
         else content
 
-        val note = Note(title, MainActivity.getCurrentTime(), null)
+        val note = Note(
+            title,
+            MainActivity.getCurrentTime(),
+            null
+        )
         note.content = content
 
         (activity as MainActivity).viewModel.insert(note)

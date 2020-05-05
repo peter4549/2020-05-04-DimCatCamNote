@@ -1,14 +1,119 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".AlarmFragment">
-
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+<layout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment" />
+        tools:context=".fragments.AlarmFragment"
+        android:orientation="vertical"
+        android:background="@color/colorGrey606060Alpha80"
+        android:gravity="center"
+        android:clickable="true">
 
-</FrameLayout>
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@color/colorBlueGrey263238"
+            android:layout_gravity="center">
+
+            <RelativeLayout
+                android:layout_width="272dp"
+                android:layout_height="32dp" >
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="32dp"
+                    android:background="@color/colorLime50"
+                    android:text="알림 설정"
+                    android:textStyle="bold"
+                    android:textColor="@color/colorBlueGreyDark"
+                    android:textSize="18sp"
+                    android:gravity="center" />
+
+                <ImageView
+                    android:id="@+id/image_view_close"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:padding="4dp"
+                    android:src="@drawable/check_mark"
+                    android:clickable="true"
+                    android:contentDescription="Close the AlarmFragment" />
+
+            </RelativeLayout>
+
+            <TextView
+                android:id="@+id/text_view_current_time_set"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/colorYellowActionBar"
+                android:text="현재 설정된 알림시간"
+                android:textStyle="bold"
+                android:textColor="@color/colorBlueGreyDark"
+                android:textAlignment="center" />
+
+            <TextView
+                android:id="@+id/text_view_current_time"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/colorYellowActionBar"
+                android:textStyle="bold"
+                android:textColor="@color/colorBlueGrey263238"
+                android:textAlignment="center" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="12dp"
+                android:orientation="vertical"
+                android:weightSum="1"
+                android:clickable="true">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="1dp"
+                    android:background="@color/colorYellowActionBar"
+                    android:textAlignment="center"
+                    android:textColor="@color/colorBrown3e2723"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:text="날짜 선택"/>
+
+                <Button
+                    android:id="@+id/button_set_date"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:foreground="?attr/selectableItemBackground"
+                    android:background="@color/colorLime50"
+                    android:textColor="@color/colorBlueGreyDark"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+            </LinearLayout>
+
+            <TimePicker
+                android:id="@+id/time_picker"
+                android:layout_width="272dp"
+                android:layout_height="wrap_content"
+                android:timePickerMode="spinner"
+                android:layout_gravity="center_horizontal"/>
+
+            <Button
+                android:id="@+id/button_set_alarm"
+                android:layout_width="match_parent"
+                android:layout_height="36dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_margin="12dp"
+                android:foreground="?attr/selectableItemBackground"
+                android:background="@color/colorLime50"
+                android:textColor="@color/colorBlueGreyDark"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:text="알림 등록" />
+
+        </LinearLayout>
+    </FrameLayout>
+</layout>

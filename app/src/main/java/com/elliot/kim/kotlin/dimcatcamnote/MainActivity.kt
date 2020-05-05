@@ -1,18 +1,29 @@
 package com.elliot.kim.kotlin.dimcatcamnote
 
+import android.Manifest
+import android.app.AlarmManager
+import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.Process
 import android.view.KeyEvent
 import android.view.inputmethod.InputMethodManager
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModelProvider
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.elliot.kim.kotlin.dimcatcamnote.broadcast_receivers.AlarmReceiver
 import com.elliot.kim.kotlin.dimcatcamnote.databinding.ActivityMainBinding
+import com.elliot.kim.kotlin.dimcatcamnote.fragments.AddFragment
+import com.elliot.kim.kotlin.dimcatcamnote.fragments.AlarmFragment
+import com.elliot.kim.kotlin.dimcatcamnote.fragments.CameraFragment
+import com.elliot.kim.kotlin.dimcatcamnote.fragments.EditFragment
 import com.google.android.material.snackbar.Snackbar
 import java.io.File
 import java.text.SimpleDateFormat
@@ -24,20 +35,32 @@ const val KEY_EVENT_EXTRA = "key_event_extra"
 class MainActivity : AppCompatActivity(), LifecycleOwner {
 
     private lateinit var binding: ActivityMainBinding
-    lateinit var viewModel: MainViewModel
     private lateinit var adapter: NoteAdapter
-    var pressedTime = 0L
 
-    private val addFragment = AddFragment()
-    private val editFragment = EditFragment()
-    val alarmFragment = AlarmFragment()
+    private var initialization = true
+    private var pressedTime = 0L
+
+    private val addFragment =
+        AddFragment()
+    private val editFragment =
+        EditFragment()
+    private val cameraFragment =
+        CameraFragment()
+
+    lateinit var viewModel: MainViewModel
+
+    val alarmFragment =
+        AlarmFragment()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        if (!hasPermissions(this))
+            requestPermissions(PERMISSIONS_REQUIRED, PERMISSIONS_REQUEST_CODE)
+
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
 
-        binding.cameraFloatingActionButton.setOnClickListener {
-        }
+        binding.cameraFloatingActionButton.setOnClickListener { startCameraFragment() }
         binding.addFloatingActionButton.setOnClickListener { startAddFragment() }
 
         binding.recyclerView.setHasFixedSize(true)
@@ -72,13 +95,15 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
     override fun onBackPressed() {
         if (isFragment) {
             when {
-                isAddFragment -> addFragment.finish(AddFragment.BACK_PRESSED)
-                isAlarmFragment -> ""
+                isAddFragment -> {
+                    addFragment.finish(AddFragment.BACK_PRESSED)
+                    hideKeyboard()
+                }
                 isEditFragment -> if (editFragment.isContentChanged()) editFragment.showCheckMessage()
                 else super.onBackPressed()
                 else -> super.onBackPressed()
             }
-        }
+        } else if (isAlarmFragment) super.onBackPressed()
         else {
             if (pressedTime == 0L) {
                 Snackbar.make(
@@ -98,6 +123,20 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
                     finish()
                     Process.killProcess(Process.myPid())
                 }
+            }
+        }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == PERMISSIONS_REQUEST_CODE) {
+            if (PackageManager.PERMISSION_GRANTED == grantResults.firstOrNull()) {
+                Toast.makeText(this, "Permission request granted", Toast.LENGTH_LONG).show()
+            } else {
+                Toast.makeText(this,
+                    "카메라 권한을 승인하셔야 카메라 기능을 사용하실 수 있습니다.",
+                    Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -141,6 +180,14 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         hideFloatingActionButton()
     }
 
+    private fun startCameraFragment() {
+        supportFragmentManager.beginTransaction()
+            .setCustomAnimations(R.anim.slide_up, R.anim.slide_up, R.anim.slide_down, R.anim.slide_down)
+            .addToBackStack(null)
+            .replace(R.id.container, cameraFragment).commit()
+        hideFloatingActionButton()
+    }
+
     fun showKeyboard() {
         val manager =
             this.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
@@ -152,12 +199,63 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         val manager =
             this.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         val view = currentFocus
-        if (view != null) manager.hideSoftInputFromWindow(view.windowToken, 0);
+        if (view != null) manager.hideSoftInputFromWindow(view.windowToken, 0)
+    }
+
+    fun cancelAlarm(note: Note, isDelete: Boolean) {
+        val id: Int = note.id
+
+        val alarmManager =
+            getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val intent = Intent(this, AlarmReceiver::class.java)
+        val pendingIntent = PendingIntent.getBroadcast(
+            this,
+            id,
+            intent,
+            PendingIntent.FLAG_ONE_SHOT
+        )
+
+        alarmManager.cancel(pendingIntent)
+        removeAlarmPreferences(id)
+
+        if (!isDelete) {
+            note.alarmTime = null
+            viewModel.update(note)
+
+            Toast.makeText(this, "알림이 해제되었습니다.", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun removeAlarmPreferences(number: Int) {
+        val sharedPreferences = getSharedPreferences(
+            "alarm_information",
+            Context.MODE_PRIVATE
+        )
+        val editor = sharedPreferences.edit()
+        editor.remove(number.toString() + "0")
+        editor.remove(number.toString() + "1")
+        editor.remove(number.toString() + "2")
+        editor.remove(number.toString() + "3")
+        editor.apply()
+    }
+
+    fun share(note: Note) {
+        val intent = Intent(Intent.ACTION_SEND)
+        val text: String = note.toSharedString()
+
+        intent.type = "text/plain"
+        intent.putExtra(Intent.EXTRA_SUBJECT, "Cat Note\n")
+        intent.putExtra(Intent.EXTRA_TEXT, text)
+
+        val chooser = Intent.createChooser(intent, "공유하기")
+        this.startActivity(chooser)
     }
 
     companion object {
+        const val DATABASE_NAME = "dim_cat_cam_notes"
 
-        private var initialization = true
+        const val PERMISSIONS_REQUEST_CODE = 10
+        val PERMISSIONS_REQUIRED = arrayOf(Manifest.permission.CAMERA)
 
         var isFragment = false
         var isAddFragment = false
@@ -165,6 +263,10 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         var isEditFragment = false
 
         private const val pattern = "yyyy-MM-dd-a-hh:mm:ss"
+
+        fun hasPermissions(context: Context) = PERMISSIONS_REQUIRED.all {
+            ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
+        }
 
         /** Use external media if it is available, our app's file directory otherwise */
         fun getOutputDirectory(context: Context): File {

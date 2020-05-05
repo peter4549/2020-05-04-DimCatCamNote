@@ -1,10 +1,10 @@
-package com.elliot.kim.kotlin.dimcatcamnote
+package com.elliot.kim.kotlin.dimcatcamnote.fragments
 
-import android.annotation.SuppressLint
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
@@ -15,27 +15,23 @@ import android.os.Build
 import android.os.Bundle
 import android.util.DisplayMetrics
 import android.util.Log
-import android.util.Size
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.MimeTypeMap
 import android.widget.ImageButton
+import android.widget.Toast
 import androidx.camera.core.*
-import androidx.camera.core.impl.PreviewConfig
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.core.net.toFile
-import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
-import androidx.navigation.Navigation
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import com.elliot.kim.kotlin.dimcatcamnote.*
+import com.elliot.kim.kotlin.dimcatcamnote.R
 import java.io.File
 import java.nio.ByteBuffer
 import java.text.SimpleDateFormat
@@ -102,10 +98,14 @@ class CameraFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        if (!PermissionsFragment.hasPermissions(requireContext())) {
-           // Navigation.findNavController(requireActivity(), R.id.fragment_container).navigate(
-            //    CameraFragmentDirections.actionCameraFragmentToPermissionsFragment()
-           // )
+        if (!MainActivity.hasPermissions(
+                requireContext()
+            )
+        ) {
+            requestPermissions(
+                MainActivity.PERMISSIONS_REQUIRED,
+                MainActivity.PERMISSIONS_REQUEST_CODE
+            )
         }
     }
 
@@ -136,7 +136,10 @@ class CameraFragment : Fragment() {
         displayManager.registerDisplayListener(displayListener, null)
 
         // Determine the output directory
-        outputDirectory = MainActivity.getOutputDirectory(requireContext())
+        outputDirectory =
+            MainActivity.getOutputDirectory(
+                requireContext()
+            )
 
         // Wait for the views to be properly laid out
         viewFinder.post {
@@ -206,12 +209,16 @@ class CameraFragment : Fragment() {
                 .build()
                 // The analyzer can then be assigned to the instance
                 .also {
-                    it.setAnalyzer(cameraExecutor, LuminosityAnalyzer { luma ->
-                        // Values returned from our analyzer are passed to the attached listener
-                        // We log image analysis results here - you should do something useful
-                        // instead!
-                        Log.d(TAG, "Average luminosity: $luma")
-                    })
+                    it.setAnalyzer(cameraExecutor,
+                        LuminosityAnalyzer { luma ->
+                            // Values returned from our analyzer are passed to the attached listener
+                            // We log image analysis results here - you should do something useful
+                            // instead!
+                            Log.d(
+                                TAG,
+                                "Average luminosity: $luma"
+                            )
+                        })
                 }
 
             // Must unbind the use-cases before rebinding them
@@ -260,7 +267,8 @@ class CameraFragment : Fragment() {
         }
 
         // Inflate a new view containing all UI for controlling the camera
-        val controls = View.inflate(requireContext(), R.layout.camera_ui_container, container)
+        val controls = View.inflate(requireContext(),
+            R.layout.camera_ui_container, container)
 
         // In the background, load latest photo taken (if any) for gallery thumbnail
         /*
@@ -272,6 +280,8 @@ class CameraFragment : Fragment() {
             }
         }*/
 
+
+
         // Listener for button used to capture photo
         controls.findViewById<ImageButton>(R.id.camera_capture_button).setOnClickListener {
 
@@ -279,7 +289,12 @@ class CameraFragment : Fragment() {
             imageCapture?.let { imageCapture ->
 
                 // Create output file to hold the image
-                val photoFile = createFile(outputDirectory, FILENAME, PHOTO_EXTENSION)
+                val photoFile =
+                    createFile(
+                        outputDirectory,
+                        FILENAME,
+                        PHOTO_EXTENSION
+                    )
 
                 // Setup image capture metadata
                 val metadata = ImageCapture.Metadata().apply {
@@ -303,10 +318,18 @@ class CameraFragment : Fragment() {
                         override fun onImageSaved(output: ImageCapture.OutputFileResults) {
                             val savedUri = output.savedUri ?: Uri.fromFile(photoFile)
                             Log.d(TAG, "Photo capture succeeded: $savedUri")
+                            val note = Note(
+                                "Test",
+                                MainActivity.getCurrentTime(),
+                                savedUri.toString()
+                            )
+                            (activity as MainActivity).viewModel.insert(note)
+                            Log.d("AA", savedUri.toString())
+
 
                             // We can only change the foreground Drawable using API level 23+ API
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                                // Update the gallery thumbnail with latest picture taken
+                                //Update the gallery thumbnail with latest picture taken
                                 //setGalleryThumbnail(savedUri)
                             }
 
@@ -340,7 +363,9 @@ class CameraFragment : Fragment() {
                     container.postDelayed({
                         container.foreground = ColorDrawable(Color.WHITE)
                         container.postDelayed(
-                            { container.foreground = null }, ANIMATION_FAST_MILLIS)
+                            { container.foreground = null },
+                            ANIMATION_FAST_MILLIS
+                        )
                     }, ANIMATION_SLOW_MILLIS)
                 }
             }
@@ -460,6 +485,19 @@ class CameraFragment : Fragment() {
         }
     }
 
+    override fun onRequestPermissionsResult(
+        requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == MainActivity.PERMISSIONS_REQUEST_CODE) {
+            if (PackageManager.PERMISSION_GRANTED == grantResults.firstOrNull()) {
+                Toast.makeText(context, "Permission request granted", Toast.LENGTH_LONG).show()
+            } else {
+                Toast.makeText(context, "Permission request denied", Toast.LENGTH_LONG).show()
+                activity?.supportFragmentManager?.popBackStack()
+            }
+        }
+    }
+
     companion object {
 
         private const val TAG = "CameraXBasic"
@@ -467,6 +505,8 @@ class CameraFragment : Fragment() {
         private const val PHOTO_EXTENSION = ".jpg"
         private const val RATIO_4_3_VALUE = 4.0 / 3.0
         private const val RATIO_16_9_VALUE = 16.0 / 9.0
+
+        var isFromAddFragment = false
 
         /** Helper function used to create a timestamped file */
         private fun createFile(baseFolder: File, format: String, extension: String) =
