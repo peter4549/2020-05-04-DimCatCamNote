@@ -7,9 +7,6 @@ import android.view.View
 import android.view.ViewGroup
 import com.elliot.kim.kotlin.dimcatcamnote.R
 
-/**
- * A simple [Fragment] subclass.
- */
 class AuthorizationFragment : Fragment() {
 
     override fun onCreateView(

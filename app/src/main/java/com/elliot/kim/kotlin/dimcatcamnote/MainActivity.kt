@@ -1,19 +1,24 @@
 package com.elliot.kim.kotlin.dimcatcamnote
 
 import android.Manifest
+import android.accessibilityservice.AccessibilityService
 import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.os.Bundle
 import android.os.Process
+import android.util.TypedValue
 import android.view.KeyEvent
+import android.view.ViewTreeObserver
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
+import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModelProvider
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
@@ -40,23 +45,25 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
     private var initialization = true
     private var pressedTime = 0L
 
-    private val addFragment =
-        AddFragment()
-    private val editFragment =
-        EditFragment()
-    private val cameraFragment =
-        CameraFragment()
+    private val editFragment = EditFragment()
 
     lateinit var viewModel: MainViewModel
+    lateinit var fragmentManager: FragmentManager
+    lateinit var addFragment: AddFragment
+    lateinit var cameraFragment: CameraFragment
+
 
     val alarmFragment =
         AlarmFragment()
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         if (!hasPermissions(this))
             requestPermissions(PERMISSIONS_REQUIRED, PERMISSIONS_REQUEST_CODE)
+
+        fragmentManager = supportFragmentManager
 
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
 
@@ -101,6 +108,10 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
                 }
                 isEditFragment -> if (editFragment.isContentChanged()) editFragment.showCheckMessage()
                 else super.onBackPressed()
+                isCameraFragment -> {
+                    super.onBackPressed()
+                    showFloatingActionButton()
+                }
                 else -> super.onBackPressed()
             }
         } else if (isAlarmFragment) super.onBackPressed()
@@ -164,7 +175,8 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
     }
 
     private fun startAddFragment() {
-        supportFragmentManager.beginTransaction()
+        addFragment = AddFragment()
+        fragmentManager.beginTransaction()
             .setCustomAnimations(R.anim.slide_up, R.anim.slide_up, R.anim.slide_down, R.anim.slide_down)
             .addToBackStack(null)
             .replace(R.id.container, addFragment).commit()
@@ -173,7 +185,7 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
 
     fun startEditFragment(note: Note) {
         editFragment.setNote(note)
-        supportFragmentManager.beginTransaction()
+        fragmentManager.beginTransaction()
             .setCustomAnimations(R.anim.slide_up, R.anim.slide_up, R.anim.slide_down, R.anim.slide_down)
             .addToBackStack(null)
             .replace(R.id.container, editFragment).commit()
@@ -181,12 +193,20 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
     }
 
     private fun startCameraFragment() {
-        supportFragmentManager.beginTransaction()
+        cameraFragment = CameraFragment()
+        fragmentManager.beginTransaction()
             .setCustomAnimations(R.anim.slide_up, R.anim.slide_up, R.anim.slide_down, R.anim.slide_down)
             .addToBackStack(null)
             .replace(R.id.container, cameraFragment).commit()
         hideFloatingActionButton()
     }
+
+    /*
+    fun removeCameraFragment() {
+        fragmentManager.beginTransaction()
+            .remove(null)
+            .commit()
+    }*/
 
     fun showKeyboard() {
         val manager =
@@ -260,6 +280,7 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         var isFragment = false
         var isAddFragment = false
         var isAlarmFragment = false
+        var isCameraFragment = false
         var isEditFragment = false
 
         private const val pattern = "yyyy-MM-dd-a-hh:mm:ss"

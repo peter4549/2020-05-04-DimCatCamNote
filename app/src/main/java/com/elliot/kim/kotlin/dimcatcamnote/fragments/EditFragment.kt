@@ -2,6 +2,7 @@ package com.elliot.kim.kotlin.dimcatcamnote.fragments
 
 import android.annotation.SuppressLint
 import android.content.DialogInterface
+import android.net.Uri
 import android.os.Bundle
 import android.view.*
 import android.view.GestureDetector.SimpleOnGestureListener
@@ -11,6 +12,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
+import com.bumptech.glide.Glide
 import com.elliot.kim.kotlin.dimcatcamnote.MainActivity
 import com.elliot.kim.kotlin.dimcatcamnote.Note
 import com.elliot.kim.kotlin.dimcatcamnote.R
@@ -145,9 +147,7 @@ class EditFragment : Fragment() {
                 startAlarmFragment(note)
             else {
                 (activity as MainActivity).cancelAlarm(note, false)
-                setTimeText(
-                    note
-                )
+                setTimeText(note)
             }
             R.id.menu_change_alarm -> startAlarmFragment(note)
             R.id.menu_share -> (activity as MainActivity).share(note)
@@ -197,6 +197,13 @@ class EditFragment : Fragment() {
         (activity as MainActivity).showKeyboard()
     }
 
+    private fun setContent(note: Note) {
+        setText(note)
+        Glide.with(this)
+            .load(Uri.parse(note.uri))
+            .into(binding.imageView)
+    }
+
     private fun setText(note: Note) {
         binding.toolBar.title = note.title
         binding.editTextContent.setText(note.content)
@@ -207,15 +214,10 @@ class EditFragment : Fragment() {
         )
     }
 
-
-
     private fun startAlarmFragment(note: Note) {
         (activity as MainActivity).alarmFragment.setNote(note)
         (activity as MainActivity).supportFragmentManager.beginTransaction().addToBackStack(null)
-            .setCustomAnimations(
-                R.anim.slide_up,
-                R.anim.slide_down
-            )
+            .setCustomAnimations(R.anim.slide_up, R.anim.slide_down)
             .replace(
                 R.id.edit_note_container,
                 (activity as MainActivity).alarmFragment).commit()

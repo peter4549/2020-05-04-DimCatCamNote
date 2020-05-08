@@ -28,6 +28,7 @@ import androidx.camera.view.PreviewView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.core.net.toFile
+import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.elliot.kim.kotlin.dimcatcamnote.*
@@ -98,6 +99,10 @@ class CameraFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
+
+        MainActivity.isFragment = true
+        MainActivity.isCameraFragment = true
+
         if (!MainActivity.hasPermissions(
                 requireContext()
             )
@@ -107,6 +112,13 @@ class CameraFragment : Fragment() {
                 MainActivity.PERMISSIONS_REQUEST_CODE
             )
         }
+    }
+
+    override fun onStop() {
+        super.onStop()
+
+        MainActivity.isFragment = false
+        MainActivity.isCameraFragment = false
     }
 
     override fun onDestroyView() {
@@ -318,14 +330,6 @@ class CameraFragment : Fragment() {
                         override fun onImageSaved(output: ImageCapture.OutputFileResults) {
                             val savedUri = output.savedUri ?: Uri.fromFile(photoFile)
                             Log.d(TAG, "Photo capture succeeded: $savedUri")
-                            val note = Note(
-                                "Test",
-                                MainActivity.getCurrentTime(),
-                                savedUri.toString()
-                            )
-                            (activity as MainActivity).viewModel.insert(note)
-                            Log.d("AA", savedUri.toString())
-
 
                             // We can only change the foreground Drawable using API level 23+ API
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -353,6 +357,8 @@ class CameraFragment : Fragment() {
                             ) { _, uri ->
                                 Log.d(TAG, "Image capture scanned into media store: $uri")
                             }
+
+                            startAddFragment(savedUri)
                         }
                     })
 
@@ -498,6 +504,29 @@ class CameraFragment : Fragment() {
         }
     }
 
+    private fun startAddFragment(uri: Uri) {
+        AddFragment.isFromCameraFragment = true
+
+        if (!isFromAddFragment) (activity as MainActivity).addFragment = AddFragment()
+
+        setUri(uri)
+        (activity as MainActivity).supportFragmentManager.beginTransaction()
+            .setCustomAnimations(
+                R.anim.slide_up,
+                R.anim.slide_up,
+                R.anim.slide_down,
+                R.anim.slide_down
+            )
+            .replace(R.id.camera_container, (activity as MainActivity).addFragment)
+            .commit()
+    }
+
+    private fun setUri (uri: Uri) {
+        val bundle = Bundle()
+        bundle.putString(KEY_URI, uri.toString())
+        (activity as MainActivity).addFragment.arguments = bundle
+    }
+
     companion object {
 
         private const val TAG = "CameraXBasic"
@@ -505,6 +534,8 @@ class CameraFragment : Fragment() {
         private const val PHOTO_EXTENSION = ".jpg"
         private const val RATIO_4_3_VALUE = 4.0 / 3.0
         private const val RATIO_16_9_VALUE = 16.0 / 9.0
+
+        const val KEY_URI = "key_uri"
 
         var isFromAddFragment = false
 

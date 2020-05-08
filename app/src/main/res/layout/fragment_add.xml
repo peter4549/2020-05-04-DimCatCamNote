@@ -5,6 +5,7 @@
     tools:context="com.elliot.kim.kotlin.dimcatcamnote.MainActivity">
 
     <RelativeLayout
+        android:id="@+id/add_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
@@ -30,15 +31,24 @@
             android:textColorHint="@color/textColorHintAddEditText"
             android:hint="제목을 입력해주세요."/>
 
+
+        <ImageView
+            android:id="@+id/imageView"
+            android:layout_width="match_parent"
+            android:layout_height="224dp"
+            android:layout_below="@id/editTextTitle"
+            android:layout_margin="2dp" />
+
         <EditText
             android:id="@+id/editTextContent"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_below="@id/editTextTitle"
+            android:layout_below="@id/imageView"
             android:gravity="top"
             android:layout_marginTop="6dp"
             android:paddingEnd="8dp"
             android:paddingStart="8dp"
+            android:paddingTop="8dp"
             android:background="@color/backgroundColorAddEditText"
             android:textColor="@color/textColorAddEditText"
             android:textColorHint="@color/textColorHintAddEditText"
