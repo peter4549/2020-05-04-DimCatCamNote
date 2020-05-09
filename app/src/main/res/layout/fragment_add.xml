@@ -37,7 +37,9 @@
             android:layout_width="match_parent"
             android:layout_height="224dp"
             android:layout_below="@id/editTextTitle"
-            android:layout_margin="2dp" />
+            android:layout_margin="2dp"
+            android:clickable="true"
+            android:focusable="true"/>
 
         <EditText
             android:id="@+id/editTextContent"
@@ -53,6 +55,14 @@
             android:textColor="@color/textColorAddEditText"
             android:textColorHint="@color/textColorHintAddEditText"
             android:hint="여기에 노트를 작성해주세요."/>
+
+        <com.google.android.material.bottomnavigation.BottomNavigationView
+            android:id="@+id/bottomNavigationView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:background="@color/backgroundColorToolbar"
+            app:menu="@menu/menu_add_bottom_navigation_view"/>
 
     </RelativeLayout>
 

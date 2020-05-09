@@ -6,6 +6,7 @@ import android.content.DialogInterface
 import android.graphics.Rect
 import android.net.Uri
 import android.os.Bundle
+import android.os.Handler
 import android.view.*
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -20,17 +21,26 @@ import com.elliot.kim.kotlin.dimcatcamnote.databinding.FragmentAddBinding
 class AddFragment : Fragment() {
 
     private lateinit var binding: FragmentAddBinding
-    private lateinit var content: String
     private lateinit var title: String
-
-    private var uri: String? = null
+    private lateinit var content: String
 
     private var shortAnimationDuration = 0
+    private var uri: String? = null
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?): View? =
+    lateinit var handler: Handler
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        MainActivity.isFragment = true
+        MainActivity.isAddFragment = true
+
+        shortAnimationDuration = resources.getInteger(android.R.integer.config_shortAnimTime)
+    }
+
+    override fun onCreateView(inflater: LayoutInflater,
+                              container: ViewGroup?,
+                              savedInstanceState: Bundle?): View? =
         inflater.inflate(R.layout.fragment_add, container, false)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -42,14 +52,31 @@ class AddFragment : Fragment() {
         (activity as AppCompatActivity).supportActionBar?.setDisplayHomeAsUpEnabled(true)
         binding.toolBar.title = "새 노트"
 
+        binding.imageView.visibility = View.GONE
+
         setHasOptionsMenu(true)
-        shortAnimationDuration = resources.getInteger(android.R.integer.config_shortAnimTime)
 
         binding.editTextContent.viewTreeObserver.addOnGlobalLayoutListener {
-            if(keyboardShown(binding.editTextContent.rootView))
-                crossFade(false)
-            else
-                showImage()
+            if (keyboardShown(binding.editTextContent.rootView)) crossFade(false)
+            else showImage()
+        }
+
+        binding.bottomNavigationView.setOnNavigationItemSelectedListener {
+            when (it.itemId) {
+                R.id.camera -> {
+                    if(uri == null) startCameraFragment()
+                    else showPictureChangeMessage()
+                }
+            }
+            return@setOnNavigationItemSelectedListener true
+        }
+
+         handler = Handler {
+            when(it.what) {
+                SHOW_BOTTOM_NAVIGATION_VIEW ->
+                    binding.bottomNavigationView.visibility = View.VISIBLE
+            }
+            true
         }
     }
 
@@ -62,26 +89,15 @@ class AddFragment : Fragment() {
         return heightDiff > softKeyboardHeight * metrics.density
     }
 
-    override fun onResume() {
-        super.onResume()
+    override fun onDestroy() {
+        super.onDestroy()
 
-        MainActivity.isFragment = true
-        MainActivity.isAddFragment = true
-
-        if (isFromCameraFragment) showImage()
-        else binding.imageView.visibility = View.GONE
-    }
-
-    override fun onStop() {
-        super.onStop()
-
-        if (isFromCameraFragment) isFromCameraFragment = false
-        else MainActivity.isFragment = false
-
+        MainActivity.isFragment = false
         MainActivity.isAddFragment = false
+        if (isFromCameraFragment) isFromCameraFragment = false
 
-        (activity as MainActivity).hideKeyboard()
         (activity as MainActivity).showFloatingActionButton()
+        (activity as MainActivity).fragmentManager.popBackStack()
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -91,13 +107,18 @@ class AddFragment : Fragment() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        MainActivity.hideKeyboard(context, view)
+
         when (item.itemId) {
             android.R.id.home -> finish(BACK_PRESSED)
-            R.id.save -> finish(
-                SAVE
-            )
+            R.id.save -> finish(SAVE)
         }
         return super.onOptionsItemSelected(item)
+    }
+
+    fun setFlagOptions() {
+        MainActivity.isFragment = true
+        MainActivity.isAddFragment = true
     }
 
     private fun setTitleContent() {
@@ -107,11 +128,11 @@ class AddFragment : Fragment() {
 
     private fun showImage() {
         uri = getUri()
-        if(uri == "")
+        if(uri == null)
             return
         else {
             crossFade(true)
-            Glide.with(this)
+            Glide.with(binding.imageView.context)
                 .load(Uri.parse(uri))
                 .into(binding.imageView)
         }
@@ -119,10 +140,10 @@ class AddFragment : Fragment() {
 
     private fun getUri(): String? {
         return if (arguments != null) arguments?.getString(CameraFragment.KEY_URI)
-        else ""
+        else null
     }
 
-    private fun isEmpty() = title == "" && content == "" && uri == null
+    private fun isEmpty() = title == "" && content == "" && !isFromCameraFragment
 
     private fun showCheckMessage() {
         val builder = context?.let { AlertDialog.Builder(it) }
@@ -130,7 +151,7 @@ class AddFragment : Fragment() {
         builder?.setMessage("지금까지 작성한 내용을 저장하시겠습니까?")
         builder?.setPositiveButton("저장") { _: DialogInterface?, _: Int ->
             save()
-            activity?.supportFragmentManager?.popBackStack()
+            onDestroy()
         }
         builder?.setNeutralButton("계속쓰기") { _: DialogInterface?, _: Int -> }
         builder?.setNegativeButton("아니요") { _: DialogInterface?, _: Int ->
@@ -167,16 +188,16 @@ class AddFragment : Fragment() {
             when (save) {
                 SAVE -> {
                     save()
-                    activity?.supportFragmentManager?.popBackStack()
+                    onDestroy()
                 }
-                else -> showCheckMessage()
+                BACK_PRESSED -> showCheckMessage()
             }
         }
     }
 
     private fun finishWithoutSaving() {
         Toast.makeText(context, "저장되지 않았습니다.", Toast.LENGTH_SHORT).show()
-        activity?.supportFragmentManager?.popBackStack()
+        onDestroy()
     }
 
     private fun crossFade(fadeIn: Boolean) {
@@ -202,7 +223,36 @@ class AddFragment : Fragment() {
         }
     }
 
+    private fun showPictureChangeMessage() {
+        val builder = context?.let { AlertDialog.Builder(it) }
+        builder?.setTitle("사진 변경")
+        builder?.setMessage("새로운 사진을 찍으시겠습니까?")
+        builder?.setPositiveButton("네") { _: DialogInterface?, _: Int ->
+            startCameraFragment()
+        }
+        builder?.setNegativeButton("아니요") { _: DialogInterface?, _: Int -> }
+        builder?.create()
+        builder?.show()
+    }
+
+    private fun startCameraFragment() {
+        if(isFromCameraFragment) isFromCameraFragment = false
+        MainActivity.isAddFragment = false
+
+        binding.bottomNavigationView.visibility = View.GONE
+
+        CameraFragment.isFromAddFragment = true
+        (activity as MainActivity).cameraFragment = CameraFragment()
+        (activity as MainActivity).cameraFragment.setExistingUri(uri)
+        (activity as MainActivity).fragmentManager.beginTransaction()
+            .addToBackStack(null)
+            .setCustomAnimations(R.anim.slide_up, R.anim.slide_down)
+            .replace(R.id.add_container, (activity as MainActivity).cameraFragment).commit()
+    }
+
     companion object {
+        const val SHOW_BOTTOM_NAVIGATION_VIEW = 0
+
         const val BACK_PRESSED = 0
         const val SAVE = 1
 

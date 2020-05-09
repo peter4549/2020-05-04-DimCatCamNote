@@ -12,6 +12,7 @@ import android.os.Bundle
 import android.os.Process
 import android.util.TypedValue
 import android.view.KeyEvent
+import android.view.View
 import android.view.ViewTreeObserver
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
@@ -52,10 +53,8 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
     lateinit var addFragment: AddFragment
     lateinit var cameraFragment: CameraFragment
 
-
     val alarmFragment =
         AlarmFragment()
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -102,15 +101,14 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
     override fun onBackPressed() {
         if (isFragment) {
             when {
-                isAddFragment -> {
-                    addFragment.finish(AddFragment.BACK_PRESSED)
-                    hideKeyboard()
+                isAddFragment -> addFragment.finish(AddFragment.BACK_PRESSED)
+                isEditFragment -> {
+                    if (editFragment.isContentChanged()) editFragment.showCheckMessage()
+                    else super.onBackPressed()
                 }
-                isEditFragment -> if (editFragment.isContentChanged()) editFragment.showCheckMessage()
-                else super.onBackPressed()
                 isCameraFragment -> {
+                    if(!CameraFragment.isFromAddFragment) showFloatingActionButton()
                     super.onBackPressed()
-                    showFloatingActionButton()
                 }
                 else -> super.onBackPressed()
             }
@@ -137,6 +135,8 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
             }
         }
     }
+
+    fun backPressed() { super.onBackPressed() }
 
     override fun onRequestPermissionsResult(
         requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
@@ -199,27 +199,6 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
             .addToBackStack(null)
             .replace(R.id.container, cameraFragment).commit()
         hideFloatingActionButton()
-    }
-
-    /*
-    fun removeCameraFragment() {
-        fragmentManager.beginTransaction()
-            .remove(null)
-            .commit()
-    }*/
-
-    fun showKeyboard() {
-        val manager =
-            this.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-        val view = currentFocus
-        if (view != null) manager.showSoftInput(view, 0)
-    }
-
-    fun hideKeyboard() {
-        val manager =
-            this.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-        val view = currentFocus
-        if (view != null) manager.hideSoftInputFromWindow(view.windowToken, 0)
     }
 
     fun cancelAlarm(note: Note, isDelete: Boolean) {
@@ -304,5 +283,17 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
 
         fun timeToString(time: Long?): String = SimpleDateFormat(pattern, Locale.getDefault()).
             format(time ?: 0L)
+
+        fun showKeyboard(context: Context?, view: View?) {
+            val manager =
+                context?.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            if (view != null) manager.showSoftInput(view, 0)
+        }
+
+        fun hideKeyboard(context: Context?, view: View?) {
+            val manager =
+                context?.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            if (view != null) manager.hideSoftInputFromWindow(view.windowToken, 0)
+        }
     }
 }

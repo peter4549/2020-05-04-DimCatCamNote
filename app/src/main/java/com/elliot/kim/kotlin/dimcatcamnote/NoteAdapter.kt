@@ -6,6 +6,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.resource.bitmap.CircleCrop
 import com.elliot.kim.kotlin.dimcatcamnote.databinding.CardViewBinding
 import com.elliot.kim.kotlin.dimcatcamnote.databinding.CardViewBinding.bind
 
@@ -39,12 +41,18 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
         else
             "${context?.getString(R.string.edit_time)}: ${MainActivity.timeToString(editTime)}"
 
+        if (uri != null) {
+            Glide.with(holder.binding.imageViewThumbnail.context)
+                .load(Uri.parse(uri))
+                .transform(CircleCrop())
+                .into(holder.binding.imageViewThumbnail)
+        } else {
+            //Glide.clear(holder.binding.imageViewThumbnail)
+        }
+
         holder.binding.textViewTitle.text = title
         holder.binding.textViewTime.text = time
         holder.binding.textViewContent.text = content
-
-        if (note.uri != null)
-            holder.binding.imageViewThumbnail.setImageURI(Uri.parse(note.uri))
 
         holder.binding.cardView.setOnClickListener {
             (context as MainActivity).startEditFragment(note)

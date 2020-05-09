@@ -1,5 +1,6 @@
 package com.elliot.kim.kotlin.dimcatcamnote.fragments
 
+import android.annotation.SuppressLint
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -58,6 +59,7 @@ class CameraFragment : Fragment() {
     private var imageCapture: ImageCapture? = null
     private var imageAnalyzer: ImageAnalysis? = null
     private var camera: Camera? = null
+    private var existingUri: Uri? = null
 
     private val displayManager by lazy {
         requireContext().getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
@@ -103,10 +105,7 @@ class CameraFragment : Fragment() {
         MainActivity.isFragment = true
         MainActivity.isCameraFragment = true
 
-        if (!MainActivity.hasPermissions(
-                requireContext()
-            )
-        ) {
+        if (!MainActivity.hasPermissions(requireContext())) {
             requestPermissions(
                 MainActivity.PERMISSIONS_REQUIRED,
                 MainActivity.PERMISSIONS_REQUEST_CODE
@@ -114,11 +113,12 @@ class CameraFragment : Fragment() {
         }
     }
 
-    override fun onStop() {
-        super.onStop()
-
-        MainActivity.isFragment = false
+    private fun finish (withPopBack: Boolean) {
         MainActivity.isCameraFragment = false
+
+        if (!isFromAddFragment) MainActivity.isFragment = false
+        else isFromAddFragment = false
+        if (withPopBack) (activity as MainActivity).fragmentManager.popBackStack()
     }
 
     override fun onDestroyView() {
@@ -130,10 +130,15 @@ class CameraFragment : Fragment() {
         displayManager.unregisterDisplayListener(displayListener)
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         container = view as ConstraintLayout
         viewFinder = container.findViewById(R.id.view_finder)
+
+        viewFinder.setOnTouchListener { v, event ->
+            Toast.makeText(context, "Touch", Toast.LENGTH_SHORT).show()
+            true }
 
         // Initialize our background executor
         cameraExecutor = Executors.newSingleThreadExecutor()
@@ -357,8 +362,9 @@ class CameraFragment : Fragment() {
                             ) { _, uri ->
                                 Log.d(TAG, "Image capture scanned into media store: $uri")
                             }
-
-                            startAddFragment(savedUri)
+                            Log.d(TAG, "씨발련아 뭐냐")
+                            if(isFromAddFragment) backToAddFragment(savedUri)
+                            else startAddFragment(savedUri)
                         }
                     })
 
@@ -499,7 +505,7 @@ class CameraFragment : Fragment() {
                 Toast.makeText(context, "Permission request granted", Toast.LENGTH_LONG).show()
             } else {
                 Toast.makeText(context, "Permission request denied", Toast.LENGTH_LONG).show()
-                activity?.supportFragmentManager?.popBackStack()
+                (activity as MainActivity).fragmentManager.popBackStack()
             }
         }
     }
@@ -507,10 +513,9 @@ class CameraFragment : Fragment() {
     private fun startAddFragment(uri: Uri) {
         AddFragment.isFromCameraFragment = true
 
-        if (!isFromAddFragment) (activity as MainActivity).addFragment = AddFragment()
-
+        (activity as MainActivity).addFragment = AddFragment()
         setUri(uri)
-        (activity as MainActivity).supportFragmentManager.beginTransaction()
+        (activity as MainActivity).fragmentManager.beginTransaction()
             .setCustomAnimations(
                 R.anim.slide_up,
                 R.anim.slide_up,
@@ -519,6 +524,17 @@ class CameraFragment : Fragment() {
             )
             .replace(R.id.camera_container, (activity as MainActivity).addFragment)
             .commit()
+        finish(false)
+    }
+
+    private fun backToAddFragment(uri: Uri) {
+        AddFragment.isFromCameraFragment = true
+
+        setUri(uri)
+        (activity as MainActivity).addFragment.setFlagOptions()
+        val message = (activity as MainActivity).addFragment.handler.obtainMessage()
+        (activity as MainActivity).addFragment.handler.sendMessage(message)
+        finish(true)
     }
 
     private fun setUri (uri: Uri) {
@@ -527,8 +543,12 @@ class CameraFragment : Fragment() {
         (activity as MainActivity).addFragment.arguments = bundle
     }
 
-    companion object {
+    fun setExistingUri(uri: String?) {
+        existingUri = if (uri == null) null
+        else Uri.parse(uri)
+    }
 
+    companion object {
         private const val TAG = "CameraXBasic"
         private const val FILENAME = "yyyy-MM-dd-HH-mm-ss-SSS"
         private const val PHOTO_EXTENSION = ".jpg"
@@ -545,3 +565,5 @@ class CameraFragment : Fragment() {
                 .format(System.currentTimeMillis()) + extension)
     }
 }
+
+

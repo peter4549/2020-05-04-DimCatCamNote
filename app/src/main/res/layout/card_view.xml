@@ -14,7 +14,7 @@
             android:id="@+id/card_view"
             android:layout_gravity="center"
             android:layout_width="match_parent"
-            android:layout_height="100dp"
+            android:layout_height="80dp"
             android:focusable="true"
             android:foreground="?attr/selectableItemBackground">
 
@@ -41,8 +41,8 @@
 
                         <ImageView
                             android:id="@+id/image_view_logo"
-                            android:layout_width="34dp"
-                            android:layout_height="28dp"
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
                             android:layout_marginStart="4dp"
                             android:layout_marginLeft="4dp"
                             android:layout_marginTop="4dp"
@@ -86,7 +86,7 @@
                     <TextView
                         android:id="@+id/text_view_time"
                         android:layout_width="match_parent"
-                        android:layout_height="28dp"
+                        android:layout_height="20dp"
                         android:paddingEnd="8dp"
                         android:paddingStart="8dp"
                         android:textColor="@color/textColorCardView"
@@ -96,7 +96,7 @@
                     <TextView
                         android:id="@+id/text_view_content"
                         android:layout_width="match_parent"
-                        android:layout_height="40dp"
+                        android:layout_height="28dp"
                         android:paddingEnd="8dp"
                         android:paddingStart="8dp"
                         android:textColor="@color/textColorCardView"

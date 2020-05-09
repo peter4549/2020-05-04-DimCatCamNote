@@ -115,7 +115,7 @@ class EditFragment : Fragment() {
         val isContentChanged = isContentChanged()
         when (item.itemId) {
             android.R.id.home -> {
-                (activity as MainActivity).hideKeyboard()
+                MainActivity.hideKeyboard(context, view)
 
                 if (isContentChanged) showCheckMessage()
                 else activity?.supportFragmentManager?.popBackStack()
@@ -194,7 +194,7 @@ class EditFragment : Fragment() {
         binding.editTextContent.requestFocus()
         binding.editTextContent.setSelection(binding.editTextContent.text.length)
 
-        (activity as MainActivity).showKeyboard()
+        MainActivity.showKeyboard(context, view)
     }
 
     private fun setContent(note: Note) {
@@ -216,7 +216,7 @@ class EditFragment : Fragment() {
 
     private fun startAlarmFragment(note: Note) {
         (activity as MainActivity).alarmFragment.setNote(note)
-        (activity as MainActivity).supportFragmentManager.beginTransaction().addToBackStack(null)
+        (activity as MainActivity).fragmentManager.beginTransaction().addToBackStack(null)
             .setCustomAnimations(R.anim.slide_up, R.anim.slide_down)
             .replace(
                 R.id.edit_note_container,
