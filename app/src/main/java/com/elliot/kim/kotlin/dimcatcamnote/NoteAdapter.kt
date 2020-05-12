@@ -5,11 +5,13 @@ import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Filter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CircleCrop
 import com.elliot.kim.kotlin.dimcatcamnote.databinding.CardViewBinding
 import com.elliot.kim.kotlin.dimcatcamnote.databinding.CardViewBinding.bind
+import java.util.*
 
 class NoteAdapter(private val context: Context?, private val notes: MutableList<Note>) :
     RecyclerView.Adapter<NoteAdapter.ViewHolder>() {
@@ -63,6 +65,37 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
         return if(notesFiltered.isNullOrEmpty()) 0 else notesFiltered.size
     }
 
+    fun getFilter(): Filter {
+        return object : Filter() {
+            override fun performFiltering(constraint: CharSequence): FilterResults {
+                val searchWord = constraint.toString()
+                if (searchWord.isEmpty()) {
+                    notesFiltered = notes
+                } else {
+                    val noteListFiltering: MutableList<Note> =
+                        ArrayList()
+                    for (note in notes) {
+                        if (note.title.toLowerCase().contains(searchWord.toLowerCase())) {
+                            noteListFiltering.add(note)
+                        }
+                    }
+                    notesFiltered = noteListFiltering
+                }
+                val filterResults = FilterResults()
+                filterResults.values = notesFiltered
+                return filterResults
+            }
+
+            override fun publishResults(
+                constraint: CharSequence,
+                results: FilterResults
+            ) {
+                notesFiltered = results.values as MutableList<Note>
+                notifyDataSetChanged()
+            }
+        }
+    }
+
     fun insert(camNote: Note) {
         notes.add(camNote)
         notifyItemInserted(notes.size - 1)
@@ -72,11 +105,26 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
         notifyItemChanged(getPosition(note))
     }
 
-    fun delete(camNote: Note) {
-        val position: Int = notesFiltered.indexOf(camNote)
+    fun delete(note: Note) {
+        val position: Int = notesFiltered.indexOf(note)
         notesFiltered.removeAt(position)
-        notes.remove(camNote)
+        notes.remove(note)
         notifyItemRemoved(position)
+        if (note.uri != null) (context as MainActivity).deleteFileFromUri(note.uri!!)
+    }
+
+    fun sort(sortBy: Int): Long {
+        Collections.sort(notes,
+            Comparator<Note> { o1: Note, o2: Note ->
+                when (sortBy) {
+                    0 -> return@Comparator (o2.creationTime - o1.creationTime).toInt()
+                    1 -> return@Comparator ((o2.editTime ?: 0L) - (o1.editTime ?: 0L)).toInt()
+                    2 -> return@Comparator o1.title.compareTo(o2.title)
+                    else -> return@Comparator 0
+                }
+            }
+        )
+        return 0L
     }
 
     fun getPosition(note: Note?): Int = notesFiltered.indexOf(note)

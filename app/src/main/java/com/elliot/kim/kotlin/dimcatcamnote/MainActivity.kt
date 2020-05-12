@@ -1,24 +1,32 @@
 package com.elliot.kim.kotlin.dimcatcamnote
 
 import android.Manifest
-import android.accessibilityservice.AccessibilityService
 import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
+import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.content.res.Configuration
+import android.media.MediaScannerConnection
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.Process
-import android.util.TypedValue
+import android.provider.MediaStore
+import android.util.Log
 import android.view.KeyEvent
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
-import android.view.ViewTreeObserver
+import android.view.animation.LayoutAnimationController
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.SearchView
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModelProvider
@@ -26,10 +34,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.elliot.kim.kotlin.dimcatcamnote.broadcast_receivers.AlarmReceiver
 import com.elliot.kim.kotlin.dimcatcamnote.databinding.ActivityMainBinding
-import com.elliot.kim.kotlin.dimcatcamnote.fragments.AddFragment
-import com.elliot.kim.kotlin.dimcatcamnote.fragments.AlarmFragment
-import com.elliot.kim.kotlin.dimcatcamnote.fragments.CameraFragment
-import com.elliot.kim.kotlin.dimcatcamnote.fragments.EditFragment
+import com.elliot.kim.kotlin.dimcatcamnote.fragments.*
 import com.google.android.material.snackbar.Snackbar
 import java.io.File
 import java.text.SimpleDateFormat
@@ -41,20 +46,30 @@ const val KEY_EVENT_EXTRA = "key_event_extra"
 class MainActivity : AppCompatActivity(), LifecycleOwner {
 
     private lateinit var binding: ActivityMainBinding
+
+    lateinit var viewModel: MainViewModel
+
     private lateinit var adapter: NoteAdapter
+
+    lateinit var fragmentManager: FragmentManager
+
+    val alarmFragment = AlarmFragment()
+    val cameraFragment = CameraFragment()
+    val editFragment = EditFragment()
+    val photoFragment = PhotoFragment()
+    val writeFragment = WriteFragment()
+
+    lateinit var animationController: LayoutAnimationController
 
     private var initialization = true
     private var pressedTime = 0L
 
-    private val editFragment = EditFragment()
-
-    lateinit var viewModel: MainViewModel
-    lateinit var fragmentManager: FragmentManager
-    lateinit var addFragment: AddFragment
-    lateinit var cameraFragment: CameraFragment
-
-    val alarmFragment =
-        AlarmFragment()
+    enum class CurrentFragment {
+        ALARM_FRAGMENT,
+        CAMERA_FRAGMENT,
+        EDIT_FRAGMENT,
+        WRITE_FRAGMENT
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -66,8 +81,13 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
 
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
 
-        binding.cameraFloatingActionButton.setOnClickListener { startCameraFragment() }
-        binding.addFloatingActionButton.setOnClickListener { startAddFragment() }
+        setSupportActionBar(binding.toolBar)
+
+        animationController = android.view.animation.AnimationUtils.loadLayoutAnimation(
+            applicationContext,
+        R.anim.layout_animation)
+
+        binding.writeFloatingActionButton.setOnClickListener { startWriteFragment() }
 
         binding.recyclerView.setHasFixedSize(true)
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
@@ -83,15 +103,9 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
                 initialization = false
             } else {
                 when {
-                    notesSize < notes.size -> {
-                        adapter.insert(notes[notes.size - 1])
-                    }
-                    notesSize == notes.size -> {
-                        adapter.update(viewModel.targetNote!!)
-                    }
-                    notesSize > notes.size -> {
-                        adapter.delete(viewModel.targetNote!!)
-                    }
+                    notesSize < notes.size -> adapter.insert(notes[notes.size - 1])
+                    notesSize == notes.size -> adapter.update(viewModel.targetNote!!)
+                    notesSize > notes.size -> adapter.delete(viewModel.targetNote!!)
                 }
             }
             notesSize = notes.size
@@ -99,39 +113,13 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
     }
 
     override fun onBackPressed() {
-        if (isFragment) {
-            when {
-                isAddFragment -> addFragment.finish(AddFragment.BACK_PRESSED)
-                isEditFragment -> {
-                    if (editFragment.isContentChanged()) editFragment.showCheckMessage()
-                    else super.onBackPressed()
-                }
-                isCameraFragment -> {
-                    if(!CameraFragment.isFromAddFragment) showFloatingActionButton()
-                    super.onBackPressed()
-                }
-                else -> super.onBackPressed()
-            }
-        } else if (isAlarmFragment) super.onBackPressed()
+        if (currentFragment == null) finishApplication()
         else {
-            if (pressedTime == 0L) {
-                Snackbar.make(
-                    findViewById(R.id.container),
-                    "한 번 더 누르면 종료됩니다.", Snackbar.LENGTH_LONG
-                ).show()
-                pressedTime = System.currentTimeMillis()
-            } else {
-                if (System.currentTimeMillis() - pressedTime > 2500L) {
-                    Snackbar.make(
-                        findViewById(R.id.container),
-                        " 한 번 더 누르면 종료됩니다.", Snackbar.LENGTH_LONG
-                    ).show()
-                    pressedTime = 0L
-                } else {
-                    super.onBackPressed()
-                    finish()
-                    Process.killProcess(Process.myPid())
-                }
+            when (currentFragment) {
+                CurrentFragment.ALARM_FRAGMENT -> super.onBackPressed()
+                CurrentFragment.CAMERA_FRAGMENT -> super.onBackPressed()
+                CurrentFragment.EDIT_FRAGMENT -> editFragment.finish(EditFragment.BACK_PRESSED)
+                CurrentFragment.WRITE_FRAGMENT -> writeFragment.finish(WriteFragment.BACK_PRESSED)
             }
         }
     }
@@ -164,41 +152,90 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         }
     }
 
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.menu_main, menu)
+        val searchView = menu.findItem(R.id.menu_search)
+            .actionView as SearchView
+        searchView.setOnQueryTextListener(object :
+            SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String): Boolean {
+                return true
+            }
+
+            override fun onQueryTextChange(newText: String): Boolean {
+                adapter.getFilter().filter(newText)
+                return true
+            }
+        })
+        searchView.setOnSearchClickListener { v: View? ->
+            binding.imageViewLogo.visibility = View.GONE
+        }
+        searchView.setOnCloseListener {
+            binding.imageViewLogo.visibility = View.VISIBLE
+            false
+        }
+        searchView.queryHint = "찾을 노트 제목을 입력해주세요."
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.menu_write -> {
+                startWriteFragment()
+                true
+            }
+            R.id.menu_sort -> {
+                showSortDialog()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+
     fun showFloatingActionButton() {
-        binding.cameraFloatingActionButton.show()
-        binding.addFloatingActionButton.show()
+        binding.writeFloatingActionButton.show()
     }
 
     private fun hideFloatingActionButton() {
-        binding.cameraFloatingActionButton.hide()
-        binding.addFloatingActionButton.hide()
-    }
-
-    private fun startAddFragment() {
-        addFragment = AddFragment()
-        fragmentManager.beginTransaction()
-            .setCustomAnimations(R.anim.slide_up, R.anim.slide_up, R.anim.slide_down, R.anim.slide_down)
-            .addToBackStack(null)
-            .replace(R.id.container, addFragment).commit()
-        hideFloatingActionButton()
+        binding.writeFloatingActionButton.hide()
     }
 
     fun startEditFragment(note: Note) {
         editFragment.setNote(note)
+        startFragment(editFragment)
+    }
+
+    private fun startWriteFragment() {
+        startFragment(writeFragment)
+    }
+
+    private fun startFragment(fragment: Fragment) {
+        hideFloatingActionButton()
         fragmentManager.beginTransaction()
             .setCustomAnimations(R.anim.slide_up, R.anim.slide_up, R.anim.slide_down, R.anim.slide_down)
             .addToBackStack(null)
-            .replace(R.id.container, editFragment).commit()
+            .replace(R.id.main_container, fragment).commit()
         hideFloatingActionButton()
     }
 
-    private fun startCameraFragment() {
-        cameraFragment = CameraFragment()
-        fragmentManager.beginTransaction()
-            .setCustomAnimations(R.anim.slide_up, R.anim.slide_up, R.anim.slide_down, R.anim.slide_down)
-            .addToBackStack(null)
-            .replace(R.id.container, cameraFragment).commit()
-        hideFloatingActionButton()
+    fun setCurrentFragment(fragment: CurrentFragment?) {
+        currentFragment = fragment
+    }
+
+    private fun showSortDialog() {
+        val builder =
+            AlertDialog.Builder(this)
+        builder.setTitle(R.string.sort_by)
+            .setItems(
+                resources.getStringArray(R.array.sort_by)
+            ) { _: DialogInterface?, which: Int ->
+                adapter.sort(which) // 옵션 기억하도록.
+                adapter.notifyDataSetChanged()
+                binding.recyclerView.layoutAnimation = animationController
+                binding.recyclerView.scheduleLayoutAnimation()
+            }
+        builder.create()
+        builder.show()
     }
 
     fun cancelAlarm(note: Note, isDelete: Boolean) {
@@ -250,17 +287,63 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         this.startActivity(chooser)
     }
 
+    private fun finishApplication() {
+        if (pressedTime == 0L) {
+            Snackbar.make(
+                findViewById(R.id.main_container),
+                "한 번 더 누르면 종료됩니다.", Snackbar.LENGTH_LONG
+            ).show()
+            pressedTime = System.currentTimeMillis()
+        } else {
+            if (System.currentTimeMillis() - pressedTime > 2500L) {
+                Snackbar.make(
+                    findViewById(R.id.main_container),
+                    " 한 번 더 누르면 종료됩니다.", Snackbar.LENGTH_LONG
+                ).show()
+                pressedTime = 0L
+            } else {
+                super.onBackPressed()
+                finish()
+                Process.killProcess(Process.myPid())
+            }
+        }
+    }
+
+    fun deleteFileFromUri(stringUri: String): Boolean {
+        val uri = Uri.parse(stringUri)
+        val file = File(uri.path!!)
+        if (file.delete()) {
+            refreshGallery(file)
+            return true
+        }
+        else {
+            if (file.canonicalFile.delete()) {
+                refreshGallery(file)
+                return true
+            }
+            else applicationContext.deleteFile(file.name)
+            return if (file.exists()) false
+            else {
+                refreshGallery(file)
+                true
+            }
+        }
+    }
+
+    private fun refreshGallery(file: File) {
+        MediaScannerConnection.scanFile(this, arrayOf(file.toString()), null
+        ) { path, uri ->
+            Log.i("ExternalStorage", "Scanned $path:")
+            Log.i("ExternalStorage", "uri=$uri");}
+    }
+
     companion object {
         const val DATABASE_NAME = "dim_cat_cam_notes"
 
         const val PERMISSIONS_REQUEST_CODE = 10
         val PERMISSIONS_REQUIRED = arrayOf(Manifest.permission.CAMERA)
 
-        var isFragment = false
-        var isAddFragment = false
-        var isAlarmFragment = false
-        var isCameraFragment = false
-        var isEditFragment = false
+        var currentFragment: CurrentFragment? = null
 
         private const val pattern = "yyyy-MM-dd-a-hh:mm:ss"
 

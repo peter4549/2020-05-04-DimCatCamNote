@@ -26,9 +26,11 @@ class EditFragment : Fragment() {
     private lateinit var originContent: String
 
     private var isEditMode = false
+    private var originAlarmTime: Long? = null
 
     fun setNote(note: Note) {
         this.note = note
+        originAlarmTime = note.alarmTime
         originContent = note.content
     }
 
@@ -41,12 +43,12 @@ class EditFragment : Fragment() {
     @SuppressLint("ClickableViewAccessibility")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
         binding = FragmentEditBinding.bind(view)
         textViewTime = binding.textViewTime
 
         (activity as MainActivity).setSupportActionBar(binding.toolBar)
         (activity as AppCompatActivity).supportActionBar?.setDisplayHomeAsUpEnabled(true)
-
         setHasOptionsMenu(true)
 
         binding.focusBlock.setOnTouchListener(object : OnTouchListener {
@@ -74,23 +76,21 @@ class EditFragment : Fragment() {
     override fun onResume() {
         super.onResume()
 
-        setText(note)
-
-        MainActivity.isFragment = true
-        MainActivity.isEditFragment = true
+        setContent(note)
+        (activity as MainActivity).setCurrentFragment(MainActivity
+            .CurrentFragment.EDIT_FRAGMENT)
     }
 
     override fun onStop() {
         super.onStop()
 
-        MainActivity.isFragment = false
-        MainActivity.isEditFragment = false
-
+        (activity as MainActivity).setCurrentFragment(null)
         (activity as MainActivity).showFloatingActionButton()
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
+
         menu.clear()
         inflater.inflate(R.menu.menu_edit, menu)
         modeIcon = menu.findItem(R.id.menu_mode_icon)
@@ -112,13 +112,10 @@ class EditFragment : Fragment() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        val isContentChanged = isContentChanged()
         when (item.itemId) {
             android.R.id.home -> {
                 MainActivity.hideKeyboard(context, view)
-
-                if (isContentChanged) showCheckMessage()
-                else activity?.supportFragmentManager?.popBackStack()
+                finish(BACK_PRESSED)
             }
             R.id.menu_mode_icon -> {
                 if (isEditMode) {
@@ -127,19 +124,9 @@ class EditFragment : Fragment() {
                     binding.focusBlock.visibility = View.VISIBLE
                     binding.editTextContent.isFocusable = false
 
-                    if (isContentChanged) {
-                        note.editTime =
-                            MainActivity.getCurrentTime()
-                        note.content = binding.editTextContent.text.toString()
-                        (activity as MainActivity).viewModel.update(note)
-
-                        Toast.makeText(context, "노트가 수정되었습니다.", Toast.LENGTH_SHORT).show()
-
-                        activity?.supportFragmentManager?.popBackStack()
-                    } else
-                        Toast.makeText(context, "변경사항이 없습니다.", Toast.LENGTH_SHORT).show()
-                } else
-                    getFocus()
+                    if (isContentChanged()) finishWithSaving()
+                    else Toast.makeText(context, "변경사항이 없습니다.", Toast.LENGTH_SHORT).show()
+                } else getFocus()
 
                 isEditMode = !isEditMode
             }
@@ -156,76 +143,100 @@ class EditFragment : Fragment() {
                 (activity as MainActivity).viewModel.update(note)
             }
             R.id.menu_delete -> {
+                (activity as MainActivity).closeOptionsMenu()
                 (activity as MainActivity).viewModel.delete(note)
 
                 Toast.makeText(context, "노트가 삭제되었습니다.", Toast.LENGTH_SHORT).show()
-
-                activity?.supportFragmentManager?.popBackStack()
+                (activity as MainActivity).backPressed()
             }
         }
         return super.onOptionsItemSelected(item)
     }
 
-    fun showCheckMessage() {
-        val builder = AlertDialog.Builder(requireContext())
-        builder.setTitle("노트 수정")
-        builder.setMessage("지금까지 편집한 내용을 저장하시겠습니까?")
-        builder.setPositiveButton("저장") { _: DialogInterface?, _: Int ->
-            (activity as MainActivity).viewModel.update(note)
-
-            Toast.makeText(context, "노트가 수정되었습니다.", Toast.LENGTH_SHORT).show()
-            //activity.originalOnBackPressed()
-        }.setNeutralButton("계속쓰기"
-        ) { _: DialogInterface?, _: Int -> }
-        builder.setNegativeButton("아니요"
-        ) { _: DialogInterface?, _: Int ->
-            Toast.makeText(context, "저장되지 않았습니다.", Toast.LENGTH_SHORT).show()
-            //activity.originalOnBackPressed()
-        }
-        builder.create()
-        builder.show()
-    }
-
-    private fun getFocus() {
-        //editModeItem.setIcon(R.drawable.check_mark_8c9eff_120)
-
-        binding.focusBlock.visibility = View.GONE
-        binding.editTextContent.isEnabled = true
-        binding.editTextContent.requestFocus()
-        binding.editTextContent.setSelection(binding.editTextContent.text.length)
-
-        MainActivity.showKeyboard(context, view)
-    }
-
-    private fun setContent(note: Note) {
+    fun setContent(note: Note) {
         setText(note)
-        Glide.with(this)
-            .load(Uri.parse(note.uri))
-            .into(binding.imageView)
+        if (note.uri != null) {
+            binding.imageView.visibility = View.VISIBLE
+            Glide.with(this)
+                .load(Uri.parse(note.uri))
+                .into(binding.imageView)
+        } else binding.imageView.visibility = View.GONE
     }
 
     private fun setText(note: Note) {
         binding.toolBar.title = note.title
         binding.editTextContent.setText(note.content)
         binding.editTextContent.isEnabled = false
-
-        setTimeText(
-            note
-        )
+        setTimeText(note)
     }
 
     private fun startAlarmFragment(note: Note) {
-        (activity as MainActivity).alarmFragment.setNote(note)
-        (activity as MainActivity).fragmentManager.beginTransaction().addToBackStack(null)
-            .setCustomAnimations(R.anim.slide_up, R.anim.slide_down)
-            .replace(
-                R.id.edit_note_container,
+        (activity as MainActivity).alarmFragment.isFromEditFragment = true
+        (activity as MainActivity).alarmFragment.note = note
+        (activity as MainActivity).fragmentManager.beginTransaction()
+            .addToBackStack(null)
+            .setCustomAnimations(R.anim.slide_up, R.anim.slide_up, R.anim.slide_down, R.anim.slide_down)
+            .replace(R.id.edit_note_container,
                 (activity as MainActivity).alarmFragment).commit()
     }
 
-    fun isContentChanged() = originContent != binding.editTextContent.text.toString()
+    private fun showCheckMessage() {
+        val builder = AlertDialog.Builder(requireContext())
+        builder.setTitle("노트 수정")
+        builder.setMessage("지금까지 편집한 내용을 저장하시겠습니까?")
+        builder.setPositiveButton("저장") { _: DialogInterface?, _: Int ->
+            finish(SAVE)
+        }.setNeutralButton("계속쓰기"
+        ) { _: DialogInterface?, _: Int -> }
+        builder.setNegativeButton("아니요"
+        ) { _: DialogInterface?, _: Int ->
+            finishWithoutSaving()
+        }
+        builder.create()
+        builder.show()
+    }
+
+    fun finish(action: Int) {
+        if (isContentChanged()) {
+            when (action) {
+                SAVE -> finishWithSaving()
+                BACK_PRESSED -> showCheckMessage()
+            }
+        }
+        else finishWithoutSaving()
+    }
+
+    private fun finishWithSaving() {
+        note.editTime =  MainActivity.getCurrentTime()
+        note.content = binding.editTextContent.text.toString()
+        (activity as MainActivity).viewModel.update(note)
+
+        Toast.makeText(context, "노트가 수정되었습니다.", Toast.LENGTH_SHORT).show()
+        (activity as MainActivity).backPressed()
+    }
+
+    private fun finishWithoutSaving() {
+        Toast.makeText(context, "변경사항이 없습니다.", Toast.LENGTH_SHORT).show()
+        (activity as MainActivity).backPressed()
+    }
+
+    private fun getFocus() {
+        modeIcon.setIcon(R.drawable.check_mark)
+
+        binding.focusBlock.visibility = View.GONE
+        binding.editTextContent.isEnabled = true
+        binding.editTextContent.requestFocus()
+        binding.editTextContent.setSelection(binding.editTextContent.text.length)
+
+        MainActivity.showKeyboard(context, binding.editTextContent)
+    }
+
+    private fun isContentChanged() = originContent != binding.editTextContent.text.toString()
 
     companion object {
+        const val SAVE = 0
+        const val BACK_PRESSED = 1
+
         lateinit var textViewTime: TextView
 
         fun setTimeText(note: Note) {

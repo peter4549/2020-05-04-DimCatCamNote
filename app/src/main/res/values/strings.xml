@@ -26,4 +26,6 @@
 
     <string name="save">save</string>
 
+    <string name="sort_by">정렬</string>
+
 </resources>

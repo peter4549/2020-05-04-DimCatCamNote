@@ -30,10 +30,9 @@ import java.util.*
 @Suppress("DEPRECATION")
 class AlarmFragment : Fragment() {
 
+    lateinit var note: Note
     private lateinit var binding: FragmentAlarmBinding
-    private lateinit var note: Note
-
-    fun setNote(note: Note) { this.note = note }
+    var isFromEditFragment = false
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -102,10 +101,9 @@ class AlarmFragment : Fragment() {
 
                     if (System.currentTimeMillis() < calendar.timeInMillis) {
                         setAlarm(calendar)
-                        if (MainActivity.isFragment) EditFragment.setTimeText(
-                            note
-                        )
-                        activity?.supportFragmentManager?.popBackStack()
+                        if (isFromEditFragment) EditFragment.setTimeText(note)
+                        (activity as MainActivity).backPressed()
+
                     } else
                         Toast.makeText(activity, "이미 지니간 시간입니다.", Toast.LENGTH_SHORT).show()
                 }
@@ -116,13 +114,17 @@ class AlarmFragment : Fragment() {
     override fun onResume() {
         super.onResume()
 
-        MainActivity.isAlarmFragment = true
+        (activity as MainActivity).setCurrentFragment(MainActivity.CurrentFragment.ALARM_FRAGMENT)
     }
 
     override fun onStop() {
         super.onStop()
 
-        MainActivity.isAlarmFragment = false
+        if (isFromEditFragment) {
+            isFromEditFragment = false
+            (activity as MainActivity).editFragment.setContent(note)
+            (activity as MainActivity).setCurrentFragment(MainActivity.CurrentFragment.EDIT_FRAGMENT)
+        }
     }
 
     private fun setAlarm(calendar: Calendar): Boolean {

@@ -23,13 +23,13 @@ import android.view.ViewGroup
 import android.webkit.MimeTypeMap
 import android.widget.ImageButton
 import android.widget.Toast
+import androidx.annotation.RequiresPermission
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.core.net.toFile
-import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.elliot.kim.kotlin.dimcatcamnote.*
@@ -60,6 +60,8 @@ class CameraFragment : Fragment() {
     private var imageAnalyzer: ImageAnalysis? = null
     private var camera: Camera? = null
     private var existingUri: Uri? = null
+
+    private var uri: Uri? = null
 
     private val displayManager by lazy {
         requireContext().getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
@@ -102,8 +104,7 @@ class CameraFragment : Fragment() {
     override fun onResume() {
         super.onResume()
 
-        MainActivity.isFragment = true
-        MainActivity.isCameraFragment = true
+        (activity as MainActivity).setCurrentFragment(MainActivity.CurrentFragment.CAMERA_FRAGMENT)
 
         if (!MainActivity.hasPermissions(requireContext())) {
             requestPermissions(
@@ -113,12 +114,14 @@ class CameraFragment : Fragment() {
         }
     }
 
-    private fun finish (withPopBack: Boolean) {
-        MainActivity.isCameraFragment = false
+    override fun onStop() {
+        super.onStop()
 
-        if (!isFromAddFragment) MainActivity.isFragment = false
-        else isFromAddFragment = false
-        if (withPopBack) (activity as MainActivity).fragmentManager.popBackStack()
+        setUri(uri)
+        (activity as MainActivity).setCurrentFragment(MainActivity.CurrentFragment.WRITE_FRAGMENT)
+
+        val message = (activity as MainActivity).writeFragment.handler.obtainMessage()
+        (activity as MainActivity).writeFragment.handler.sendMessage(message)
     }
 
     override fun onDestroyView() {
@@ -287,18 +290,6 @@ class CameraFragment : Fragment() {
         val controls = View.inflate(requireContext(),
             R.layout.camera_ui_container, container)
 
-        // In the background, load latest photo taken (if any) for gallery thumbnail
-        /*
-        lifecycleScope.launch(Dispatchers.IO) {
-            outputDirectory.listFiles { file ->
-                EXTENSION_WHITELIST.contains(file.extension.toUpperCase(Locale.ROOT))
-            }?.max()?.let {
-                setGalleryThumbnail(Uri.fromFile(it))
-            }
-        }*/
-
-
-
         // Listener for button used to capture photo
         controls.findViewById<ImageButton>(R.id.camera_capture_button).setOnClickListener {
 
@@ -336,6 +327,8 @@ class CameraFragment : Fragment() {
                             val savedUri = output.savedUri ?: Uri.fromFile(photoFile)
                             Log.d(TAG, "Photo capture succeeded: $savedUri")
 
+                            uri = savedUri
+
                             // We can only change the foreground Drawable using API level 23+ API
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                                 //Update the gallery thumbnail with latest picture taken
@@ -362,9 +355,8 @@ class CameraFragment : Fragment() {
                             ) { _, uri ->
                                 Log.d(TAG, "Image capture scanned into media store: $uri")
                             }
-                            Log.d(TAG, "씨발련아 뭐냐")
-                            if(isFromAddFragment) backToAddFragment(savedUri)
-                            else startAddFragment(savedUri)
+
+                            (activity as MainActivity).fragmentManager.popBackStack()
                         }
                     })
 
@@ -392,20 +384,6 @@ class CameraFragment : Fragment() {
             }
             // Re-bind use cases to update selected camera
             bindCameraUseCases()
-        }
-
-        // Listener for button used to view the most recent photo
-        controls.findViewById<ImageButton>(R.id.photo_view_button).setOnClickListener {
-            // Only navigate when the gallery has photos
-            if (true == outputDirectory.listFiles()?.isNotEmpty()) {
-                /*
-                Navigation.findNavController(
-                    requireActivity(), R.id.fragment_container
-                ).navigate(CameraFragmentDirections
-                    .actionCameraToGallery(outputDirectory.absolutePath))
-
-                 */
-            }
         }
     }
 
@@ -510,37 +488,10 @@ class CameraFragment : Fragment() {
         }
     }
 
-    private fun startAddFragment(uri: Uri) {
-        AddFragment.isFromCameraFragment = true
-
-        (activity as MainActivity).addFragment = AddFragment()
-        setUri(uri)
-        (activity as MainActivity).fragmentManager.beginTransaction()
-            .setCustomAnimations(
-                R.anim.slide_up,
-                R.anim.slide_up,
-                R.anim.slide_down,
-                R.anim.slide_down
-            )
-            .replace(R.id.camera_container, (activity as MainActivity).addFragment)
-            .commit()
-        finish(false)
-    }
-
-    private fun backToAddFragment(uri: Uri) {
-        AddFragment.isFromCameraFragment = true
-
-        setUri(uri)
-        (activity as MainActivity).addFragment.setFlagOptions()
-        val message = (activity as MainActivity).addFragment.handler.obtainMessage()
-        (activity as MainActivity).addFragment.handler.sendMessage(message)
-        finish(true)
-    }
-
-    private fun setUri (uri: Uri) {
+    private fun setUri (uri: Uri?) {
         val bundle = Bundle()
         bundle.putString(KEY_URI, uri.toString())
-        (activity as MainActivity).addFragment.arguments = bundle
+        (activity as MainActivity).writeFragment.arguments = bundle
     }
 
     fun setExistingUri(uri: String?) {
@@ -556,8 +507,9 @@ class CameraFragment : Fragment() {
         private const val RATIO_16_9_VALUE = 16.0 / 9.0
 
         const val KEY_URI = "key_uri"
+        const val KEY_ROOT_DIRECTORY = "key_root_directory"
 
-        var isFromAddFragment = false
+        var isFromWriteFragment = false
 
         /** Helper function used to create a timestamped file */
         private fun createFile(baseFolder: File, format: String, extension: String) =

@@ -10,6 +10,7 @@
         android:layout_height="match_parent"
         android:orientation="vertical"
         android:background="@color/backgroundColorAddContainer"
+        android:clickable="true"
         android:focusable="true">
 
         <androidx.appcompat.widget.Toolbar
@@ -62,7 +63,7 @@
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
             android:background="@color/backgroundColorToolbar"
-            app:menu="@menu/menu_add_bottom_navigation_view"/>
+            app:menu="@menu/menu_write_bottom_navigation_view"/>
 
     </RelativeLayout>
 

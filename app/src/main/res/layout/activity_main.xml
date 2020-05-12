@@ -5,7 +5,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/container"
+        android:id="@+id/main_container"
         android:name="androidx.navigation.fragment.NavHostFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -13,26 +13,44 @@
         app:defaultNavHost="true"
         tools:context=".MainActivity">
 
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/tool_bar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="@color/colorPurplece93d8"
+            android:theme="@style/AppTheme.AppBarOverly"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:popupTheme="@style/AppTheme.PopupOverlay">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <ImageView
+                    android:id="@+id/image_view_logo"
+                    android:layout_width="144dp"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/time_8c9eff_240"
+                    android:contentDescription="Application Logo" />
+
+            </RelativeLayout>
+
+        </androidx.appcompat.widget.Toolbar>
+
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recycler_view"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:scrollbars="vertical" />
-
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/camera_floating_action_button"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
-            android:layout_marginBottom="30dp"
-            android:layout_marginStart="30dp"
+            android:layout_height="0dp"
+            android:scrollbars="vertical"
             app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:borderWidth="0dp"
-            app:fabCustomSize="60dp"
-            app:fabSize="auto" />
+            app:layout_constraintTop_toBottomOf="@+id/tool_bar" />
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/add_floating_action_button"
+            android:id="@+id/write_floating_action_button"
             android:layout_width="60dp"
             android:layout_height="60dp"
             android:layout_marginBottom="30dp"
@@ -44,4 +62,5 @@
             app:fabSize="auto" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
+
 </layout>
