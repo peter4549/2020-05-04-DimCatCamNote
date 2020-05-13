@@ -7,12 +7,11 @@ import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.media.MediaScannerConnection
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.os.Process
-import android.provider.MediaStore
 import android.util.Log
 import android.view.KeyEvent
 import android.view.Menu
@@ -32,9 +31,13 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModelProvider
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.elliot.kim.kotlin.dimcatcamnote.broadcast_receivers.AlarmReceiver
 import com.elliot.kim.kotlin.dimcatcamnote.databinding.ActivityMainBinding
 import com.elliot.kim.kotlin.dimcatcamnote.fragments.*
+import com.elliot.kim.kotlin.dimcatcamnote.item_touch_helper.RecyclerViewTouchHelper
+import com.elliot.kim.kotlin.dimcatcamnote.item_touch_helper.UnderlayButton
+import com.elliot.kim.kotlin.dimcatcamnote.item_touch_helper.UnderlayButtonClickListener
 import com.google.android.material.snackbar.Snackbar
 import java.io.File
 import java.text.SimpleDateFormat
@@ -49,7 +52,8 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
 
     lateinit var viewModel: MainViewModel
 
-    private lateinit var adapter: NoteAdapter
+    private lateinit var noteAdapter: NoteAdapter
+    private lateinit var recyclerViewTouchHelper: RecyclerViewTouchHelper
 
     lateinit var fragmentManager: FragmentManager
 
@@ -89,23 +93,50 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
 
         binding.writeFloatingActionButton.setOnClickListener { startWriteFragment() }
 
-        binding.recyclerView.setHasFixedSize(true)
-        binding.recyclerView.layoutManager = LinearLayoutManager(this)
-
         val viewModelFactory = ViewModelProvider.AndroidViewModelFactory.getInstance(application)
         viewModel = ViewModelProvider(this, viewModelFactory)[MainViewModel::class.java]
 
         var notesSize = 0
         viewModel.getAll().observe(this, androidx.lifecycle.Observer { notes ->
             if (initialization) {
-                adapter = NoteAdapter(this, notes)
-                binding.recyclerView.adapter = adapter
+                noteAdapter = NoteAdapter(this, notes)
+                binding.recyclerView.apply {
+                    setHasFixedSize(true)
+                    adapter = noteAdapter
+                    layoutManager = LinearLayoutManager(context)
+                }
+
+                recyclerViewTouchHelper = object: RecyclerViewTouchHelper(this,
+                    binding.recyclerView, 200, noteAdapter) {
+                    override fun instantiateUnderlayButton(
+                        viewHolder: RecyclerView.ViewHolder,
+                        buttonBuffer: MutableList<UnderlayButton>
+                    ) {
+                        buttonBuffer.add(
+                            UnderlayButton(this@MainActivity,
+                                "편집",
+                                30,
+                                0,
+                                Color.parseColor("#FF3C30"),
+                                object :
+                                    UnderlayButtonClickListener {
+                                    override fun onClick(position: Int) {
+                                        Toast.makeText(
+                                            this@MainActivity, "Edit clicked",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
+                                })
+                        )
+                    }
+                }
+
                 initialization = false
             } else {
                 when {
-                    notesSize < notes.size -> adapter.insert(notes[notes.size - 1])
-                    notesSize == notes.size -> adapter.update(viewModel.targetNote!!)
-                    notesSize > notes.size -> adapter.delete(viewModel.targetNote!!)
+                    notesSize < notes.size -> noteAdapter.insert(notes[notes.size - 1])
+                    notesSize == notes.size -> noteAdapter.update(viewModel.targetNote!!)
+                    notesSize > notes.size -> noteAdapter.delete(viewModel.targetNote!!)
                 }
             }
             notesSize = notes.size
@@ -163,11 +194,11 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
             }
 
             override fun onQueryTextChange(newText: String): Boolean {
-                adapter.getFilter().filter(newText)
+                noteAdapter.getFilter().filter(newText)
                 return true
             }
         })
-        searchView.setOnSearchClickListener { v: View? ->
+        searchView.setOnSearchClickListener {
             binding.imageViewLogo.visibility = View.GONE
         }
         searchView.setOnCloseListener {
@@ -229,8 +260,8 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
             .setItems(
                 resources.getStringArray(R.array.sort_by)
             ) { _: DialogInterface?, which: Int ->
-                adapter.sort(which) // 옵션 기억하도록.
-                adapter.notifyDataSetChanged()
+                noteAdapter.sort(which) // 옵션 기억하도록.
+                noteAdapter.notifyDataSetChanged()
                 binding.recyclerView.layoutAnimation = animationController
                 binding.recyclerView.scheduleLayoutAnimation()
             }

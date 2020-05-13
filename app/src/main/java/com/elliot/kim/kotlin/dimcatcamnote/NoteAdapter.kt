@@ -11,10 +11,12 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CircleCrop
 import com.elliot.kim.kotlin.dimcatcamnote.databinding.CardViewBinding
 import com.elliot.kim.kotlin.dimcatcamnote.databinding.CardViewBinding.bind
+import com.elliot.kim.kotlin.dimcatcamnote.item_touch_helper.ItemMovedListener
 import java.util.*
 
 class NoteAdapter(private val context: Context?, private val notes: MutableList<Note>) :
-    RecyclerView.Adapter<NoteAdapter.ViewHolder>() {
+    RecyclerView.Adapter<NoteAdapter.ViewHolder>(),
+    ItemMovedListener {
 
     private var notesFiltered: MutableList<Note> = notes
 
@@ -26,6 +28,16 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
         val v = LayoutInflater.from(parent.context).inflate(R.layout.card_view, parent, false)
 
         return ViewHolder(v)
+    }
+
+    override fun onItemMoved(from: Int, to: Int) {
+        if (from == to) {
+            return
+        }
+
+        val fromItem = notesFiltered.removeAt(from)
+        notesFiltered.add(to, fromItem)
+        notifyItemMoved(from, to)
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
@@ -48,8 +60,6 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
                 .load(Uri.parse(uri))
                 .transform(CircleCrop())
                 .into(holder.binding.imageViewThumbnail)
-        } else {
-            //Glide.clear(holder.binding.imageViewThumbnail)
         }
 
         holder.binding.textViewTitle.text = title
@@ -111,6 +121,13 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
         notes.remove(note)
         notifyItemRemoved(position)
         if (note.uri != null) (context as MainActivity).deleteFileFromUri(note.uri!!)
+    }
+
+    fun delete(position: Int) {
+        val removedNote = notesFiltered.removeAt(position)
+        notes.remove(removedNote)
+        notifyItemRemoved(position)
+        if (removedNote.uri != null) (context as MainActivity).deleteFileFromUri(removedNote.uri!!)
     }
 
     fun sort(sortBy: Int): Long {
