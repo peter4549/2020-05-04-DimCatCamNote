@@ -41,6 +41,13 @@ class MainViewModel(application: Application): AndroidViewModel(application) {
         }
     }
 
+    fun delete(id: Int) {
+        scope.launch {
+            targetNote = database.dao().findNoteById(id)
+            database.dao().delete(database.dao().findNoteById(id))
+        }
+    }
+
     override fun onCleared() {
         super.onCleared()
         job.cancel()

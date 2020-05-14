@@ -20,6 +20,7 @@ class UnderlayButton (private val context: Context, private val text: String,
     fun onClick(x: Float, y: Float): Boolean {
         if(clickRegion != null && clickRegion!!.contains(x, y)) {
             listener.onClick(position)
+
             return true
         }
 
@@ -49,7 +50,7 @@ class UnderlayButton (private val context: Context, private val text: String,
         } else {
             val drawable = ContextCompat.getDrawable(context, imageResourceId)
             val bitmap = drawableToBitmap(drawable)
-            c.drawBitmap(bitmap, (rectF.left + rectF.right) / 2,
+            c.drawBitmap(bitmap, rectF.left + 32,
                 (rectF.top + rectF.bottom) / 2, paint)
         }
 

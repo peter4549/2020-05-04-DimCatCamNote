@@ -12,30 +12,43 @@ import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 
+const val toLeft = 0
+const val toRight = 1
+
+const val deleteButtonWidth = 256F
+
 @SuppressLint("ClickableViewAccessibility")
 abstract class RecyclerViewTouchHelper(context: Context, private val recyclerView: RecyclerView,
                       private var buttonWidth: Int, private val itemMovedListener: ItemMovedListener
 )
     : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
 
-    private var buttons: MutableList<UnderlayButton>? = null
-    private val buttonBuffer: MutableMap<Int, MutableList<UnderlayButton>>
-
     private lateinit var gestureDetector: GestureDetector
+    private lateinit var itemTouchHelper: ItemTouchHelper
     private lateinit var removerQueue: Queue<Int>
+
+    private var leftButtons: MutableList<UnderlayButton>? = null
+    private val leftButtonBuffer: MutableMap<Int, MutableList<UnderlayButton>>
+
+    private var rightButtons: MutableList<UnderlayButton>? = null
+    private val rightButtonBuffer: MutableMap<Int, MutableList<UnderlayButton>>
 
     private var swipePosition = -1
     private var swipeThreshold = 0.5F
 
-    lateinit var itemTouchHelper: ItemTouchHelper
+    abstract fun instantiateRightUnderlayButton(viewHolder: RecyclerView.ViewHolder,
+                                           rightButtonBuffer: MutableList<UnderlayButton>)
 
-    abstract fun instantiateUnderlayButton(viewHolder: RecyclerView.ViewHolder,
-                                           buttonBuffer: MutableList<UnderlayButton>)
+    abstract fun instantiateLeftUnderlayButton(viewHolder: RecyclerView.ViewHolder,
+                                               leftButtonBuffer: MutableList<UnderlayButton>)
 
     private val gestureListener = object
         : GestureDetector.SimpleOnGestureListener() {
-        override fun onSingleTapUp(e: MotionEvent?): Boolean {
-            for (button in buttons!!)
+        override fun onSingleTapConfirmed(e: MotionEvent?): Boolean {
+            for (button in rightButtons!!)
+                if (button.onClick(e!!.x, e.y)) break
+
+            for (button in leftButtons!!)
                 if (button.onClick(e!!.x, e.y)) break
 
             return true
@@ -80,10 +93,14 @@ abstract class RecyclerViewTouchHelper(context: Context, private val recyclerVie
     init {
         this.recyclerView.setOnTouchListener(onTouchListener)
         this.gestureDetector = GestureDetector(context, gestureListener)
-        this.buttons = ArrayList()
-        this.buttonBuffer = HashMap()
-        this.removerQueue =
-            InLinkedList()
+
+        this.rightButtons = ArrayList()
+        this.rightButtonBuffer = HashMap()
+
+        this.leftButtons = ArrayList()
+        this.leftButtonBuffer = HashMap()
+
+        this.removerQueue = InLinkedList()
 
         attachRecyclerView()
     }
@@ -133,17 +150,21 @@ abstract class RecyclerViewTouchHelper(context: Context, private val recyclerVie
     }
 
     override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-        //listener.onItemSwiped(viewHolder.adapterPosition)
-
         val position = viewHolder.adapterPosition
         if (swipePosition != position) removerQueue.add(swipePosition)
         swipePosition = position
 
-        if (buttonBuffer.containsKey(swipePosition)) buttons = buttonBuffer[swipePosition]
-        else buttons!!.clear()
-        buttonBuffer.clear()
+        if (rightButtonBuffer.containsKey(swipePosition)) rightButtons =
+            rightButtonBuffer[swipePosition]
+        else rightButtons!!.clear()
+        rightButtonBuffer.clear()
 
-        swipeThreshold = 0.5F * buttons!!.size.toFloat() * buttonWidth.toFloat()
+        if (leftButtonBuffer.containsKey(swipePosition)) leftButtons =
+            leftButtonBuffer[swipePosition]
+        else leftButtons!!.clear()
+        leftButtonBuffer.clear()
+
+        swipeThreshold = 0.5F * rightButtons!!.size.toFloat() * buttonWidth.toFloat()
 
         recoverSwipedItem()
     }
@@ -169,13 +190,22 @@ abstract class RecyclerViewTouchHelper(context: Context, private val recyclerVie
         if (actionState == ItemTouchHelper.ACTION_STATE_SWIPE) {
             if (dX < 0) {
                 var buffer: MutableList<UnderlayButton> = ArrayList()
-                if (!buttonBuffer.containsKey(position)) {
-                    instantiateUnderlayButton(viewHolder, buffer)
-                    buttonBuffer[position] = buffer
-                } else buffer = buttonBuffer[position]!!
+                if (!rightButtonBuffer.containsKey(position)) {
+                    instantiateRightUnderlayButton(viewHolder, buffer)
+                    rightButtonBuffer[position] = buffer
+                } else buffer = rightButtonBuffer[position]!!
 
-                translationX = dX * buttonBuffer.size * buttonWidth / itemView.width // 비슷하게 반대방향도 제약 가능.
-                drawButton(c, itemView, buffer, position, translationX)
+                translationX = dX * buttonWidth / itemView.width
+                drawButton(c, itemView, buffer, position, translationX, toLeft)
+            } else if (dX > 0){
+                var buffer: MutableList<UnderlayButton> = ArrayList()
+                if (!leftButtonBuffer.containsKey(position)) {
+                    instantiateLeftUnderlayButton(viewHolder, buffer)
+                    leftButtonBuffer[position] = buffer
+                } else buffer = leftButtonBuffer[position]!!
+
+                translationX = dX * deleteButtonWidth / itemView.width
+                drawButton(c, itemView, buffer, position, translationX, toRight)
             }
 
             super.onChildDraw(c, recyclerView, viewHolder, translationX, dY, actionState, isCurrentlyActive)
@@ -183,15 +213,32 @@ abstract class RecyclerViewTouchHelper(context: Context, private val recyclerVie
     }
 
     private fun drawButton(c: Canvas, itemView: View, buffer: MutableList<UnderlayButton>,
-                           position: Int, translationX: Float) {
+                           position: Int, translationX: Float, direction: Int) {
+        var left = itemView.left.toFloat()
         var right = itemView.right.toFloat()
-        val dButtonWidth = -1 * translationX / buffer.size
 
-        for (button in buffer) {
-            val left = right - dButtonWidth
-            button.onDraw(c, RectF(left, itemView.top.toFloat(), right, itemView.bottom.toFloat()),
-                position)
-            right = left
+        var width = 0F
+        if (direction == toLeft) width = -1 * translationX / buffer.size
+        else if (direction == toRight) width = deleteButtonWidth
+
+        if (direction == toLeft) {
+            for (button in buffer) {
+                left = right - width
+                button.onDraw(
+                    c, RectF(left, itemView.top.toFloat(), right, itemView.bottom.toFloat()),
+                    position
+                )
+                right = left
+            }
+        } else if (direction == toRight) {
+            for (button in buffer) {
+                right = left + deleteButtonWidth
+                button.onDraw(
+                    c, RectF(left, itemView.top.toFloat(), right, itemView.bottom.toFloat()),
+                    position
+                )
+                left = right
+            }
         }
     }
 

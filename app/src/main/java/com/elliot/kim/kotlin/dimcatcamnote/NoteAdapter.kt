@@ -120,6 +120,8 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
         notesFiltered.removeAt(position)
         notes.remove(note)
         notifyItemRemoved(position)
+
+        (context as MainActivity).cancelAlarm(note, true)
         if (note.uri != null) (context as MainActivity).deleteFileFromUri(note.uri!!)
     }
 
@@ -145,5 +147,7 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
     }
 
     fun getPosition(note: Note?): Int = notesFiltered.indexOf(note)
+
+    fun getNoteByPosition(position: Int): Note = notesFiltered[position]
 
 }

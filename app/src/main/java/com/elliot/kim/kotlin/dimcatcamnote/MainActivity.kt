@@ -82,15 +82,12 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
             requestPermissions(PERMISSIONS_REQUIRED, PERMISSIONS_REQUEST_CODE)
 
         fragmentManager = supportFragmentManager
-
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
-
-        setSupportActionBar(binding.toolBar)
-
         animationController = android.view.animation.AnimationUtils.loadLayoutAnimation(
             applicationContext,
-        R.anim.layout_animation)
+            R.anim.layout_animation)
 
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
+        setSupportActionBar(binding.toolBar)
         binding.writeFloatingActionButton.setOnClickListener { startWriteFragment() }
 
         val viewModelFactory = ViewModelProvider.AndroidViewModelFactory.getInstance(application)
@@ -106,30 +103,7 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
                     layoutManager = LinearLayoutManager(context)
                 }
 
-                recyclerViewTouchHelper = object: RecyclerViewTouchHelper(this,
-                    binding.recyclerView, 200, noteAdapter) {
-                    override fun instantiateUnderlayButton(
-                        viewHolder: RecyclerView.ViewHolder,
-                        buttonBuffer: MutableList<UnderlayButton>
-                    ) {
-                        buttonBuffer.add(
-                            UnderlayButton(this@MainActivity,
-                                "편집",
-                                30,
-                                0,
-                                Color.parseColor("#FF3C30"),
-                                object :
-                                    UnderlayButtonClickListener {
-                                    override fun onClick(position: Int) {
-                                        Toast.makeText(
-                                            this@MainActivity, "Edit clicked",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-                                    }
-                                })
-                        )
-                    }
-                }
+                createUnderlayButtons()
 
                 initialization = false
             } else {
@@ -141,6 +115,90 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
             }
             notesSize = notes.size
         })
+    }
+
+    private fun createUnderlayButtons() {
+        recyclerViewTouchHelper = object: RecyclerViewTouchHelper(this,
+            binding.recyclerView, 544, noteAdapter) {
+            override fun instantiateRightUnderlayButton(
+                viewHolder: RecyclerView.ViewHolder,
+                rightButtonBuffer: MutableList<UnderlayButton>
+            ) {
+                rightButtonBuffer.add(
+                    UnderlayButton(this@MainActivity,
+                        "편집",
+                        30,
+                        0,
+                        Color.parseColor("#FF3C30"),
+                        object : UnderlayButtonClickListener {
+                            override fun onClick(position: Int) {
+                                Toast.makeText(
+                                    this@MainActivity, "Edit clicked",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+
+                                noteAdapter.notifyItemChanged(position)
+                            }
+                        })
+                )
+
+                rightButtonBuffer.add(
+                    UnderlayButton(this@MainActivity,
+                        "알림",
+                        30,
+                        R.drawable.dimcat100,
+                        getColor(R.color.colorAmberfff8e1),
+                        object :
+                            UnderlayButtonClickListener {
+                            override fun onClick(position: Int) {
+                                Toast.makeText(
+                                    this@MainActivity, "알림 clicked",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+
+                                noteAdapter.notifyItemChanged(position)
+                            }
+                        })
+                )
+
+                rightButtonBuffer.add(
+                    UnderlayButton(this@MainActivity,
+                        "완료",
+                        30,
+                        R.drawable.dimcat100,
+                        getColor(R.color.colorBlueGrey263238),
+                        object : UnderlayButtonClickListener {
+                            override fun onClick(position: Int) {
+                                Toast.makeText(
+                                    this@MainActivity, "Edit clicked",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+
+                                noteAdapter.notifyItemChanged(position)
+                            }
+                        })
+                )
+            }
+
+            override fun instantiateLeftUnderlayButton(
+                viewHolder: RecyclerView.ViewHolder,
+                leftButtonBuffer: MutableList<UnderlayButton>
+            ) {
+                leftButtonBuffer.add(
+                    UnderlayButton(this@MainActivity,
+                        "삭제",
+                        30,
+                        R.drawable.dimcat100,
+                        getColor(R.color.colorDeepPurple651fff),
+                        object : UnderlayButtonClickListener {
+                            override fun onClick(position: Int) {
+                                viewModel.delete((binding.recyclerView.adapter as NoteAdapter)
+                                    .getNoteByPosition(position))
+                            }
+                        })
+                )
+            }
+        }
     }
 
     override fun onBackPressed() {
