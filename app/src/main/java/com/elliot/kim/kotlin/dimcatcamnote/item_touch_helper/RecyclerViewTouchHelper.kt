@@ -6,6 +6,7 @@ import android.graphics.*
 import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
+import android.widget.Toast
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import java.util.*
@@ -15,11 +16,10 @@ import kotlin.collections.HashMap
 const val toLeft = 0
 const val toRight = 1
 
-const val deleteButtonWidth = 256F
-
 @SuppressLint("ClickableViewAccessibility")
-abstract class RecyclerViewTouchHelper(context: Context, private val recyclerView: RecyclerView,
-                      private var buttonWidth: Int, private val itemMovedListener: ItemMovedListener
+abstract class RecyclerViewTouchHelper(val context: Context, private val recyclerView: RecyclerView,
+                      private var leftButtonWidth: Int, private var rightButtonWidth: Int,
+                                       private val itemMovedListener: ItemMovedListener
 )
     : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
 
@@ -164,7 +164,8 @@ abstract class RecyclerViewTouchHelper(context: Context, private val recyclerVie
         else leftButtons!!.clear()
         leftButtonBuffer.clear()
 
-        swipeThreshold = 0.5F * rightButtons!!.size.toFloat() * buttonWidth.toFloat()
+        // 수정 해야 될듯.if (direction == ItemTouchHelper.START) = swipeThreshold
+        // left button 쭉 딸려나오는 문제.
 
         recoverSwipedItem()
     }
@@ -195,7 +196,7 @@ abstract class RecyclerViewTouchHelper(context: Context, private val recyclerVie
                     rightButtonBuffer[position] = buffer
                 } else buffer = rightButtonBuffer[position]!!
 
-                translationX = dX * buttonWidth / itemView.width
+                translationX = dX * rightButtonWidth / itemView.width
                 drawButton(c, itemView, buffer, position, translationX, toLeft)
             } else if (dX > 0){
                 var buffer: MutableList<UnderlayButton> = ArrayList()
@@ -204,7 +205,7 @@ abstract class RecyclerViewTouchHelper(context: Context, private val recyclerVie
                     leftButtonBuffer[position] = buffer
                 } else buffer = leftButtonBuffer[position]!!
 
-                translationX = dX * deleteButtonWidth / itemView.width
+                translationX = dX * leftButtonWidth / itemView.width
                 drawButton(c, itemView, buffer, position, translationX, toRight)
             }
 
@@ -216,14 +217,14 @@ abstract class RecyclerViewTouchHelper(context: Context, private val recyclerVie
                            position: Int, translationX: Float, direction: Int) {
         var left = itemView.left.toFloat()
         var right = itemView.right.toFloat()
+        var buttonWidth = 0F
 
-        var width = 0F
-        if (direction == toLeft) width = -1 * translationX / buffer.size
-        else if (direction == toRight) width = deleteButtonWidth
+        if (direction == toLeft) buttonWidth = -1 * translationX / buffer.size
+        else if (direction == toRight) buttonWidth = translationX / buffer.size
 
         if (direction == toLeft) {
             for (button in buffer) {
-                left = right - width
+                left = right - buttonWidth
                 button.onDraw(
                     c, RectF(left, itemView.top.toFloat(), right, itemView.bottom.toFloat()),
                     position
@@ -232,7 +233,7 @@ abstract class RecyclerViewTouchHelper(context: Context, private val recyclerVie
             }
         } else if (direction == toRight) {
             for (button in buffer) {
-                right = left + deleteButtonWidth
+                right = left + buttonWidth
                 button.onDraw(
                     c, RectF(left, itemView.top.toFloat(), right, itemView.bottom.toFloat()),
                     position
@@ -250,10 +251,12 @@ abstract class RecyclerViewTouchHelper(context: Context, private val recyclerVie
     }
 
     override fun getSwipeEscapeVelocity(defaultValue: Float): Float {
-        return 0.1F * defaultValue
+        return 0.2F * defaultValue
     }
 
     override fun getSwipeVelocityThreshold(defaultValue: Float): Float {
         return 5.0F * defaultValue
     }
+
+
 }

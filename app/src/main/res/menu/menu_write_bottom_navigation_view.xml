@@ -5,4 +5,8 @@
         android:title="Camera"
         android:icon="@drawable/ic_camera" />
 
+    <item android:id="@+id/mic"
+        android:title="Voice Note"
+        android:icon="@drawable/microphone" />
+
 </menu>

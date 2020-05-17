@@ -3,10 +3,16 @@ package com.elliot.kim.kotlin.dimcatcamnote.fragments
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.content.DialogInterface
+import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Rect
 import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
+import android.speech.RecognitionListener
+import android.speech.RecognizerIntent
+import android.speech.SpeechRecognizer
+import android.util.Log
 import android.view.*
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -14,23 +20,36 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
 import com.elliot.kim.kotlin.dimcatcamnote.MainActivity
+import com.elliot.kim.kotlin.dimcatcamnote.MainActivity.Companion.CAMERA_PERMISSIONS_REQUEST_CODE
+import com.elliot.kim.kotlin.dimcatcamnote.MainActivity.Companion.RECORD_AUDIO_PERMISSIONS_REQUEST_CODE
 import com.elliot.kim.kotlin.dimcatcamnote.Note
 import com.elliot.kim.kotlin.dimcatcamnote.R
 import com.elliot.kim.kotlin.dimcatcamnote.databinding.FragmentWriteBinding
 
 class WriteFragment : Fragment() {
     private lateinit var binding: FragmentWriteBinding
+    lateinit var handler: Handler
+    private var shortAnimationDuration = 0
+
     private lateinit var title: String
     private lateinit var content: String
+    var uri: String? = null
 
-    private var shortAnimationDuration = 0
-    private var uri: String? = null
-
-    lateinit var handler: Handler
+    private lateinit var intent: Intent
+    private lateinit var recognizer: SpeechRecognizer
+    private var previousPartialText = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         shortAnimationDuration = resources.getInteger(android.R.integer.config_shortAnimTime)
+        intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
+        intent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, requireActivity().packageName)
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "ko-KR")
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_WEB_SEARCH)
+        intent.putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
+        intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Say the magic word")
+        intent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 100)
+        recognizer = SpeechRecognizer.createSpeechRecognizer(context)
     }
 
     override fun onCreateView(inflater: LayoutInflater,
@@ -48,7 +67,6 @@ class WriteFragment : Fragment() {
     override fun onStop() {
         super.onStop()
 
-        arguments = null
         uri = null
 
         (activity as MainActivity).setCurrentFragment(null)
@@ -76,8 +94,23 @@ class WriteFragment : Fragment() {
         binding.bottomNavigationView.setOnNavigationItemSelectedListener {
             when (it.itemId) {
                 R.id.camera -> {
-                    if(uri == null) startCameraFragment()
+                    if(uri == null) {
+                        if (MainActivity.hasCameraPermissions(requireContext()))
+                            startCameraFragment()
+                        else
+                            requestPermissions(MainActivity.CAMERA_PERMISSIONS_REQUIRED,
+                                CAMERA_PERMISSIONS_REQUEST_CODE)
+                    }
                     else showPictureChangeMessage()
+                }
+                R.id.mic -> {
+                    if (MainActivity.hasCameraPermissions(requireContext()))
+                        startSpeechRecognition()
+                    else
+                        requestPermissions(MainActivity.RECORD_AUDIO_PERMISSIONS_REQUESTED,
+                            RECORD_AUDIO_PERMISSIONS_REQUEST_CODE)
+
+                    it.isChecked = false
                 }
             }
             return@setOnNavigationItemSelectedListener true
@@ -124,15 +157,8 @@ class WriteFragment : Fragment() {
         content = binding.editTextContent.text.toString()
     }
 
-    private fun getUri(): String? {
-        return if (arguments != null) arguments?.getString(CameraFragment.KEY_URI)
-        else null
-    }
-
     private fun showImage() {
-        uri = getUri()
-        if(uri == null)
-            return
+        if(uri == null) return
         else {
             crossFade(true)
             Glide.with(binding.imageView.context)
@@ -144,11 +170,15 @@ class WriteFragment : Fragment() {
     private fun startCameraFragment() {
         binding.bottomNavigationView.visibility = View.GONE
 
-        (activity as MainActivity).cameraFragment.setExistingUri(uri)
         (activity as MainActivity).fragmentManager.beginTransaction()
             .addToBackStack(null)
             .setCustomAnimations(R.anim.slide_up, R.anim.slide_up, R.anim.slide_down, R.anim.slide_down)
             .replace(R.id.add_container, (activity as MainActivity).cameraFragment).commit()
+    }
+
+    private fun startSpeechRecognition() {
+        recognizer.setRecognitionListener(recognitionListener)
+        recognizer.startListening(intent)
     }
 
     private fun startPhotoFragment() {
@@ -232,17 +262,17 @@ class WriteFragment : Fragment() {
     private fun crossFade(fadeIn: Boolean) {
         if (fadeIn) {
             binding.imageView.apply {
-                alpha = 0f
+                alpha = 0F
                 visibility = View.VISIBLE
 
                 animate()
-                    .alpha(1f)
+                    .alpha(1F)
                     .setDuration(shortAnimationDuration.toLong())
                     .setListener(null)
             }
         } else {
             binding.imageView.animate()
-                .alpha(0f)
+                .alpha(0F)
                 .setDuration(shortAnimationDuration.toLong())
                 .setListener(object : AnimatorListenerAdapter() {
                     override fun onAnimationEnd(animation: Animator) {
@@ -255,6 +285,97 @@ class WriteFragment : Fragment() {
     private fun clear() {
         binding.editTextTitle.text = null
         binding.editTextContent.text = null
+    }
+
+    private val recognitionListener = object: RecognitionListener {
+
+
+        override fun onReadyForSpeech(params: Bundle?) {
+            previousPartialText = ""
+        }
+
+        override fun onRmsChanged(rmsdB: Float) {
+
+        }
+
+        override fun onBufferReceived(buffer: ByteArray?) {
+
+        }
+
+        override fun onPartialResults(partialResults: Bundle?) {
+
+            val results: List<String>? =
+                partialResults!!.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
+            if (results != null) {
+                val text = results[0]
+                if (text != previousPartialText) {
+                    Log.d("PARTIAL", text)
+                    binding.editTextContent.append(text.subSequence(previousPartialText.length,
+                        text.length))
+                    previousPartialText = text
+                }
+            }
+        }
+
+        override fun onEvent(eventType: Int, params: Bundle?) {
+
+        }
+
+        override fun onBeginningOfSpeech() {
+
+        }
+
+        override fun onEndOfSpeech() {
+
+        }
+
+        override fun onError(error: Int) {
+
+        }
+
+        override fun onResults(results: Bundle?) {
+
+        }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+
+        when (requestCode) {
+            CAMERA_PERMISSIONS_REQUEST_CODE -> {
+                if (PackageManager.PERMISSION_GRANTED == grantResults.firstOrNull()) {
+                    Toast.makeText(
+                        context,
+                        "CAM in WRITE permission request granted",
+                        Toast.LENGTH_LONG
+                    ).show()
+                    startCameraFragment()
+                } else {
+                    Toast.makeText(
+                        context,
+                        "카메라 권한을 승인하셔야 카메라 기능을 사용하실 수 있습니다.",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+            RECORD_AUDIO_PERMISSIONS_REQUEST_CODE -> {
+                if (PackageManager.PERMISSION_GRANTED == grantResults.firstOrNull()) {
+                    Toast.makeText(
+                        context,
+                        "AUDIO in WRITE permission request granted",
+                        Toast.LENGTH_LONG
+                    ).show()
+                    startCameraFragment()
+                } else {
+                    Toast.makeText(
+                        context,
+                        "오디오 권한을 승인하셔야 오디오 기능을 사용하실 수 있습니다.",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+        }
     }
 
     companion object {

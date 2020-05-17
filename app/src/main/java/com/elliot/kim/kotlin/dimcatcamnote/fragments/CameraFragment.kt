@@ -59,7 +59,6 @@ class CameraFragment : Fragment() {
     private var imageCapture: ImageCapture? = null
     private var imageAnalyzer: ImageAnalysis? = null
     private var camera: Camera? = null
-    private var existingUri: Uri? = null
 
     private var uri: Uri? = null
 
@@ -104,24 +103,19 @@ class CameraFragment : Fragment() {
     override fun onResume() {
         super.onResume()
 
-        (activity as MainActivity).setCurrentFragment(MainActivity.CurrentFragment.CAMERA_FRAGMENT)
+        uri = null
 
-        if (!MainActivity.hasPermissions(requireContext())) {
-            requestPermissions(
-                MainActivity.PERMISSIONS_REQUIRED,
-                MainActivity.PERMISSIONS_REQUEST_CODE
-            )
-        }
+        (activity as MainActivity).setCurrentFragment(MainActivity.CurrentFragment.CAMERA_FRAGMENT)
     }
 
     override fun onStop() {
-        super.onStop()
-
-        setUri(uri)
+        if (uri != null) (activity as MainActivity).writeFragment.uri = uri.toString()
         (activity as MainActivity).setCurrentFragment(MainActivity.CurrentFragment.WRITE_FRAGMENT)
 
         val message = (activity as MainActivity).writeFragment.handler.obtainMessage()
         (activity as MainActivity).writeFragment.handler.sendMessage(message)
+
+        super.onStop()
     }
 
     override fun onDestroyView() {
@@ -329,12 +323,6 @@ class CameraFragment : Fragment() {
 
                             uri = savedUri
 
-                            // We can only change the foreground Drawable using API level 23+ API
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                                //Update the gallery thumbnail with latest picture taken
-                                //setGalleryThumbnail(savedUri)
-                            }
-
                             // Implicit broadcasts will be ignored for devices running API level >= 24
                             // so if you only target API level 24+ you can remove this statement
                             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
@@ -473,30 +461,6 @@ class CameraFragment : Fragment() {
 
             image.close()
         }
-    }
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == MainActivity.PERMISSIONS_REQUEST_CODE) {
-            if (PackageManager.PERMISSION_GRANTED == grantResults.firstOrNull()) {
-                Toast.makeText(context, "Permission request granted", Toast.LENGTH_LONG).show()
-            } else {
-                Toast.makeText(context, "Permission request denied", Toast.LENGTH_LONG).show()
-                (activity as MainActivity).fragmentManager.popBackStack()
-            }
-        }
-    }
-
-    private fun setUri (uri: Uri?) {
-        val bundle = Bundle()
-        bundle.putString(KEY_URI, uri.toString())
-        (activity as MainActivity).writeFragment.arguments = bundle
-    }
-
-    fun setExistingUri(uri: String?) {
-        existingUri = if (uri == null) null
-        else Uri.parse(uri)
     }
 
     companion object {

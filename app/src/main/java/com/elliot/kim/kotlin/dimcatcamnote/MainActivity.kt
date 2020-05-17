@@ -7,11 +7,11 @@ import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.Color
 import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Bundle
 import android.os.Process
+import android.speech.RecognitionListener
 import android.util.Log
 import android.view.KeyEvent
 import android.view.Menu
@@ -78,8 +78,10 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        if (!hasPermissions(this))
-            requestPermissions(PERMISSIONS_REQUIRED, PERMISSIONS_REQUEST_CODE)
+        val permissionsRequired = getPermissionsRequired(this)
+        if (permissionsRequired.isNotEmpty()) {
+            requestPermissions(permissionsRequired, PERMISSIONS_REQUEST_CODE)
+        }
 
         fragmentManager = supportFragmentManager
         animationController = android.view.animation.AnimationUtils.loadLayoutAnimation(
@@ -119,7 +121,7 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
 
     private fun createUnderlayButtons() {
         recyclerViewTouchHelper = object: RecyclerViewTouchHelper(this,
-            binding.recyclerView, 544, noteAdapter) {
+            binding.recyclerView, 544, 256,noteAdapter) {
             override fun instantiateRightUnderlayButton(
                 viewHolder: RecyclerView.ViewHolder,
                 rightButtonBuffer: MutableList<UnderlayButton>
@@ -129,13 +131,25 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
                         "편집",
                         30,
                         0,
-                        Color.parseColor("#FF3C30"),
+                        getColor(R.color.colorUnderlayButtonEdit),
                         object : UnderlayButtonClickListener {
                             override fun onClick(position: Int) {
-                                Toast.makeText(
-                                    this@MainActivity, "Edit clicked",
-                                    Toast.LENGTH_SHORT
-                                ).show()
+                                startEditFragment(noteAdapter.getNoteByPosition(position))
+
+                                noteAdapter.notifyItemChanged(position)
+                            }
+                        })
+                )
+
+                rightButtonBuffer.add(
+                    UnderlayButton(this@MainActivity,
+                        "공유",
+                        30,
+                        0,
+                        getColor(R.color.colorUnderlayButtonShare),
+                        object : UnderlayButtonClickListener {
+                            override fun onClick(position: Int) {
+                                share(noteAdapter.getNoteByPosition(position))
 
                                 noteAdapter.notifyItemChanged(position)
                             }
@@ -146,15 +160,11 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
                     UnderlayButton(this@MainActivity,
                         "알림",
                         30,
-                        R.drawable.dimcat100,
-                        getColor(R.color.colorAmberfff8e1),
-                        object :
-                            UnderlayButtonClickListener {
+                        0,
+                        getColor(R.color.colorUnderlayButtonAlarm),
+                        object : UnderlayButtonClickListener {
                             override fun onClick(position: Int) {
-                                Toast.makeText(
-                                    this@MainActivity, "알림 clicked",
-                                    Toast.LENGTH_SHORT
-                                ).show()
+                                startAlarmFragment(noteAdapter.getNoteByPosition(position))
 
                                 noteAdapter.notifyItemChanged(position)
                             }
@@ -165,12 +175,12 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
                     UnderlayButton(this@MainActivity,
                         "완료",
                         30,
-                        R.drawable.dimcat100,
-                        getColor(R.color.colorBlueGrey263238),
+                        0,
+                        getColor(R.color.colorUnderlayButtonEdit),
                         object : UnderlayButtonClickListener {
                             override fun onClick(position: Int) {
                                 Toast.makeText(
-                                    this@MainActivity, "Edit clicked",
+                                    this@MainActivity, "완료 clicked",
                                     Toast.LENGTH_SHORT
                                 ).show()
 
@@ -189,10 +199,10 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
                         "삭제",
                         30,
                         R.drawable.dimcat100,
-                        getColor(R.color.colorDeepPurple651fff),
+                        getColor(R.color.colorUnderlayButtonDelete),
                         object : UnderlayButtonClickListener {
                             override fun onClick(position: Int) {
-                                viewModel.delete((binding.recyclerView.adapter as NoteAdapter)
+                                viewModel.delete(noteAdapter
                                     .getNoteByPosition(position))
                             }
                         })
@@ -220,11 +230,15 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == PERMISSIONS_REQUEST_CODE) {
             if (PackageManager.PERMISSION_GRANTED == grantResults.firstOrNull()) {
-                Toast.makeText(this, "Permission request granted", Toast.LENGTH_LONG).show()
+                if (hasCameraPermissions(this))
+                    Toast.makeText(this, "CAM permission request granted", Toast.LENGTH_LONG).show()
+                if (hasRecordAudioPermission(this))
+                    Toast.makeText(this, "Audio permission request granted", Toast.LENGTH_LONG).show()
             } else {
-                Toast.makeText(this,
-                    "카메라 권한을 승인하셔야 카메라 기능을 사용하실 수 있습니다.",
-                    Toast.LENGTH_SHORT).show()
+                if (!hasCameraPermissions(this))
+                    Toast.makeText(this, "카메라를 승인해야 쓸수잇음 ㅋ", Toast.LENGTH_LONG).show()
+                if (!hasRecordAudioPermission(this))
+                    Toast.makeText(this, "음성 녹음을 승인해야 쓸수잇다네 소년", Toast.LENGTH_LONG).show()
             }
         }
     }
@@ -287,6 +301,12 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
 
     private fun hideFloatingActionButton() {
         binding.writeFloatingActionButton.hide()
+    }
+
+    private fun startAlarmFragment(note: Note) {
+        alarmFragment.isFromEditFragment = false
+        alarmFragment.note = note
+        startFragment(alarmFragment)
     }
 
     fun startEditFragment(note: Note) {
@@ -430,13 +450,28 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         const val DATABASE_NAME = "dim_cat_cam_notes"
 
         const val PERMISSIONS_REQUEST_CODE = 10
-        val PERMISSIONS_REQUIRED = arrayOf(Manifest.permission.CAMERA)
+        const val CAMERA_PERMISSIONS_REQUEST_CODE = 11
+        const val RECORD_AUDIO_PERMISSIONS_REQUEST_CODE = 12
+
+        val CAMERA_PERMISSIONS_REQUIRED = arrayOf(Manifest.permission.CAMERA)
+        val RECORD_AUDIO_PERMISSIONS_REQUESTED = arrayOf(Manifest.permission.RECORD_AUDIO)
 
         var currentFragment: CurrentFragment? = null
 
         private const val pattern = "yyyy-MM-dd-a-hh:mm:ss"
 
-        fun hasPermissions(context: Context) = PERMISSIONS_REQUIRED.all {
+        fun getPermissionsRequired(context: Context): Array<String> {
+            var permissionsRequired = arrayOf<String>()
+            if (!hasCameraPermissions(context)) permissionsRequired += CAMERA_PERMISSIONS_REQUIRED
+            if (!hasRecordAudioPermission(context)) permissionsRequired += RECORD_AUDIO_PERMISSIONS_REQUESTED
+            return permissionsRequired
+        }
+
+        fun hasCameraPermissions(context: Context) = CAMERA_PERMISSIONS_REQUIRED.all {
+            ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
+        }
+
+        fun hasRecordAudioPermission(context: Context) = RECORD_AUDIO_PERMISSIONS_REQUESTED.all {
             ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
         }
 
@@ -468,4 +503,5 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
             if (view != null) manager.hideSoftInputFromWindow(view.windowToken, 0)
         }
     }
+
 }
