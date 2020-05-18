@@ -19,7 +19,6 @@
 
     <string name="creation_time">생성시간</string>
     <string name="edit_time">수정시간</string>
-
     <string name="alarm_time">알람시간</string>
 
     <string name="toolbar_title">새 노트</string>

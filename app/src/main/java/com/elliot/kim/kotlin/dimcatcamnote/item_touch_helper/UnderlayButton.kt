@@ -6,12 +6,14 @@ import android.graphics.*
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import androidx.core.content.ContextCompat
+import com.elliot.kim.kotlin.dimcatcamnote.MainActivity
 
-class UnderlayButton (private val context: Context, private val text: String,
+class UnderlayButton (private val context: Context,
+                      val id: MainActivity.Companion.UnderlayButtonIds,
+                      var text: String,
                       private val textSize: Int,
-                      private val imageResourceId: Int, private val color: Int,
-                      private val listener: UnderlayButtonClickListener
-){
+                      var imageResourceId: Int, private val color: Int,
+                      private val listener: UnderlayButtonClickListener) {
 
     private var position = 0
     private var clickRegion: RectF? = null

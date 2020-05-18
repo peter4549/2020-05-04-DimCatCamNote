@@ -6,9 +6,11 @@ import android.graphics.*
 import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
-import android.widget.Toast
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
+import com.elliot.kim.kotlin.dimcatcamnote.MainActivity
+import com.elliot.kim.kotlin.dimcatcamnote.NoteAdapter
+import com.elliot.kim.kotlin.dimcatcamnote.R
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
@@ -56,29 +58,29 @@ abstract class RecyclerViewTouchHelper(val context: Context, private val recycle
     }
 
     private val onTouchListener = View.OnTouchListener { _, event ->
-            if (swipePosition < 0) return@OnTouchListener false
+        if (swipePosition < 0) return@OnTouchListener false
 
-            val point = Point(event?.rawX!!.toInt(), event.rawY.toInt())
-            val rect = Rect()
+        val point = Point(event?.rawX!!.toInt(), event.rawY.toInt())
+        val rect = Rect()
 
-            val swipeViewHolder = recyclerView
-                .findViewHolderForAdapterPosition(swipePosition)
-            val swipedItem = swipeViewHolder?.itemView
-            swipedItem?.getGlobalVisibleRect(rect)
+        val swipeViewHolder = recyclerView
+            .findViewHolderForAdapterPosition(swipePosition)
+        val swipedItem = swipeViewHolder?.itemView
+        swipedItem?.getGlobalVisibleRect(rect)
 
-            if (event.action == MotionEvent.ACTION_DOWN ||
-                event.action == MotionEvent.ACTION_UP ||
-                event.action == MotionEvent.ACTION_MOVE) {
-                if (rect.top < point.y && rect.bottom > point.y)
-                    gestureDetector.onTouchEvent(event)
-                else {
-                    removerQueue.add(swipePosition)
-                    swipePosition = -1
-                    recoverSwipedItem()
-                }
+        if (event.action == MotionEvent.ACTION_DOWN ||
+            event.action == MotionEvent.ACTION_UP ||
+            event.action == MotionEvent.ACTION_MOVE) {
+            if (rect.top < point.y && rect.bottom > point.y)
+                gestureDetector.onTouchEvent(event)
+            else {
+                removerQueue.add(swipePosition)
+                swipePosition = -1
+                recoverSwipedItem()
             }
+        }
 
-            false
+        false
     }
 
     @Synchronized
@@ -164,8 +166,13 @@ abstract class RecyclerViewTouchHelper(val context: Context, private val recycle
         else leftButtons!!.clear()
         leftButtonBuffer.clear()
 
-        // 수정 해야 될듯.if (direction == ItemTouchHelper.START) = swipeThreshold
-        // left button 쭉 딸려나오는 문제.
+        if (direction == ItemTouchHelper.START) {
+            swipeThreshold =0.5F * rightButtons!!.size.toFloat() * rightButtonWidth.toFloat()
+
+        }
+        else if (direction == ItemTouchHelper.END) {
+            swipeThreshold = 0.5F * leftButtons!!.size.toFloat() * leftButtonWidth.toFloat()
+        }
 
         recoverSwipedItem()
     }
@@ -224,6 +231,7 @@ abstract class RecyclerViewTouchHelper(val context: Context, private val recycle
 
         if (direction == toLeft) {
             for (button in buffer) {
+                setButtonOptions(button, position)
                 left = right - buttonWidth
                 button.onDraw(
                     c, RectF(left, itemView.top.toFloat(), right, itemView.bottom.toFloat()),
@@ -251,12 +259,19 @@ abstract class RecyclerViewTouchHelper(val context: Context, private val recycle
     }
 
     override fun getSwipeEscapeVelocity(defaultValue: Float): Float {
-        return 0.2F * defaultValue
+        return 0.1F * defaultValue
     }
 
     override fun getSwipeVelocityThreshold(defaultValue: Float): Float {
         return 5.0F * defaultValue
     }
 
-
+    private fun setButtonOptions(button: UnderlayButton, position: Int) {
+        if (((recyclerView.adapter as NoteAdapter).getNoteByPosition(position).alarmTime != null)
+            && button.id == MainActivity.Companion.UnderlayButtonIds.ALARM)
+                button.imageResourceId = R.drawable.ic_cat_footprint
+        if ((recyclerView.adapter as NoteAdapter).getNoteByPosition(position).isDone
+            && button.id == MainActivity.Companion.UnderlayButtonIds.DONE)
+                button.text = "해제"
+    }
 }

@@ -121,13 +121,14 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
 
     private fun createUnderlayButtons() {
         recyclerViewTouchHelper = object: RecyclerViewTouchHelper(this,
-            binding.recyclerView, 544, 256,noteAdapter) {
+            binding.recyclerView, 256, 512, noteAdapter) {
             override fun instantiateRightUnderlayButton(
                 viewHolder: RecyclerView.ViewHolder,
                 rightButtonBuffer: MutableList<UnderlayButton>
             ) {
                 rightButtonBuffer.add(
                     UnderlayButton(this@MainActivity,
+                        UnderlayButtonIds.EDIT,
                         "편집",
                         30,
                         0,
@@ -143,6 +144,7 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
 
                 rightButtonBuffer.add(
                     UnderlayButton(this@MainActivity,
+                        UnderlayButtonIds.SHARE,
                         "공유",
                         30,
                         0,
@@ -158,13 +160,16 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
 
                 rightButtonBuffer.add(
                     UnderlayButton(this@MainActivity,
+                        UnderlayButtonIds.ALARM,
                         "알림",
                         30,
                         0,
                         getColor(R.color.colorUnderlayButtonAlarm),
                         object : UnderlayButtonClickListener {
                             override fun onClick(position: Int) {
-                                startAlarmFragment(noteAdapter.getNoteByPosition(position))
+                                if (noteAdapter.getNoteByPosition(position).alarmTime == null)
+                                    startAlarmFragment(noteAdapter.getNoteByPosition(position))
+                                else cancelAlarm(noteAdapter.getNoteByPosition(position), false)
 
                                 noteAdapter.notifyItemChanged(position)
                             }
@@ -173,18 +178,22 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
 
                 rightButtonBuffer.add(
                     UnderlayButton(this@MainActivity,
+                        UnderlayButtonIds.DONE,
                         "완료",
                         30,
                         0,
                         getColor(R.color.colorUnderlayButtonEdit),
                         object : UnderlayButtonClickListener {
                             override fun onClick(position: Int) {
-                                Toast.makeText(
-                                    this@MainActivity, "완료 clicked",
-                                    Toast.LENGTH_SHORT
-                                ).show()
+                                if (noteAdapter.getNoteByPosition(position).isDone) {
+                                    noteAdapter.getNoteByPosition(position).isDone = false
+                                    showToast("완료처리를 해제하셨습니다.")
+                                } else {
+                                    noteAdapter.getNoteByPosition(position).isDone = true
+                                    showToast("완료처리 되었습니다.")
+                                }
 
-                                noteAdapter.notifyItemChanged(position)
+                                viewModel.update(noteAdapter.getNoteByPosition(position))
                             }
                         })
                 )
@@ -196,6 +205,7 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
             ) {
                 leftButtonBuffer.add(
                     UnderlayButton(this@MainActivity,
+                        UnderlayButtonIds.DELETE,
                         "삭제",
                         30,
                         R.drawable.dimcat100,
@@ -446,6 +456,10 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
             Log.i("ExternalStorage", "uri=$uri");}
     }
 
+    private fun showToast(text: String, duration: Int = Toast.LENGTH_SHORT) {
+        Toast.makeText(this, text, duration).show()
+    }
+
     companion object {
         const val DATABASE_NAME = "dim_cat_cam_notes"
 
@@ -457,6 +471,14 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         val RECORD_AUDIO_PERMISSIONS_REQUESTED = arrayOf(Manifest.permission.RECORD_AUDIO)
 
         var currentFragment: CurrentFragment? = null
+
+        enum class UnderlayButtonIds {
+            DONE,
+            ALARM,
+            SHARE,
+            EDIT,
+            DELETE
+        }
 
         private const val pattern = "yyyy-MM-dd-a-hh:mm:ss"
 
@@ -503,5 +525,4 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
             if (view != null) manager.hideSoftInputFromWindow(view.windowToken, 0)
         }
     }
-
 }

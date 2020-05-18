@@ -113,18 +113,16 @@ class AlarmFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-
         (activity as MainActivity).setCurrentFragment(MainActivity.CurrentFragment.ALARM_FRAGMENT)
     }
 
     override fun onStop() {
         super.onStop()
-
         if (isFromEditFragment) {
             isFromEditFragment = false
             (activity as MainActivity).editFragment.setContent(note)
             (activity as MainActivity).setCurrentFragment(MainActivity.CurrentFragment.EDIT_FRAGMENT)
-        }
+        } else (activity as MainActivity).setCurrentFragment(null)
     }
 
     private fun setAlarm(calendar: Calendar): Boolean {
@@ -193,10 +191,10 @@ class AlarmFragment : Fragment() {
             Context.MODE_PRIVATE
         )
         val editor = sharedPreferences.edit()
-        editor.putInt(number.toString() + "0", number)
-        editor.putLong(number.toString() + "1", alarmTime)
-        editor.putString(number.toString() + "2", title)
-        editor.putString(number.toString() + "3", content)
+        editor.putInt("${number}0", number)
+        editor.putLong("${number}1", alarmTime)
+        editor.putString("${number}2", title)
+        editor.putString("${number}3", content)
         editor.apply()
     }
 
@@ -258,7 +256,7 @@ class AlarmFragment : Fragment() {
                 (child as EditText).setTextColor(color)
 
                 numberPicker.invalidate()
-            } catch (e: NoSuchFieldException) {
+            } catch (e: NoSuchFieldException ) {
                 e.printStackTrace()
             } catch (e: IllegalAccessException) {
                 e.printStackTrace()

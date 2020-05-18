@@ -13,9 +13,9 @@ class DeviceBootReceiver : BroadcastReceiver()  {
 
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action == "android.intent.action.BOOT_COMPLETED") {
-            val alarmManager =
+            val manager =
                 context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-            val intentToAlarmReceiver = Intent(context, AlarmReceiver::class.java)
+            val alarmIntent = Intent(context, AlarmReceiver::class.java)
             val preferences = context.getSharedPreferences(
                 "alarm_preferences",
                 Context.MODE_PRIVATE
@@ -23,21 +23,21 @@ class DeviceBootReceiver : BroadcastReceiver()  {
 
             val entries = preferences.all
             val entriesSize = entries.size
-            val intKeySet =
+            val keySet =
                 Arrays.stream(entries.keys.toTypedArray())
                     .mapToInt { s: String -> s.toInt() }.toArray()
+
+            var id = 0
+            var title: String? = null
+            var content: String? = null
+
+            Arrays.sort(keySet)
 
             val calendar: Calendar = GregorianCalendar()
 
             var count = 0
-            var id = 0
-            var title: String? = ""
-            var content: String? = ""
-
-            Arrays.sort(intKeySet)
-
             for (i in 0 until entriesSize) {
-                val key = intKeySet[i].toString()
+                val key = keySet[i].toString()
                 when (count) {
                     0 -> id = preferences.getInt(key, 0)
                     1 -> calendar.timeInMillis = preferences.getLong(key, 0)
@@ -49,20 +49,20 @@ class DeviceBootReceiver : BroadcastReceiver()  {
                 if (count == 4) {
                     count = 0
 
-                    intentToAlarmReceiver.putExtra(AlarmFragment.KEY_ID, id)
-                    intentToAlarmReceiver.putExtra(AlarmFragment.KEY_TITLE, title)
-                    intentToAlarmReceiver.putExtra(AlarmFragment.KEY_CONTENT, content)
+                    alarmIntent.putExtra(AlarmFragment.KEY_ID, id)
+                    alarmIntent.putExtra(AlarmFragment.KEY_TITLE, title)
+                    alarmIntent.putExtra(AlarmFragment.KEY_CONTENT, content)
 
                     val pendingIntent = PendingIntent.getBroadcast(
                         context,
                         id,
-                        intentToAlarmReceiver,
+                        alarmIntent,
                         PendingIntent.FLAG_ONE_SHOT
                     )
 
-                    alarmManager[AlarmManager.RTC_WAKEUP, calendar.timeInMillis] = pendingIntent
+                    manager[AlarmManager.RTC_WAKEUP, calendar.timeInMillis] = pendingIntent
                     if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        alarmManager.setExactAndAllowWhileIdle(
+                        manager.setExactAndAllowWhileIdle(
                             AlarmManager.RTC_WAKEUP,
                             calendar.timeInMillis,
                             pendingIntent

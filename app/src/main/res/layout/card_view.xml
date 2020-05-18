@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <FrameLayout
-        android:id="@+id/frame_layout"
+        android:id="@+id/card_view_frame_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="2dp"
@@ -14,7 +14,7 @@
             android:id="@+id/card_view"
             android:layout_gravity="center"
             android:layout_width="match_parent"
-            android:layout_height="80dp"
+            android:layout_height="wrap_content"
             android:focusable="true"
             android:foreground="?attr/selectableItemBackground">
 
@@ -22,7 +22,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="horizontal"
-                android:background="@color/backgroundColorCardView">
+                android:background="@color/backgroundColorCardViewAmber">
 
                 <ImageView
                     android:id="@+id/image_view_thumbnail"
@@ -60,7 +60,8 @@
                             android:gravity="center"
                             android:textColor="@color/textColorCardView"
                             android:textSize="20sp"
-                            android:textStyle="bold" />
+                            android:textStyle="bold"
+                            android:maxLength="12"/>
 
                         <ImageView
                             android:id="@+id/image_view_done"
@@ -79,7 +80,8 @@
                             android:layout_marginTop="6dp"
                             android:layout_marginEnd="6dp"
                             android:layout_marginBottom="6dp"
-                            android:visibility="invisible" />
+                            android:visibility="gone"
+                            android:src="@drawable/ic_clock_card_view"/>
 
                     </RelativeLayout>
 
@@ -94,6 +96,16 @@
                         android:textStyle="italic" />
 
                     <TextView
+                        android:id="@+id/text_view_alarm_time"
+                        android:layout_width="match_parent"
+                        android:layout_height="@dimen/alarm_time_text_height"
+                        android:paddingEnd="8dp"
+                        android:paddingStart="8dp"
+                        android:textColor="@color/textColorCardView"
+                        android:textSize="16sp"
+                        android:textStyle="italic" />
+
+                    <TextView
                         android:id="@+id/text_view_content"
                         android:layout_width="match_parent"
                         android:layout_height="28dp"
@@ -101,7 +113,8 @@
                         android:paddingStart="8dp"
                         android:textColor="@color/textColorCardView"
                         android:textSize="16sp"
-                        android:textStyle="bold" />
+                        android:textStyle="bold"
+                        android:maxLength="16"/>
 
                 </LinearLayout>
 

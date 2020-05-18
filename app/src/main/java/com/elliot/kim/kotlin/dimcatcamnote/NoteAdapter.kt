@@ -1,6 +1,7 @@
 package com.elliot.kim.kotlin.dimcatcamnote
 
 import android.content.Context
+import android.graphics.Paint
 import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
@@ -13,6 +14,7 @@ import com.elliot.kim.kotlin.dimcatcamnote.databinding.CardViewBinding
 import com.elliot.kim.kotlin.dimcatcamnote.databinding.CardViewBinding.bind
 import com.elliot.kim.kotlin.dimcatcamnote.item_touch_helper.ItemMovedListener
 import java.util.*
+
 
 class NoteAdapter(private val context: Context?, private val notes: MutableList<Note>) :
     RecyclerView.Adapter<NoteAdapter.ViewHolder>(),
@@ -55,16 +57,47 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
         else
             "${context?.getString(R.string.edit_time)}: ${MainActivity.timeToString(editTime)}"
 
-        if (uri != null) {
+        holder.binding.textViewTitle.text = title
+        holder.binding.textViewTime.text = time
+        holder.binding.textViewContent.text = content
+
+        if (uri == null) {
+            holder.binding.imageViewThumbnail.visibility = View.GONE
+        } else {
+            holder.binding.imageViewThumbnail.visibility = View.VISIBLE
             Glide.with(holder.binding.imageViewThumbnail.context)
                 .load(Uri.parse(uri))
                 .transform(CircleCrop())
                 .into(holder.binding.imageViewThumbnail)
         }
 
-        holder.binding.textViewTitle.text = title
-        holder.binding.textViewTime.text = time
-        holder.binding.textViewContent.text = content
+        if (note.isDone) {
+            holder.binding.textViewTitle.paintFlags = holder.binding.textViewTitle.paintFlags or
+                    Paint.STRIKE_THRU_TEXT_FLAG
+            holder.binding.textViewTime.paintFlags = holder.binding.textViewTime.paintFlags or
+                    Paint.STRIKE_THRU_TEXT_FLAG
+            holder.binding.textViewContent.paintFlags = holder.binding.textViewContent.paintFlags or
+                    Paint.STRIKE_THRU_TEXT_FLAG
+            holder.binding.imageViewLogo.setImageResource(R.drawable.ic_cat_footprint)
+            holder.binding.imageViewDone.visibility = View.VISIBLE
+        } else {
+            holder.binding.textViewTitle.paintFlags = 0
+            holder.binding.textViewTime.paintFlags = 0
+            holder.binding.textViewContent.paintFlags = 0
+            holder.binding.imageViewLogo.setImageResource(R.drawable.ic_cat_card_view_00)
+            holder.binding.imageViewDone.visibility = View.INVISIBLE
+        }
+
+        if (note.alarmTime == null) {
+            holder.binding.textViewAlarmTime.visibility = View.GONE
+            holder.binding.imageViewAlarm.visibility = View.GONE
+        } else {
+            val alarmTimeText =
+                "${context?.getString(R.string.alarm_time)}: ${MainActivity.timeToString(alarmTime)}"
+            holder.binding.textViewAlarmTime.visibility = View.VISIBLE
+            holder.binding.textViewAlarmTime.text = alarmTimeText
+            holder.binding.imageViewAlarm.visibility = View.VISIBLE
+        }
 
         holder.binding.cardView.setOnClickListener {
             (context as MainActivity).startEditFragment(note)
