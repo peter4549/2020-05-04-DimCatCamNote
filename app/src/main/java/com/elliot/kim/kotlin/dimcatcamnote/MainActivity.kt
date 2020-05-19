@@ -11,7 +11,6 @@ import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Bundle
 import android.os.Process
-import android.speech.RecognitionListener
 import android.util.Log
 import android.view.KeyEvent
 import android.view.Menu
@@ -19,12 +18,15 @@ import android.view.MenuItem
 import android.view.View
 import android.view.animation.LayoutAnimationController
 import android.view.inputmethod.InputMethodManager
+import android.widget.EditText
 import android.widget.Toast
+import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.LifecycleOwner
@@ -38,6 +40,7 @@ import com.elliot.kim.kotlin.dimcatcamnote.fragments.*
 import com.elliot.kim.kotlin.dimcatcamnote.item_touch_helper.RecyclerViewTouchHelper
 import com.elliot.kim.kotlin.dimcatcamnote.item_touch_helper.UnderlayButton
 import com.elliot.kim.kotlin.dimcatcamnote.item_touch_helper.UnderlayButtonClickListener
+import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
 import java.io.File
 import java.text.SimpleDateFormat
@@ -45,6 +48,8 @@ import java.util.*
 
 const val KEY_EVENT_ACTION = "key_event_action"
 const val KEY_EVENT_EXTRA = "key_event_extra"
+
+private const val DEFAULT_FOLDER_ID = 0
 
 class MainActivity : AppCompatActivity(), LifecycleOwner {
 
@@ -54,6 +59,8 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
 
     private lateinit var noteAdapter: NoteAdapter
     private lateinit var recyclerViewTouchHelper: RecyclerViewTouchHelper
+    private lateinit var folderManager: FolderManager
+    private lateinit var folderMenuItem: MenuItem
 
     lateinit var fragmentManager: FragmentManager
 
@@ -91,6 +98,45 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
         setSupportActionBar(binding.toolBar)
         binding.writeFloatingActionButton.setOnClickListener { startWriteFragment() }
+
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.setHomeAsUpIndicator(R.drawable.ic_menu_00)
+
+        val toggle = ActionBarDrawerToggle(
+            this, binding.drawerLayout, binding.toolBar, R.string.navigation_drawer_open, R.string.navigation_drawer_close
+        )
+        binding.drawerLayout.addDrawerListener(toggle)
+        toggle.syncState()
+
+        folderManager = FolderManager(this)
+
+        folderMenuItem = binding.navView.menu.findItem(R.id.folder)
+
+        folderManager.addFolder("HIE") // 불러오는 로직...
+
+        var order = 2
+        for (folder in folderManager.folders) {
+            folderMenuItem.subMenu.add(R.id.menu_navigation_view_folder, folder.first, order++, folder.second)
+            folderMenuItem.subMenu.getItem(order - 2).setIcon(R.drawable.dimcat100)
+        }
+
+        binding.navView.setNavigationItemSelectedListener {
+            when (it.itemId) {
+                R.id.add_folder -> {
+                    showAddFolderDialog()
+                    return@setNavigationItemSelectedListener false
+                }
+                else -> {
+                    // 보여주는 아이템.
+                    // 현재 아이템에 맞는, it.asdf
+                    it.itemId // 이거를 set Current Folder 함수로 전달하고, 데이터셋 체인지드 호출하면, 될듯.
+                    // 해당 함수는 전체 리스트 중에서 ,, 아 어뎁터의 함수로 제작하면 될듯.
+                    // 어뎁터 필터에 최상위 조건을 넣는것, if id == 1000이면 무시, 아니면 해당하는 폴더 아이디 갖는 놈들
+                    // 선별해서 필터에 채우고,
+                }
+            }
+            return@setNavigationItemSelectedListener true
+        }
 
         val viewModelFactory = ViewModelProvider.AndroidViewModelFactory.getInstance(application)
         viewModel = ViewModelProvider(this, viewModelFactory)[MainViewModel::class.java]
@@ -267,6 +313,7 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_main, menu)
+
         val searchView = menu.findItem(R.id.menu_search)
             .actionView as SearchView
         searchView.setOnQueryTextListener(object :
@@ -339,6 +386,35 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
 
     fun setCurrentFragment(fragment: CurrentFragment?) {
         currentFragment = fragment
+    }
+
+
+    private fun showAddFolderDialog() {
+        val dialog = AlertDialog.Builder(this)
+
+        dialog.setTitle("폴더 생성")
+        dialog.setMessage("폴더이름을 입력해주세요.")
+
+        val editText = EditText(this)
+        dialog.setView(editText)
+
+        dialog.setPositiveButton("확인") { _: DialogInterface?, _: Int ->
+            if (editText.text.toString() == "") {
+                showToast("폴더이름을 입력해주세요.")
+            } else {
+                folderManager.addFolder(editText.text.toString())
+                folderMenuItem.subMenu.add(R.id.menu_navigation_view_folder,
+                    folderManager.folders.last().first, folderManager.folders.size + 1,
+                    folderManager.folders.last().second)
+                folderMenuItem.subMenu.getItem(folderManager.folders.size).setIcon(R.drawable.dimcat100)
+                binding.navView.invalidate()
+            }
+        }
+
+        dialog.setNegativeButton("취소") { _: DialogInterface?, _: Int -> }
+
+        dialog.create()
+        dialog.show()
     }
 
     private fun showSortDialog() {
@@ -456,7 +532,7 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
             Log.i("ExternalStorage", "uri=$uri");}
     }
 
-    private fun showToast(text: String, duration: Int = Toast.LENGTH_SHORT) {
+    fun showToast(text: String, duration: Int = Toast.LENGTH_SHORT) {
         Toast.makeText(this, text, duration).show()
     }
 

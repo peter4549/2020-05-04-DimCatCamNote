@@ -15,5 +15,22 @@
     </style>
 
     <style name="AppTheme.AppBarOverly" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+
+    <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+
+    <style name="PasscodeInputIStyle">
+        <item name="android:gravity">center</item>
+        <item name="android:maxLength">1</item>
+        <item name="android:textColor">@color/colorBrown3e2723</item>
+        <item name="android:textSize">40sp</item>
+        <item name="android:background">@color/colorLime50</item>
+        <item name="android:inputType">textPassword|number</item>
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">80dp</item>
+        <item name="android:layout_margin">4dp</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:singleLine">true</item>
+    </style>
 </resources>

@@ -4,63 +4,127 @@
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/main_container"
-        android:name="androidx.navigation.fragment.NavHostFragment"
+    <androidx.drawerlayout.widget.DrawerLayout
+        android:id="@+id/drawer_layout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:keepScreenOn="true"
-        app:defaultNavHost="true"
-        tools:context=".MainActivity">
+        android:layout_height="match_parent">
 
-        <androidx.appcompat.widget.Toolbar
-            android:id="@+id/tool_bar"
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/main_container"
+            android:name="androidx.navigation.fragment.NavHostFragment"
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:background="@color/colorPurplece93d8"
-            android:theme="@style/AppTheme.AppBarOverly"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:popupTheme="@style/AppTheme.PopupOverlay">
+            android:layout_height="match_parent"
+            android:keepScreenOn="true"
+            app:defaultNavHost="true"
+            tools:context=".MainActivity">
 
-            <RelativeLayout
+            <androidx.appcompat.widget.Toolbar
+                android:id="@+id/tool_bar"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent">
+                android:layout_height="?attr/actionBarSize"
+                android:background="@color/colorPurplece93d8"
+                android:theme="@style/AppTheme.AppBarOverly"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:popupTheme="@style/AppTheme.PopupOverlay">
 
-                <ImageView
-                    android:id="@+id/image_view_logo"
-                    android:layout_width="144dp"
-                    android:layout_height="wrap_content"
-                    android:src="@drawable/time_8c9eff_240"
-                    android:contentDescription="Application Logo" />
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
 
-            </RelativeLayout>
+                    <ImageView
+                        android:id="@+id/image_view_logo"
+                        android:layout_width="144dp"
+                        android:layout_height="wrap_content"
+                        android:src="@drawable/time_8c9eff_240"
+                        android:contentDescription="Application Logo" />
 
-        </androidx.appcompat.widget.Toolbar>
+                </RelativeLayout>
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recycler_view"
+            </androidx.appcompat.widget.Toolbar>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recycler_view"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:scrollbars="vertical"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/tool_bar" />
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/write_floating_action_button"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:layout_marginBottom="30dp"
+                android:layout_marginEnd="30dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:borderWidth="0dp"
+                app:fabCustomSize="60dp"
+                app:fabSize="auto" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <com.google.android.material.navigation.NavigationView
+            android:id="@+id/nav_view"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_gravity="start"
+            android:fitsSystemWindows="true"
+            app:headerLayout="@layout/nav_header"
+            app:menu="@menu/menu_navigation_view"/>
+
+        <RelativeLayout
+            android:id="@+id/lock_view"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:scrollbars="vertical"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/tool_bar" />
+            android:layout_height="match_parent"
+            android:clickable="true"
+            android:focusable="true">
 
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/write_floating_action_button"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
-            android:layout_marginBottom="30dp"
-            android:layout_marginEnd="30dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:borderWidth="0dp"
-            app:fabCustomSize="60dp"
-            app:fabSize="auto" />
+            <TextureView
+                android:id="@+id/text_view_lock"
+                android:layout_width="128dp"
+                android:layout_height="64dp"
+                android:layout_centerHorizontal="true"
+                android:layout_centerVertical="true" />
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+            <LinearLayout
+                android:id="@+id/ll_passcodes"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/text_view_lock"
+                android:orientation="horizontal" >
+
+                <EditText
+                    android:id="@+id/passcode_1"
+                    style="@style/PasscodeInputIStyle" >
+
+                    <requestFocus />
+                </EditText>
+
+                <EditText
+                    android:id="@+id/passcode_2"
+                    style="@style/PasscodeInputIStyle" >
+                </EditText>
+
+                <EditText
+                    android:id="@+id/passcode_3"
+                    style="@style/PasscodeInputIStyle" >
+                </EditText>
+
+                <EditText
+                    android:id="@+id/passcode_4"
+                    style="@style/PasscodeInputIStyle" >
+                </EditText>
+            </LinearLayout>
+
+
+
+        </RelativeLayout>
+
+    </androidx.drawerlayout.widget.DrawerLayout>
 
 </layout>

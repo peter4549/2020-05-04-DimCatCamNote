@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <group android:checkableBehavior="single">
+        <item android:id="@+id/add_folder"
+            android:title="폴더 추가"
+            android:icon="@drawable/ic_cat_footprint"/>
+    </group>
+
+    <item android:id="@+id/folder"
+        android:title="Folder">
+        <menu android:id="@+id/menu_navigation_view_folder">
+            <item android:id="@+id/temp"
+                android:title="전체"
+                android:icon="@drawable/ic_clock_card_view" />
+
+        </menu>
+    </item>
+
+    <!--
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/navigation_item_attachment"
+            android:checked="true"
+            android:icon="@drawable/ic_attachment"
+            android:title="@string/nav_item_attachment" />
+        <item
+            android:id="@+id/navigation_item_images"
+            android:icon="@drawable/ic_image"
+            android:title="@string/nav_item_images" />
+        <item
+            android:id="@+id/navigation_item_location"
+            android:icon="@drawable/ic_place"
+            android:title="@string/nav_item_location" />
+    </group>
+
+    <item android:title="@string/nav_sub_menu">
+        <menu>
+            <item
+                android:icon="@drawable/ic_emoticon"
+                android:id="@+id/nav_sub_menu_item01"
+                android:title="@string/nav_sub_menu_item01" />
+            <item
+                android:icon="@drawable/ic_emoticon"
+                android:id="@+id/nav_sub_menu_item02"
+                android:title="@string/nav_sub_menu_item02" />
+        </menu>
+    </item> -->
+</menu>
