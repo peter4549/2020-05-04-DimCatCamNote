@@ -11,10 +11,11 @@
     <item android:id="@+id/folder"
         android:title="Folder">
         <menu android:id="@+id/menu_navigation_view_folder">
-            <item android:id="@+id/temp"
+            <item android:id="@+id/default_folder"
                 android:title="전체"
-                android:icon="@drawable/ic_clock_card_view" />
 
+                android:actionLayout="@layout/navigation_drawer_action_view"/>
+                <!--android:icon="@drawable/ic_clock_card_view"-->
         </menu>
     </item>
 

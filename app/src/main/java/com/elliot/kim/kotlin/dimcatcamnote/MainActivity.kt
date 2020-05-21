@@ -4,7 +4,6 @@ import android.Manifest
 import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
-import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.media.MediaScannerConnection
@@ -12,21 +11,18 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Process
 import android.util.Log
-import android.view.KeyEvent
-import android.view.Menu
-import android.view.MenuItem
-import android.view.View
+import android.view.*
 import android.view.animation.LayoutAnimationController
 import android.view.inputmethod.InputMethodManager
-import android.widget.EditText
+import android.widget.ImageView
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.ActionBarDrawerToggle
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.core.content.ContextCompat
+import androidx.core.view.MenuItemCompat
 import androidx.databinding.DataBindingUtil
-import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.LifecycleOwner
@@ -40,7 +36,6 @@ import com.elliot.kim.kotlin.dimcatcamnote.fragments.*
 import com.elliot.kim.kotlin.dimcatcamnote.item_touch_helper.RecyclerViewTouchHelper
 import com.elliot.kim.kotlin.dimcatcamnote.item_touch_helper.UnderlayButton
 import com.elliot.kim.kotlin.dimcatcamnote.item_touch_helper.UnderlayButtonClickListener
-import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
 import java.io.File
 import java.text.SimpleDateFormat
@@ -58,9 +53,10 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
     lateinit var viewModel: MainViewModel
 
     private lateinit var noteAdapter: NoteAdapter
+    private lateinit var folderAdapter: FolderAdapter
     private lateinit var recyclerViewTouchHelper: RecyclerViewTouchHelper
-    private lateinit var folderManager: FolderManager
-    private lateinit var folderMenuItem: MenuItem
+    lateinit var folderManager: FolderManager
+    lateinit var folderGroup: MenuItem
 
     lateinit var fragmentManager: FragmentManager
 
@@ -74,6 +70,8 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
 
     private var initialization = true
     private var pressedTime = 0L
+
+    private lateinit var dialogManager: DialogManager
 
     enum class CurrentFragment {
         ALARM_FRAGMENT,
@@ -100,7 +98,6 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         binding.writeFloatingActionButton.setOnClickListener { startWriteFragment() }
 
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        supportActionBar?.setHomeAsUpIndicator(R.drawable.ic_menu_00)
 
         val toggle = ActionBarDrawerToggle(
             this, binding.drawerLayout, binding.toolBar, R.string.navigation_drawer_open, R.string.navigation_drawer_close
@@ -109,24 +106,43 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         toggle.syncState()
 
         folderManager = FolderManager(this)
+        folderAdapter = FolderAdapter(this, folderManager)
+        binding.navDrawerRecyclerview.apply {
+            setHasFixedSize(true)
+            adapter = folderAdapter
+            layoutManager = LinearLayoutManager(context)
+        }
 
-        folderMenuItem = binding.navView.menu.findItem(R.id.folder)
+        initializeNavigationDrawer()
+        //folderGroup = binding.navView.menu.findItem(R.id.folder)
 
-        folderManager.addFolder("HIE") // 불러오는 로직...
-
+        /*
         var order = 2
         for (folder in folderManager.folders) {
-            folderMenuItem.subMenu.add(R.id.menu_navigation_view_folder, folder.first, order++, folder.second)
-            folderMenuItem.subMenu.getItem(order - 2).setIcon(R.drawable.dimcat100)
+            folderGroup.subMenu.add(R.id.menu_navigation_view_folder, folder.first, order++, null)
+            //folderGroup.subMenu.getItem(order - 2).setIcon(R.drawable.dimcat100) 디자인 로직까지. 텍스트도 뷰에 쓸것.
+            val item = folderGroup.subMenu.getItem(order - 2)
+
+            item.setActionView(R.layout.navigation_drawer_action_view)
+            item.actionView.findViewById<ImageView>(R.id.icon_view).setImageDrawable(getDrawable(R.drawable.dimcat40))
+            item.actionView.findViewById<TextView>(R.id.text_view).text = folder.second
+
+            item.actionView.setOnLongClickListener {
+                showToast("HAHAHA")
+                false
+            }
         }
+
 
         binding.navView.setNavigationItemSelectedListener {
             when (it.itemId) {
                 R.id.add_folder -> {
-                    showAddFolderDialog()
+                    dialogManager.showDialog(DialogManager.Companion.DialogType.ADD_FOLDER)
+                    //binding.navView.invalidate() 자동 업데이트가 되네.. 여러기기 테스트 하고 삭제해도 될듯.
                     return@setNavigationItemSelectedListener false
-                }
-                else -> {
+                    //                }
+                    //                else > {
+                    //                    // 장기간 클릭시 컨텍스트 메뉴 온
                     // 보여주는 아이템.
                     // 현재 아이템에 맞는, it.asdf
                     it.itemId // 이거를 set Current Folder 함수로 전달하고, 데이터셋 체인지드 호출하면, 될듯.
@@ -134,17 +150,32 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
                     // 어뎁터 필터에 최상위 조건을 넣는것, if id == 1000이면 무시, 아니면 해당하는 폴더 아이디 갖는 놈들
                     // 선별해서 필터에 채우고,
                 }
+                R.id.default_folder -> {
+                    showToast("Default")
+                    dialogManager.showDialog(DialogManager.Companion.DialogType.FOLDER_OPTIONS)
+                    // 끄고 , 전체 메모 보여주기.
+                }
+                else -> {
+                    val selectedFolder = folderManager.folders.find { pair: Folder ->
+                        pair.first == it.itemId
+                    } ?: throw NullPointerException("Folder not found.")
+                    showFolderManagementDialog(selectedFolder)
+                    showToast("${it.itemId}")
+                }
             }
             return@setNavigationItemSelectedListener true
         }
+
+         */
 
         val viewModelFactory = ViewModelProvider.AndroidViewModelFactory.getInstance(application)
         viewModel = ViewModelProvider(this, viewModelFactory)[MainViewModel::class.java]
 
         var notesSize = 0
         viewModel.getAll().observe(this, androidx.lifecycle.Observer { notes ->
-            if (initialization) {
+            if (initialization) {// 초기화 로직 정리할 것.
                 noteAdapter = NoteAdapter(this, notes)
+                initializeDialogManager()
                 binding.recyclerView.apply {
                     setHasFixedSize(true)
                     adapter = noteAdapter
@@ -215,7 +246,8 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
                             override fun onClick(position: Int) {
                                 if (noteAdapter.getNoteByPosition(position).alarmTime == null)
                                     startAlarmFragment(noteAdapter.getNoteByPosition(position))
-                                else cancelAlarm(noteAdapter.getNoteByPosition(position), false)
+                                else
+                                    cancelAlarm(noteAdapter.getNoteByPosition(position), false)
 
                                 noteAdapter.notifyItemChanged(position)
                             }
@@ -240,6 +272,21 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
                                 }
 
                                 viewModel.update(noteAdapter.getNoteByPosition(position))
+                            }
+                        })
+                )
+
+                rightButtonBuffer.add(
+                    UnderlayButton(this@MainActivity,
+                        UnderlayButtonIds.DONE,
+                        "폴더 이동",
+                        20,
+                        0,
+                        getColor(R.color.colorYellowfff176),
+                        object : UnderlayButtonClickListener {
+                            override fun onClick(position: Int) {
+                                dialogManager.showDialog(DialogManager
+                                    .Companion.DialogType.FOLDER_OPTIONS)
                             }
                         })
                 )
@@ -330,6 +377,7 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         searchView.setOnSearchClickListener {
             binding.imageViewLogo.visibility = View.GONE
         }
+
         searchView.setOnCloseListener {
             binding.imageViewLogo.visibility = View.VISIBLE
             false
@@ -345,7 +393,9 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
                 true
             }
             R.id.menu_sort -> {
-                showSortDialog()
+                dialogManager.showDialog(DialogManager.Companion.DialogType.SORT)
+                binding.recyclerView.layoutAnimation = animationController
+                binding.recyclerView.scheduleLayoutAnimation()
                 true
             }
             else -> super.onOptionsItemSelected(item)
@@ -388,49 +438,22 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         currentFragment = fragment
     }
 
+    private fun showFolderManagementDialog(folder: Folder) {
+        /*
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("\"${folder.second}\" 폴더 관리")
+            .setItems(R.array.colors_array,
+                DialogInterface.OnClickListener { _, which ->
+                    when (which) {
+                        0 -> {}
 
-    private fun showAddFolderDialog() {
-        val dialog = AlertDialog.Builder(this)
-
-        dialog.setTitle("폴더 생성")
-        dialog.setMessage("폴더이름을 입력해주세요.")
-
-        val editText = EditText(this)
-        dialog.setView(editText)
-
-        dialog.setPositiveButton("확인") { _: DialogInterface?, _: Int ->
-            if (editText.text.toString() == "") {
-                showToast("폴더이름을 입력해주세요.")
-            } else {
-                folderManager.addFolder(editText.text.toString())
-                folderMenuItem.subMenu.add(R.id.menu_navigation_view_folder,
-                    folderManager.folders.last().first, folderManager.folders.size + 1,
-                    folderManager.folders.last().second)
-                folderMenuItem.subMenu.getItem(folderManager.folders.size).setIcon(R.drawable.dimcat100)
-                binding.navView.invalidate()
-            }
-        }
-
-        dialog.setNegativeButton("취소") { _: DialogInterface?, _: Int -> }
-
-        dialog.create()
-        dialog.show()
-    }
-
-    private fun showSortDialog() {
-        val builder =
-            AlertDialog.Builder(this)
-        builder.setTitle(R.string.sort_by)
-            .setItems(
-                resources.getStringArray(R.array.sort_by)
-            ) { _: DialogInterface?, which: Int ->
-                noteAdapter.sort(which) // 옵션 기억하도록.
-                noteAdapter.notifyDataSetChanged()
-                binding.recyclerView.layoutAnimation = animationController
-                binding.recyclerView.scheduleLayoutAnimation()
-            }
+                    }
+                })
         builder.create()
-        builder.show()
+
+         */
+
+
     }
 
     fun cancelAlarm(note: Note, isDelete: Boolean) {
@@ -536,8 +559,21 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         Toast.makeText(this, text, duration).show()
     }
 
+    private fun initializeDialogManager() {
+        dialogManager = DialogManager(this)
+        dialogManager.setFolderAdapter(folderAdapter)
+        dialogManager.setFolderManager(folderManager)
+        dialogManager.setNoteAdapter(noteAdapter)
+    }
+
+    private fun initializeNavigationDrawer() {
+        binding.buttonAddFolder.setOnClickListener {
+            dialogManager.showDialog(DialogManager.Companion.DialogType.ADD_FOLDER)
+        }
+    }
+
     companion object {
-        const val DATABASE_NAME = "dim_cat_cam_notes"
+        const val DATABASE_NAME = "dim_cat_cam_notes_2"
 
         const val PERMISSIONS_REQUEST_CODE = 10
         const val CAMERA_PERMISSIONS_REQUEST_CODE = 11

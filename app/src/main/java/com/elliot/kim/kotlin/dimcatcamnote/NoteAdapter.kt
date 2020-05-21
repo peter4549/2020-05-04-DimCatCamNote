@@ -112,17 +112,18 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
         return object : Filter() {
             override fun performFiltering(constraint: CharSequence): FilterResults {
                 val searchWord = constraint.toString()
-                if (searchWord.isEmpty()) {
-                    notesFiltered = notes
+                notesFiltered = if (searchWord.isEmpty()) {
+                    notes
                 } else {
                     val noteListFiltering: MutableList<Note> =
                         ArrayList()
                     for (note in notes) {
-                        if (note.title.toLowerCase().contains(searchWord.toLowerCase())) {
+                        if (note.title.toLowerCase(Locale.ROOT)
+                                .contains(searchWord.toLowerCase(Locale.ROOT))) {
                             noteListFiltering.add(note)
                         }
                     }
-                    notesFiltered = noteListFiltering
+                    noteListFiltering
                 }
                 val filterResults = FilterResults()
                 filterResults.values = notesFiltered

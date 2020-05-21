@@ -7,11 +7,13 @@
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
         <item name="android:colorControlHighlight">@color/colorPurplece93d8</item>
+        <item name="android:windowFullscreen">true</item>
     </style>
 
-    <style name="AppTheme.NoActionBar">
+    <style name="AppTheme.NoActionBar" >
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
+
     </style>
 
     <style name="AppTheme.AppBarOverly" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
@@ -19,6 +21,10 @@
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 
     <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+
+    <style name="NavigationTheme" parent="AppTheme">
+        <item name="listPreferredItemHeightSmall">@dimen/nav_drawer_menu_item_height</item>
+    </style>
 
     <style name="PasscodeInputIStyle">
         <item name="android:gravity">center</item>

@@ -1,37 +1,47 @@
 package com.elliot.kim.kotlin.dimcatcamnote
 
 import android.content.Context
-import android.content.DialogInterface
-import android.widget.EditText
-import androidx.appcompat.app.AlertDialog
+import android.util.Log
 import java.util.*
 
 class FolderManager(private val context: Context) {
 
-    var folders: MutableList<Pair<Int, String>>
+    var folders: MutableList<Folder>
     var lastId = 0
     var isAdded = false
 
     init {
         folders = loadFolders()
-        if (folders.isNotEmpty()) lastId = folders.last().first
+        if (folders.isNotEmpty()) lastId = folders.last().id
+        else {
+            for (folder in folders) Log.d("HERE", folder.name)
+        }
     }
 
     fun addFolder(name: String): Boolean {
-        return if (folders.add(Pair(++lastId, name))) {
+        return if (folders.add(Folder(++lastId, name))) {
             (context as MainActivity).showToast("폴더가 생성되었습니다.")
+            saveFolder(folders.last())
             true
         } else false
     }
 
-    fun removeFolder(id: Int, name: String): Boolean {
-        return folders.remove(Pair(id, name))
+    fun removeFolder(folder: Folder): Boolean {
+        val preferences = (context as MainActivity).getSharedPreferences(
+            PREFERENCES_NAME,
+            Context.MODE_PRIVATE
+        )
+        val editor = preferences.edit()
+        editor.remove("${folder.id}")
+        editor.apply()
+
+        return folders.remove(folder)
     }
 
-    private fun loadFolders(): MutableList<Pair<Int, String>> {
-        val folders = mutableListOf<Pair<Int, String>>()
+    private fun loadFolders(): MutableList<Folder> {
+        val folders = mutableListOf<Folder>()
         val preferences = (context as MainActivity).getSharedPreferences(
-            "folders_preferences",
+            PREFERENCES_NAME,
             Context.MODE_PRIVATE)
 
         val entries = preferences.all
@@ -44,21 +54,27 @@ class FolderManager(private val context: Context) {
 
         for (i in 0 until entriesSize) {
             val key = keySet[i]
-            folders.add(Pair(key, preferences.getString(key.toString(), "")!!))
+            folders.add(Folder(key, preferences.getString(key.toString(), "")!!))
         }
 
         return folders
     }
 
-    fun saveFolders() {
+    private fun saveFolder(folder: Folder) {
         val preferences = (context as MainActivity).getSharedPreferences(
-            "folders_preferences",
+            PREFERENCES_NAME,
             Context.MODE_PRIVATE)
         val editor = preferences.edit()
-
-        for (folder in folders)
-            editor.putString("${folder.first}", folder.second)
-
+        editor.putString("${folder.id}", folder.name)
         editor.apply()
+    }
+
+    fun moveNoteToFolder(note: Note, folder: Folder) {
+        note.folderId = folder.id
+        (context as MainActivity).viewModel.update(note)
+    }
+
+    companion object {
+        const val PREFERENCES_NAME = "folder_preferences"
     }
 }
