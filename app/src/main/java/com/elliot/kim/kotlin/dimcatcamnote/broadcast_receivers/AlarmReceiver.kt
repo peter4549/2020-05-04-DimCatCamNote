@@ -1,5 +1,6 @@
 package com.elliot.kim.kotlin.dimcatcamnote.broadcast_receivers
 
+import android.app.ActivityManager
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -7,35 +8,39 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.os.Build
-import android.util.Log
 import androidx.core.app.NotificationCompat
-import com.elliot.kim.kotlin.dimcatcamnote.fragments.AlarmFragment
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.elliot.kim.kotlin.dimcatcamnote.MainActivity
 import com.elliot.kim.kotlin.dimcatcamnote.R
+import com.elliot.kim.kotlin.dimcatcamnote.fragments.AlarmFragment
 import com.elliot.kim.kotlin.dimcatcamnote.services.AlarmIntentService
+
 
 class AlarmReceiver : BroadcastReceiver() {
 
+    private lateinit var activity: MainActivity
+
+    fun setActivity(activity: MainActivity) {
+        this.activity = MainActivity()
+        this.activity = activity
+    }
+
     override fun onReceive(context: Context?, intent: Intent?) {
-        val builder = NotificationCompat.Builder(context!!, "default")
+        val builder = NotificationCompat.Builder(context!!, CHANNEL_ID)
         val manager =
             context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         val notificationIntent = Intent(context, MainActivity::class.java)
         val serviceIntent = Intent(context, AlarmIntentService::class.java)
+        val id = intent!!.getIntExtra(AlarmFragment.KEY_ID_EXTRA,
+            AlarmFragment.DEFAULT_VALUE_EXTRA)
+        if (id == AlarmFragment.DEFAULT_VALUE_EXTRA) return
+        val title = intent.getStringExtra(AlarmFragment.KEY_TITLE_EXTRA)
+        val content = intent.getStringExtra(AlarmFragment.KEY_CONTENT_EXTRA)
 
-        val id = intent!!.getIntExtra(AlarmFragment.KEY_ID, -1)
-        if (id == -1) {
-            Log.e(TAG, "ID not found.")
-            return
-        }
-
-        val title = intent.getStringExtra(AlarmFragment.KEY_TITLE)
-        val content = intent.getStringExtra(AlarmFragment.KEY_CONTENT)
-
-        notificationIntent.action = "ALARM_ACTION"
+        notificationIntent.action = ACTION_ALARM
         notificationIntent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or
                 Intent.FLAG_ACTIVITY_SINGLE_TOP
-        notificationIntent.putExtra("ID", id)
+        notificationIntent.putExtra(AlarmFragment.KEY_ID_EXTRA, id)
 
         val pendingIntent = PendingIntent.getActivity(
             context,
@@ -47,10 +52,10 @@ class AlarmReceiver : BroadcastReceiver() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val importance = NotificationManager.IMPORTANCE_HIGH
             val channel = NotificationChannel(CHANNEL_ID, CHANNEL_NAME, importance)
-            channel.description = "Notification channel for the Cat Note" // 차후 수정
 
-            manager.createNotificationChannel(channel)
             builder.setSmallIcon(R.drawable.ic_notification)
+            channel.description = CHANNEL_DESCRIPTION
+            manager.createNotificationChannel(channel)
         } else builder.setSmallIcon(R.mipmap.ic_notification)
 
         builder.setAutoCancel(true)
@@ -58,19 +63,30 @@ class AlarmReceiver : BroadcastReceiver() {
             .setWhen(System.currentTimeMillis())
             .setContentTitle(title)
             .setContentText(content)
-            .setContentInfo("Content of note set as notification") // 차후 수정 or Not..
+            .setContentInfo(CONTENT_INFO)
             .setContentIntent(pendingIntent)
-
         manager.notify(id, builder.build())
 
-        serviceIntent.putExtra("ID", id)
+        serviceIntent.putExtra(AlarmFragment.KEY_ID_EXTRA, id)
         context.startService(serviceIntent)
+
+        /*
+        if (isAppRunning(context)) {
+            val note = activity.getNoteById(id)
+            activity.cancelAlarm(note, false)
+        } else {
+            serviceIntent.putExtra(AlarmFragment.KEY_ID_EXTRA, id)
+            context.startService(serviceIntent)
+        }
+
+         */
     }
 
     companion object {
-        private const val TAG = "AlarmReceiver"
-
+        private const val ACTION_ALARM = "action_alarm"
         private const val CHANNEL_ID = "default"
-        private const val CHANNEL_NAME = "com_duke_elliot_kim_kotlin_cat_note" // 이름 차후 수정
+        private const val CHANNEL_NAME = "com_duke_elliot_kim_kotlin_cat_note" // 이름 차후 수정 아래도.
+        private const val CHANNEL_DESCRIPTION = "dim_cat_note_channel"
+        private const val CONTENT_INFO = "note_info"
     }
 }

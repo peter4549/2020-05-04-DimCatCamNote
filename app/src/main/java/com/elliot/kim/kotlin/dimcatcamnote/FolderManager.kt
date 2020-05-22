@@ -54,7 +54,7 @@ class FolderManager(private val context: Context) {
 
         for (i in 0 until entriesSize) {
             val key = keySet[i]
-            folders.add(Folder(key, preferences.getString(key.toString(), "")!!))
+            folders.add(Folder(key, preferences.getString(key.toString(), null)!!))
         }
 
         return folders
@@ -69,8 +69,8 @@ class FolderManager(private val context: Context) {
         editor.apply()
     }
 
-    fun moveNoteToFolder(note: Note, folder: Folder) {
-        note.folderId = folder.id
+    fun moveNoteToFolder(note: Note?, folderName: String?) {
+        note!!.folderName = folderName
         (context as MainActivity).viewModel.update(note)
     }
 

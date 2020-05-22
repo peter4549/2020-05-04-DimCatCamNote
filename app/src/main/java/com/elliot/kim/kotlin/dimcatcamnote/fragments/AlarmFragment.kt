@@ -42,12 +42,8 @@ class AlarmFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding = FragmentAlarmBinding.bind(view)
-        setTimePickerTextColor(binding.timePicker)
-
         val calendar: Calendar = GregorianCalendar()
         val currentTime = calendar.time
-
         val currentYear = SimpleDateFormat("yyyy",
             Locale.getDefault()).format(currentTime).toInt()
         val currentMonth = SimpleDateFormat("MM",
@@ -59,14 +55,14 @@ class AlarmFragment : Fragment() {
         val currentMinute = SimpleDateFormat("mm",
             Locale.getDefault()).format(currentTime).toInt()
 
+        binding = FragmentAlarmBinding.bind(view)
+        setTimePickerTextColor(binding.timePicker)
         binding.buttonSetDate.text = String.format("%d년 %d월 %d일",
             currentYear, currentMonth, currentDayOfMonth
         )
-
         binding.timePicker.setIs24HourView(false)
         binding.timePicker.hour = currentHour
         binding.timePicker.minute = currentMinute
-
         binding.buttonSetAlarm.setOnClickListener(onClickListener)
         binding.buttonSetDate.setOnClickListener(onClickListener)
         binding.imageViewClose.setOnClickListener(onClickListener)
@@ -82,7 +78,6 @@ class AlarmFragment : Fragment() {
                     val year = buttonText.substring(0, 4).toInt()
                     val month = buttonText.substring(4, 5).toInt()
                     val dayOfMonth = buttonText.substring(5).toInt()
-
                     val hour: Int
                     val minute: Int
 
@@ -140,9 +135,9 @@ class AlarmFragment : Fragment() {
         var content = note.content
         if (content.length > 16) content = content.substring(0, 16)
 
-        intent.putExtra(KEY_ID, id)
-        intent.putExtra(KEY_TITLE, title)
-        intent.putExtra(KEY_CONTENT, content)
+        intent.putExtra(KEY_ID_EXTRA, id)
+        intent.putExtra(KEY_TITLE_EXTRA, title)
+        intent.putExtra(KEY_CONTENT_EXTRA, content)
 
         val pendingIntent = PendingIntent.getBroadcast(
             activity,
@@ -187,7 +182,7 @@ class AlarmFragment : Fragment() {
         content: String
     ) {
         val sharedPreferences = (activity as MainActivity).getSharedPreferences(
-            "alarm_preferences",
+            PREFERENCES_NAME_ALARM,
             Context.MODE_PRIVATE
         )
         val editor = sharedPreferences.edit()
@@ -267,8 +262,10 @@ class AlarmFragment : Fragment() {
     }
 
     companion object {
-        const val KEY_ID = "key_id"
-        const val KEY_TITLE = "key_title"
-        const val KEY_CONTENT = "key_content"
+        const val KEY_ID_EXTRA = "key_id_extra"
+        const val KEY_TITLE_EXTRA = "key_title_extra"
+        const val KEY_CONTENT_EXTRA = "key_content_extra"
+        const val DEFAULT_VALUE_EXTRA = -1
+        const val PREFERENCES_NAME_ALARM = "preferences_name_alarm"
     }
 }

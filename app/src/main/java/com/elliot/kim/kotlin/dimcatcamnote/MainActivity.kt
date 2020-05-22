@@ -3,8 +3,10 @@ package com.elliot.kim.kotlin.dimcatcamnote
 import android.Manifest
 import android.app.AlarmManager
 import android.app.PendingIntent
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.media.MediaScannerConnection
 import android.net.Uri
@@ -14,8 +16,6 @@ import android.util.Log
 import android.view.*
 import android.view.animation.LayoutAnimationController
 import android.view.inputmethod.InputMethodManager
-import android.widget.ImageView
-import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
@@ -58,6 +58,8 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
     lateinit var folderManager: FolderManager
     lateinit var folderGroup: MenuItem
 
+    var currentFolderName: String? = null
+
     lateinit var fragmentManager: FragmentManager
 
     val alarmFragment = AlarmFragment()
@@ -72,6 +74,14 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
     private var pressedTime = 0L
 
     private lateinit var dialogManager: DialogManager
+
+    private val receiver: BroadcastReceiver = object: BroadcastReceiver(){
+        override fun onReceive(context: Context?, intent: Intent?) {
+            val id = intent!!.getIntExtra(AlarmFragment.KEY_ID_EXTRA,
+                AlarmFragment.DEFAULT_VALUE_EXTRA)
+            cancelAlarm(getNoteById(id), false)
+        }
+    }
 
     enum class CurrentFragment {
         ALARM_FRAGMENT,
@@ -114,59 +124,7 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         }
 
         initializeNavigationDrawer()
-        //folderGroup = binding.navView.menu.findItem(R.id.folder)
 
-        /*
-        var order = 2
-        for (folder in folderManager.folders) {
-            folderGroup.subMenu.add(R.id.menu_navigation_view_folder, folder.first, order++, null)
-            //folderGroup.subMenu.getItem(order - 2).setIcon(R.drawable.dimcat100) 디자인 로직까지. 텍스트도 뷰에 쓸것.
-            val item = folderGroup.subMenu.getItem(order - 2)
-
-            item.setActionView(R.layout.navigation_drawer_action_view)
-            item.actionView.findViewById<ImageView>(R.id.icon_view).setImageDrawable(getDrawable(R.drawable.dimcat40))
-            item.actionView.findViewById<TextView>(R.id.text_view).text = folder.second
-
-            item.actionView.setOnLongClickListener {
-                showToast("HAHAHA")
-                false
-            }
-        }
-
-
-        binding.navView.setNavigationItemSelectedListener {
-            when (it.itemId) {
-                R.id.add_folder -> {
-                    dialogManager.showDialog(DialogManager.Companion.DialogType.ADD_FOLDER)
-                    //binding.navView.invalidate() 자동 업데이트가 되네.. 여러기기 테스트 하고 삭제해도 될듯.
-                    return@setNavigationItemSelectedListener false
-                    //                }
-                    //                else > {
-                    //                    // 장기간 클릭시 컨텍스트 메뉴 온
-                    // 보여주는 아이템.
-                    // 현재 아이템에 맞는, it.asdf
-                    it.itemId // 이거를 set Current Folder 함수로 전달하고, 데이터셋 체인지드 호출하면, 될듯.
-                    // 해당 함수는 전체 리스트 중에서 ,, 아 어뎁터의 함수로 제작하면 될듯.
-                    // 어뎁터 필터에 최상위 조건을 넣는것, if id == 1000이면 무시, 아니면 해당하는 폴더 아이디 갖는 놈들
-                    // 선별해서 필터에 채우고,
-                }
-                R.id.default_folder -> {
-                    showToast("Default")
-                    dialogManager.showDialog(DialogManager.Companion.DialogType.FOLDER_OPTIONS)
-                    // 끄고 , 전체 메모 보여주기.
-                }
-                else -> {
-                    val selectedFolder = folderManager.folders.find { pair: Folder ->
-                        pair.first == it.itemId
-                    } ?: throw NullPointerException("Folder not found.")
-                    showFolderManagementDialog(selectedFolder)
-                    showToast("${it.itemId}")
-                }
-            }
-            return@setNavigationItemSelectedListener true
-        }
-
-         */
 
         val viewModelFactory = ViewModelProvider.AndroidViewModelFactory.getInstance(application)
         viewModel = ViewModelProvider(this, viewModelFactory)[MainViewModel::class.java]
@@ -176,6 +134,7 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
             if (initialization) {// 초기화 로직 정리할 것.
                 noteAdapter = NoteAdapter(this, notes)
                 initializeDialogManager()
+                initialize()
                 binding.recyclerView.apply {
                     setHasFixedSize(true)
                     adapter = noteAdapter
@@ -194,6 +153,18 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
             }
             notesSize = notes.size
         })
+    }
+
+    override fun onResume() {
+        super.onResume()
+        LocalBroadcastManager.getInstance(this).registerReceiver(receiver,
+            IntentFilter(ACTION_IS_APP_RUNNING))
+    }
+
+    override fun onPause() {
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(
+            receiver);
+        super.onPause()
     }
 
     private fun createUnderlayButtons() {
@@ -446,7 +417,7 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
                 DialogInterface.OnClickListener { _, which ->
                     when (which) {
                         0 -> {}
-
+ g
                     }
                 })
         builder.create()
@@ -455,6 +426,8 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
 
 
     }
+
+    fun getNoteById(id: Int): Note = noteAdapter.getNoteById(id)
 
     fun cancelAlarm(note: Note, isDelete: Boolean) {
         val id: Int = note.id
@@ -559,6 +532,10 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         Toast.makeText(this, text, duration).show()
     }
 
+    private fun initialize() {
+        loadCurrentFolderName()
+    }
+
     private fun initializeDialogManager() {
         dialogManager = DialogManager(this)
         dialogManager.setFolderAdapter(folderAdapter)
@@ -572,8 +549,38 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         }
     }
 
+    fun _setCurrentFolderName(name: String?) { // showCurrentFolderItems 로 바꾸는게 나은듯.
+        currentFolderName = name
+        saveCurrentFolderName(currentFolderName)
+        binding.textViewCurrentFolderName.text = currentFolderName ?: "전체"
+        noteAdapter.getFilter().filter("")
+    }
+
+    private fun saveCurrentFolderName(name: String?) {
+        val preferences = getSharedPreferences(
+            PREFERENCES_CURRENT_FOLDER,
+            Context.MODE_PRIVATE)
+        val editor = preferences.edit()
+        editor.putString(KEY_CURRENT_FOLDER, name)
+        editor.apply()
+    }
+
+    // create 단계에서 실행하면 notify없이 바로 적용 가능할 것..
+    private fun loadCurrentFolderName() {
+        val preferences = getSharedPreferences(
+            PREFERENCES_CURRENT_FOLDER,
+            Context.MODE_PRIVATE)
+        _setCurrentFolderName(preferences.getString(KEY_CURRENT_FOLDER, null))
+    }
+
     companion object {
-        const val DATABASE_NAME = "dim_cat_cam_notes_2"
+        const val DATABASE_NAME = "dim_cat_cam_notes_3"
+
+        const val PREFERENCES_CURRENT_FOLDER = "current_folder"
+
+        const val KEY_CURRENT_FOLDER = "key_current_folder"
+
+        const val ACTION_IS_APP_RUNNING = "action_is_app_running"
 
         const val PERMISSIONS_REQUEST_CODE = 10
         const val CAMERA_PERMISSIONS_REQUEST_CODE = 11

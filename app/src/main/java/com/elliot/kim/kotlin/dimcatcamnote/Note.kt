@@ -13,7 +13,7 @@ data class Note(
     var editTime: Long? = null
     var alarmTime: Long? = null
     var isDone: Boolean = false
-    var folderId: Int? = null
+    var folderName: String? = null
 
     fun toSharedString(): String =
         """

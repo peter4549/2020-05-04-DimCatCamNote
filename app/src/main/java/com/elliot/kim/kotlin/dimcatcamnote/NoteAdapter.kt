@@ -1,5 +1,6 @@
 package com.elliot.kim.kotlin.dimcatcamnote
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Paint
 import android.net.Uri
@@ -22,6 +23,8 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
 
     private var notesFiltered: MutableList<Note> = notes
 
+    var selectedNote: Note? = null
+
     class ViewHolder(v: View) : RecyclerView.ViewHolder(v) {
         val binding: CardViewBinding = bind(v)
     }
@@ -42,6 +45,7 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
         notifyItemMoved(from, to)
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val note: Note = notesFiltered[position]
 
@@ -99,6 +103,11 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
             holder.binding.imageViewAlarm.visibility = View.VISIBLE
         }
 
+        holder.binding.cardView.setOnTouchListener { _, _ ->
+            selectedNote = note
+            false
+        }
+
         holder.binding.cardView.setOnClickListener {
             (context as MainActivity).startEditFragment(note)
         }
@@ -111,10 +120,10 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
     fun getFilter(): Filter {
         return object : Filter() {
             override fun performFiltering(constraint: CharSequence): FilterResults {
+                val currentFolderName = (context as MainActivity).currentFolderName
                 val searchWord = constraint.toString()
-                notesFiltered = if (searchWord.isEmpty()) {
-                    notes
-                } else {
+                if (searchWord.isEmpty() && currentFolderName == null)  notesFiltered = notes
+                else if (searchWord.isNotEmpty() && currentFolderName == null){
                     val noteListFiltering: MutableList<Note> =
                         ArrayList()
                     for (note in notes) {
@@ -123,7 +132,27 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
                             noteListFiltering.add(note)
                         }
                     }
-                    noteListFiltering
+                    notesFiltered = noteListFiltering
+                } else if (searchWord.isEmpty() && currentFolderName != null){
+                    val noteListFiltering: MutableList<Note> =
+                        ArrayList()
+                    for (note in notes) {
+                        if (note.folderName == currentFolderName) {
+                            noteListFiltering.add(note)
+                        }
+                    }
+                    notesFiltered = noteListFiltering
+                } else {
+                    val noteListFiltering: MutableList<Note> =
+                        ArrayList()
+                    for (note in notes) {
+                        if (note.title.toLowerCase(Locale.ROOT)
+                                .contains(searchWord.toLowerCase(Locale.ROOT)) &&
+                            (note.folderName == currentFolderName)) {
+                            noteListFiltering.add(note)
+                        }
+                    }
+                    notesFiltered = noteListFiltering
                 }
                 val filterResults = FilterResults()
                 filterResults.values = notesFiltered
@@ -156,7 +185,7 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
         notifyItemRemoved(position)
 
         (context as MainActivity).cancelAlarm(note, true)
-        if (note.uri != null) (context as MainActivity).deleteFileFromUri(note.uri!!)
+        if (note.uri != null) context.deleteFileFromUri(note.uri!!)
     }
 
     fun delete(position: Int) {
@@ -184,4 +213,7 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
 
     fun getNoteByPosition(position: Int): Note = notesFiltered[position]
 
+    fun getNoteById(id: Int): Note {
+        return notesFiltered.filter{ it.id == id }[0]
+    }
 }

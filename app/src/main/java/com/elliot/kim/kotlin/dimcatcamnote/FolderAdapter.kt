@@ -17,7 +17,7 @@ class FolderAdapter(private val context: Context?, private val folderManager: Fo
         REMOVE(1002)
     }
 
-    class ViewHolder(v: View, folderManager: FolderManager, folderAdapter: FolderAdapter)
+    class ViewHolder(context: Context?, v: View, folderManager: FolderManager, folderAdapter: FolderAdapter)
         : RecyclerView.ViewHolder(v), View.OnCreateContextMenuListener {
         val binding: CardViewNavigationDrawerBinding = bind(v)
 
@@ -41,7 +41,7 @@ class FolderAdapter(private val context: Context?, private val folderManager: Fo
         private val menuItemClickListener = MenuItem.OnMenuItemClickListener {
             val folder = folderManager.folders[adapterPosition]
             when (it.itemId) {
-                MenuItemId.OPEN.id -> {}
+                MenuItemId.OPEN.id -> { (context as MainActivity)._setCurrentFolderName(folder.name) }
                 MenuItemId.LOCK.id -> {}
                 MenuItemId.REMOVE.id -> {
                     folderManager.removeFolder(folder)
@@ -57,14 +57,14 @@ class FolderAdapter(private val context: Context?, private val folderManager: Fo
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val v = LayoutInflater.from(parent.context).inflate(R.layout.card_view_navigation_drawer,
             parent, false)
-        return ViewHolder(v, folderManager, this)
+        return ViewHolder(context, v, folderManager, this)
     }
 
     override fun getItemCount(): Int {
         return if(folders.isNullOrEmpty()) 0 else folders.size
     }
 
-    override fun onBindViewHolder(holder: FolderAdapter.ViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val folder: Folder = folders[position]
         val name = folder.name
 

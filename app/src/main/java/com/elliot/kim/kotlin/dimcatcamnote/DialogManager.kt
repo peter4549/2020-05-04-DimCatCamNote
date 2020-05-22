@@ -68,7 +68,10 @@ class DialogManager(private val context: Context) {
         val spinner = dialog.findViewById<Spinner>(R.id.spinner)
         setSpinner(spinner, folderManager.folders)
         dialog.findViewById<Button>(R.id.button_move).setOnClickListener {
-
+            val folderName: String? = spinner.selectedItem as String
+            folderManager.moveNoteToFolder(noteAdapter.selectedNote, folderName)
+            (context as MainActivity).showToast("${noteAdapter.selectedNote!!.title}--폴더로 이동하였습니다.")
+            dialog.dismiss()
         }
         dialog.findViewById<Button>(R.id.button_cancel).setOnClickListener {
             dialog.dismiss()
@@ -86,8 +89,6 @@ class DialogManager(private val context: Context) {
         for (folder in folders) adapter.add(folder.name)
 
         spinner.adapter = adapter
-
-
     }
 
     private fun showSortDialog() {

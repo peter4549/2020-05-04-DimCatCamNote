@@ -13,31 +13,29 @@ class DeviceBootReceiver : BroadcastReceiver()  {
 
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action == "android.intent.action.BOOT_COMPLETED") {
+            val calendar: Calendar = GregorianCalendar()
             val manager =
                 context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-            val alarmIntent = Intent(context, AlarmReceiver::class.java)
+            val receiverIntent = Intent(context, AlarmReceiver::class.java)
             val preferences = context.getSharedPreferences(
-                "alarm_preferences",
+                AlarmFragment.PREFERENCES_NAME_ALARM,
                 Context.MODE_PRIVATE
             )
-
             val entries = preferences.all
             val entriesSize = entries.size
             val keySet =
                 Arrays.stream(entries.keys.toTypedArray())
                     .mapToInt { s: String -> s.toInt() }.toArray()
-
+            var count = 0
             var id = 0
             var title: String? = null
             var content: String? = null
 
             Arrays.sort(keySet)
 
-            val calendar: Calendar = GregorianCalendar()
-
-            var count = 0
             for (i in 0 until entriesSize) {
                 val key = keySet[i].toString()
+
                 when (count) {
                     0 -> id = preferences.getInt(key, 0)
                     1 -> calendar.timeInMillis = preferences.getLong(key, 0)
@@ -45,22 +43,19 @@ class DeviceBootReceiver : BroadcastReceiver()  {
                     3 -> content = preferences.getString(key, "")
                 }
 
-                ++count
-                if (count == 4) {
-                    count = 0
-
-                    alarmIntent.putExtra(AlarmFragment.KEY_ID, id)
-                    alarmIntent.putExtra(AlarmFragment.KEY_TITLE, title)
-                    alarmIntent.putExtra(AlarmFragment.KEY_CONTENT, content)
+                if (++count == 4) {
+                    receiverIntent.putExtra(AlarmFragment.KEY_ID_EXTRA, id)
+                    receiverIntent.putExtra(AlarmFragment.KEY_TITLE_EXTRA, title)
+                    receiverIntent.putExtra(AlarmFragment.KEY_CONTENT_EXTRA, content)
 
                     val pendingIntent = PendingIntent.getBroadcast(
                         context,
                         id,
-                        alarmIntent,
+                        receiverIntent,
                         PendingIntent.FLAG_ONE_SHOT
                     )
-
                     manager[AlarmManager.RTC_WAKEUP, calendar.timeInMillis] = pendingIntent
+
                     if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                         manager.setExactAndAllowWhileIdle(
                             AlarmManager.RTC_WAKEUP,
@@ -68,6 +63,8 @@ class DeviceBootReceiver : BroadcastReceiver()  {
                             pendingIntent
                         )
                     }
+
+                    count = 0
                 }
             }
         }
