@@ -13,6 +13,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
+import com.elliot.kim.kotlin.dimcatcamnote.CurrentFragment
 import com.elliot.kim.kotlin.dimcatcamnote.MainActivity
 import com.elliot.kim.kotlin.dimcatcamnote.Note
 import com.elliot.kim.kotlin.dimcatcamnote.R
@@ -77,8 +78,7 @@ class EditFragment : Fragment() {
         super.onResume()
 
         setContent(note)
-        (activity as MainActivity).setCurrentFragment(MainActivity
-            .CurrentFragment.EDIT_FRAGMENT)
+        (activity as MainActivity).setCurrentFragment(CurrentFragment.EDIT_FRAGMENT)
     }
 
     override fun onStop() {

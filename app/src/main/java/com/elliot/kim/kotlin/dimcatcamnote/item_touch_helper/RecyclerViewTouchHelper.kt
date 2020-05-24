@@ -167,7 +167,7 @@ abstract class RecyclerViewTouchHelper(val context: Context, private val recycle
         leftButtonBuffer.clear()
 
         if (direction == ItemTouchHelper.START) {
-            swipeThreshold =0.5F * rightButtons!!.size.toFloat() * rightButtonWidth.toFloat()
+            swipeThreshold = 0.5F * rightButtons!!.size.toFloat() * rightButtonWidth.toFloat()
 
         }
         else if (direction == ItemTouchHelper.END) {

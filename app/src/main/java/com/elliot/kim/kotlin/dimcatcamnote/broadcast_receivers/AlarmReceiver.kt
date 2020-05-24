@@ -1,6 +1,5 @@
 package com.elliot.kim.kotlin.dimcatcamnote.broadcast_receivers
 
-import android.app.ActivityManager
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -9,21 +8,11 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import androidx.core.app.NotificationCompat
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
-import com.elliot.kim.kotlin.dimcatcamnote.MainActivity
-import com.elliot.kim.kotlin.dimcatcamnote.R
-import com.elliot.kim.kotlin.dimcatcamnote.fragments.AlarmFragment
+import com.elliot.kim.kotlin.dimcatcamnote.*
 import com.elliot.kim.kotlin.dimcatcamnote.services.AlarmIntentService
 
 
 class AlarmReceiver : BroadcastReceiver() {
-
-    private lateinit var activity: MainActivity
-
-    fun setActivity(activity: MainActivity) {
-        this.activity = MainActivity()
-        this.activity = activity
-    }
 
     override fun onReceive(context: Context?, intent: Intent?) {
         val builder = NotificationCompat.Builder(context!!, CHANNEL_ID)
@@ -31,16 +20,15 @@ class AlarmReceiver : BroadcastReceiver() {
             context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         val notificationIntent = Intent(context, MainActivity::class.java)
         val serviceIntent = Intent(context, AlarmIntentService::class.java)
-        val id = intent!!.getIntExtra(AlarmFragment.KEY_ID_EXTRA,
-            AlarmFragment.DEFAULT_VALUE_EXTRA)
-        if (id == AlarmFragment.DEFAULT_VALUE_EXTRA) return
-        val title = intent.getStringExtra(AlarmFragment.KEY_TITLE_EXTRA)
-        val content = intent.getStringExtra(AlarmFragment.KEY_CONTENT_EXTRA)
+        val id = intent!!.getIntExtra(KEY_NOTE_ID, DEFAULT_VALUE_NOTE_ID)
+        if (id == DEFAULT_VALUE_NOTE_ID) return
+        val title = intent.getStringExtra(KEY_NOTE_TITLE)
+        val content = intent.getStringExtra(KEY_NOTE_CONTENT)
 
         notificationIntent.action = ACTION_ALARM
         notificationIntent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or
                 Intent.FLAG_ACTIVITY_SINGLE_TOP
-        notificationIntent.putExtra(AlarmFragment.KEY_ID_EXTRA, id)
+        notificationIntent.putExtra(KEY_NOTE_ID, id)
 
         val pendingIntent = PendingIntent.getActivity(
             context,
@@ -67,19 +55,8 @@ class AlarmReceiver : BroadcastReceiver() {
             .setContentIntent(pendingIntent)
         manager.notify(id, builder.build())
 
-        serviceIntent.putExtra(AlarmFragment.KEY_ID_EXTRA, id)
+        serviceIntent.putExtra(KEY_NOTE_ID, id)
         context.startService(serviceIntent)
-
-        /*
-        if (isAppRunning(context)) {
-            val note = activity.getNoteById(id)
-            activity.cancelAlarm(note, false)
-        } else {
-            serviceIntent.putExtra(AlarmFragment.KEY_ID_EXTRA, id)
-            context.startService(serviceIntent)
-        }
-
-         */
     }
 
     companion object {

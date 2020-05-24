@@ -21,6 +21,7 @@ import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.core.content.ContextCompat
+import androidx.core.view.GravityCompat
 import androidx.core.view.MenuItemCompat
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
@@ -44,8 +45,6 @@ import java.util.*
 const val KEY_EVENT_ACTION = "key_event_action"
 const val KEY_EVENT_EXTRA = "key_event_extra"
 
-private const val DEFAULT_FOLDER_ID = 0
-
 class MainActivity : AppCompatActivity(), LifecycleOwner {
 
     private lateinit var binding: ActivityMainBinding
@@ -56,9 +55,8 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
     private lateinit var folderAdapter: FolderAdapter
     private lateinit var recyclerViewTouchHelper: RecyclerViewTouchHelper
     lateinit var folderManager: FolderManager
-    lateinit var folderGroup: MenuItem
 
-    var currentFolderName: String? = null
+    var currentFolder = Folder(DEFAULT_FOLDER_ID, DEFAULT_FOLDER_NAME)
 
     lateinit var fragmentManager: FragmentManager
 
@@ -77,17 +75,9 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
 
     private val receiver: BroadcastReceiver = object: BroadcastReceiver(){
         override fun onReceive(context: Context?, intent: Intent?) {
-            val id = intent!!.getIntExtra(AlarmFragment.KEY_ID_EXTRA,
-                AlarmFragment.DEFAULT_VALUE_EXTRA)
+            val id = intent!!.getIntExtra(KEY_NOTE_ID, DEFAULT_VALUE_NOTE_ID)
             cancelAlarm(getNoteById(id), false)
         }
-    }
-
-    enum class CurrentFragment {
-        ALARM_FRAGMENT,
-        CAMERA_FRAGMENT,
-        EDIT_FRAGMENT,
-        WRITE_FRAGMENT
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -109,31 +99,17 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
 
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        val toggle = ActionBarDrawerToggle(
-            this, binding.drawerLayout, binding.toolBar, R.string.navigation_drawer_open, R.string.navigation_drawer_close
-        )
-        binding.drawerLayout.addDrawerListener(toggle)
-        toggle.syncState()
 
-        folderManager = FolderManager(this)
-        folderAdapter = FolderAdapter(this, folderManager)
-        binding.navDrawerRecyclerview.apply {
-            setHasFixedSize(true)
-            adapter = folderAdapter
-            layoutManager = LinearLayoutManager(context)
-        }
-
-        initializeNavigationDrawer()
 
 
         val viewModelFactory = ViewModelProvider.AndroidViewModelFactory.getInstance(application)
         viewModel = ViewModelProvider(this, viewModelFactory)[MainViewModel::class.java]
 
         var notesSize = 0
+        // 데이터를 읽어오고, 그놈을 등록하고, 오브저브 설정도 하는 것으로.
         viewModel.getAll().observe(this, androidx.lifecycle.Observer { notes ->
             if (initialization) {// 초기화 로직 정리할 것.
                 noteAdapter = NoteAdapter(this, notes)
-                initializeDialogManager()
                 initialize()
                 binding.recyclerView.apply {
                     setHasFixedSize(true)
@@ -174,6 +150,23 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
                 viewHolder: RecyclerView.ViewHolder,
                 rightButtonBuffer: MutableList<UnderlayButton>
             ) {
+                rightButtonBuffer.add(
+                    UnderlayButton(this@MainActivity,
+                        UnderlayButtonIds.EDIT,
+                        "더보기",
+                        30,
+                        0,
+                        getColor(R.color.colorJuniperAlpha20),
+                        object : UnderlayButtonClickListener {
+                            override fun onClick(position: Int) {
+                                dialogManager.showDialog(DialogManager
+                                    .Companion.DialogType.MORE_OPTIONS)
+
+                                // noteAdapter.notifyItemChanged(position)
+                            }
+                        })
+                )
+
                 rightButtonBuffer.add(
                     UnderlayButton(this@MainActivity,
                         UnderlayButtonIds.EDIT,
@@ -286,13 +279,17 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
     }
 
     override fun onBackPressed() {
-        if (currentFragment == null) finishApplication()
+        if (binding.drawerLayout.isDrawerOpen(GravityCompat.START))
+            binding.drawerLayout.closeDrawer(GravityCompat.START, true)
         else {
-            when (currentFragment) {
-                CurrentFragment.ALARM_FRAGMENT -> super.onBackPressed()
-                CurrentFragment.CAMERA_FRAGMENT -> super.onBackPressed()
-                CurrentFragment.EDIT_FRAGMENT -> editFragment.finish(EditFragment.BACK_PRESSED)
-                CurrentFragment.WRITE_FRAGMENT -> writeFragment.finish(WriteFragment.BACK_PRESSED)
+            if (currentFragment == null) finishApplication()
+            else {
+                when (currentFragment) {
+                    CurrentFragment.ALARM_FRAGMENT -> super.onBackPressed()
+                    CurrentFragment.CAMERA_FRAGMENT -> super.onBackPressed()
+                    CurrentFragment.EDIT_FRAGMENT -> editFragment.finish(EditFragment.BACK_PRESSED)
+                    CurrentFragment.WRITE_FRAGMENT -> writeFragment.finish(WriteFragment.BACK_PRESSED)
+                }
             }
         }
     }
@@ -533,7 +530,17 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
     }
 
     private fun initialize() {
+        folderManager = FolderManager(this)
+
+        folderAdapter = FolderAdapter(this, folderManager)
+        binding.navDrawerRecyclerview.apply {
+            setHasFixedSize(true)
+            adapter = folderAdapter
+            layoutManager = LinearLayoutManager(context)
+        }
         loadCurrentFolderName()
+        initializeNavigationDrawer()
+        initializeDialogManager()
     }
 
     private fun initializeDialogManager() {
@@ -544,37 +551,42 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
     }
 
     private fun initializeNavigationDrawer() {
+        val toggle = ActionBarDrawerToggle(
+            this, binding.drawerLayout, binding.toolBar, R.string.navigation_drawer_open, R.string.navigation_drawer_close
+        )
+        binding.drawerLayout.addDrawerListener(toggle)
+        toggle.syncState()
+
         binding.buttonAddFolder.setOnClickListener {
             dialogManager.showDialog(DialogManager.Companion.DialogType.ADD_FOLDER)
         }
     }
 
-    fun _setCurrentFolderName(name: String?) { // showCurrentFolderItems 로 바꾸는게 나은듯.
-        currentFolderName = name
-        saveCurrentFolderName(currentFolderName)
-        binding.textViewCurrentFolderName.text = currentFolderName ?: "전체"
+    fun showCurrentFolderItems(folder: Folder) { // showCurrentFolderItems 로 바꾸는게 나은듯.
+        currentFolder = folder
+        saveCurrentFolder(currentFolder)
+        binding.textViewCurrentFolderName.text = currentFolder.name ?: "전체"
         noteAdapter.getFilter().filter("")
     }
 
-    private fun saveCurrentFolderName(name: String?) {
+    private fun saveCurrentFolder(folder: Folder) {
         val preferences = getSharedPreferences(
             PREFERENCES_CURRENT_FOLDER,
             Context.MODE_PRIVATE)
         val editor = preferences.edit()
-        editor.putString(KEY_CURRENT_FOLDER, name)
+        editor.putInt("${folder.id}", folder.id)
         editor.apply()
     }
 
-    // create 단계에서 실행하면 notify없이 바로 적용 가능할 것..
     private fun loadCurrentFolderName() {
         val preferences = getSharedPreferences(
             PREFERENCES_CURRENT_FOLDER,
             Context.MODE_PRIVATE)
-        _setCurrentFolderName(preferences.getString(KEY_CURRENT_FOLDER, null))
+        showCurrentFolderItems(folderManager.getFolderById(preferences.getInt(KEY_CURRENT_FOLDER, 0)))
     }
 
     companion object {
-        const val DATABASE_NAME = "dim_cat_cam_notes_3"
+        const val DATABASE_NAME = "dim_cat_cam_notes_5"
 
         const val PREFERENCES_CURRENT_FOLDER = "current_folder"
 
@@ -596,7 +608,8 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
             ALARM,
             SHARE,
             EDIT,
-            DELETE
+            DELETE,
+            MORE
         }
 
         private const val pattern = "yyyy-MM-dd-a-hh:mm:ss"

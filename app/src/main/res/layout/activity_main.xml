@@ -94,6 +94,12 @@
                 android:orientation="vertical">
 
                 <Button
+                    android:id="@+id/button_trash"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:text="휴지통" />
+
+                <Button
                     android:id="@+id/button_add_folder"
                     android:layout_width="match_parent"
                     android:layout_height="40dp"

@@ -57,6 +57,39 @@
             android:textColorHint="@color/textColorHintAddEditText"
             android:hint="여기에 노트를 작성해주세요."/>
 
+        <LinearLayout
+            android:id="@+id/linear_layout_speech_recognition"
+            android:layout_width="256dp"
+            android:layout_height="88dp"
+            android:layout_above="@+id/bottomNavigationView"
+            android:layout_centerHorizontal="true"
+            android:background="@color/colorPurplef3e5f5"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="24dp"
+                android:background="@color/design_default_color_background"
+                android:gravity="center"
+                android:padding="2dp"
+                android:text="지금 말씀하세요." />
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="32dp"
+                android:src="@drawable/microphone"
+                android:contentDescription=""/>
+
+            <Button
+                android:id="@+id/button_complete_speech_recognition"
+                android:layout_width="match_parent"
+                android:layout_height="32dp"
+                android:background="@color/colorYellowActionBar"
+                android:text="완료"/>
+
+        </LinearLayout>
+
         <com.google.android.material.bottomnavigation.BottomNavigationView
             android:id="@+id/bottomNavigationView"
             android:layout_width="match_parent"

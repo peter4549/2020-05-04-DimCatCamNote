@@ -6,7 +6,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.os.Build
-import com.elliot.kim.kotlin.dimcatcamnote.fragments.AlarmFragment
+import com.elliot.kim.kotlin.dimcatcamnote.*
 import java.util.*
 
 class DeviceBootReceiver : BroadcastReceiver()  {
@@ -18,7 +18,7 @@ class DeviceBootReceiver : BroadcastReceiver()  {
                 context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
             val receiverIntent = Intent(context, AlarmReceiver::class.java)
             val preferences = context.getSharedPreferences(
-                AlarmFragment.PREFERENCES_NAME_ALARM,
+                PREFERENCES_NAME_ALARM,
                 Context.MODE_PRIVATE
             )
             val entries = preferences.all
@@ -44,9 +44,9 @@ class DeviceBootReceiver : BroadcastReceiver()  {
                 }
 
                 if (++count == 4) {
-                    receiverIntent.putExtra(AlarmFragment.KEY_ID_EXTRA, id)
-                    receiverIntent.putExtra(AlarmFragment.KEY_TITLE_EXTRA, title)
-                    receiverIntent.putExtra(AlarmFragment.KEY_CONTENT_EXTRA, content)
+                    receiverIntent.putExtra(KEY_NOTE_ID, id)
+                    receiverIntent.putExtra(KEY_NOTE_TITLE, title)
+                    receiverIntent.putExtra(KEY_NOTE_CONTENT, content)
 
                     val pendingIntent = PendingIntent.getBroadcast(
                         context,

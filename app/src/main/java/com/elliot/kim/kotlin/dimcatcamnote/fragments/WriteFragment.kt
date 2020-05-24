@@ -2,10 +2,12 @@ package com.elliot.kim.kotlin.dimcatcamnote.fragments
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
+import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Rect
+import android.media.AudioManager
 import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
@@ -19,37 +21,43 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
+import com.elliot.kim.kotlin.dimcatcamnote.CurrentFragment
 import com.elliot.kim.kotlin.dimcatcamnote.MainActivity
 import com.elliot.kim.kotlin.dimcatcamnote.MainActivity.Companion.CAMERA_PERMISSIONS_REQUEST_CODE
 import com.elliot.kim.kotlin.dimcatcamnote.MainActivity.Companion.RECORD_AUDIO_PERMISSIONS_REQUEST_CODE
 import com.elliot.kim.kotlin.dimcatcamnote.Note
 import com.elliot.kim.kotlin.dimcatcamnote.R
 import com.elliot.kim.kotlin.dimcatcamnote.databinding.FragmentWriteBinding
+import kotlinx.android.synthetic.main.fragment_write.view.*
 
 class WriteFragment : Fragment() {
-    private lateinit var binding: FragmentWriteBinding
+
     lateinit var handler: Handler
-    private var shortAnimationDuration = 0
-
-    private lateinit var title: String
-    private lateinit var content: String
-    var uri: String? = null
-
+    private lateinit var audioManager: AudioManager
+    private lateinit var binding: FragmentWriteBinding
     private lateinit var intent: Intent
     private lateinit var recognizer: SpeechRecognizer
+    private lateinit var title: String
+    private lateinit var content: String
+    private var originalVolume = 0
     private var previousPartialText = ""
+    private var shortAnimationDuration = 0
+    private var isFirstOnResults = true
+    private var isRecognizingSpeech = false
+    var uri: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        audioManager = requireActivity().getSystemService(Context.AUDIO_SERVICE) as AudioManager
         shortAnimationDuration = resources.getInteger(android.R.integer.config_shortAnimTime)
         intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
         intent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, requireActivity().packageName)
-        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "ko-KR")
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, VALUE_LANGUAGE)
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_WEB_SEARCH)
+        intent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, VALUE_MAX_RESULTS)
         intent.putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
-        intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Say the magic word")
-        intent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 100)
-        recognizer = SpeechRecognizer.createSpeechRecognizer(context)
+        intent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, 600000)
+        intent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_MINIMUM_LENGTH_MILLIS, 600000)
     }
 
     override fun onCreateView(inflater: LayoutInflater,
@@ -59,51 +67,41 @@ class WriteFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
+        clearText()
+        (activity as MainActivity).setCurrentFragment(CurrentFragment.WRITE_FRAGMENT)
 
-        clear()
-        (activity as MainActivity).setCurrentFragment(MainActivity.CurrentFragment.WRITE_FRAGMENT)
-    }
-
-    override fun onStop() {
-        super.onStop()
-
-        uri = null
-
-        (activity as MainActivity).setCurrentFragment(null)
-        (activity as MainActivity).showFloatingActionButton()
+        originalVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
         binding = FragmentWriteBinding.bind(view)
 
         (activity as AppCompatActivity).setSupportActionBar(binding.toolBar)
         (activity as AppCompatActivity).supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        binding.toolBar.title = "새 노트"
         setHasOptionsMenu(true)
 
+        binding.toolBar.title = TITLE_TOOLBAR
         binding.imageView.visibility = View.GONE
         binding.imageView.setOnClickListener { startPhotoFragment() }
-
-        binding.editTextContent.viewTreeObserver.addOnGlobalLayoutListener {
-            if (keyboardShown(binding.editTextContent.rootView)) crossFade(false)
-            else showImage()
-        }
 
         binding.bottomNavigationView.setOnNavigationItemSelectedListener {
             when (it.itemId) {
                 R.id.camera -> {
-                    if(uri == null) {
-                        if (MainActivity.hasCameraPermissions(requireContext()))
-                            startCameraFragment()
-                        else
-                            requestPermissions(MainActivity.CAMERA_PERMISSIONS_REQUIRED,
-                                CAMERA_PERMISSIONS_REQUEST_CODE)
+                    if (isRecognizingSpeech) finishSpeechRecognition()
+                    else {
+                        if (uri == null) {
+                            if (MainActivity.hasCameraPermissions(requireContext()))
+                                startCameraFragment()
+                            else
+                                requestPermissions(
+                                    MainActivity.CAMERA_PERMISSIONS_REQUIRED,
+                                    CAMERA_PERMISSIONS_REQUEST_CODE
+                                )
+                        } else showPictureChangeMessage()
                     }
-                    else showPictureChangeMessage()
                 }
-                R.id.mic -> {
+                R.id.microphone -> {
                     if (MainActivity.hasCameraPermissions(requireContext()))
                         startSpeechRecognition()
                     else
@@ -116,22 +114,39 @@ class WriteFragment : Fragment() {
             return@setOnNavigationItemSelectedListener true
         }
 
+        binding.buttonCompleteSpeechRecognition.setOnClickListener { finishSpeechRecognition() }
+
+        binding.editTextContent.viewTreeObserver.addOnGlobalLayoutListener {
+            if (keyboardShown(binding.editTextContent.rootView)) crossFadeImageView(false)
+            else showImage()
+        }
+
         handler = Handler {
             when(it.what) {
-                SHOW_BOTTOM_NAVIGATION_VIEW ->
-                    binding.bottomNavigationView.visibility = View.VISIBLE
+                SHOW_BOTTOM_NAVIGATION_VIEW -> {
+                    binding.bottomNavigationView.apply {
+                        translationY = binding.bottomNavigationView.height.toFloat()
+                        visibility = View.VISIBLE
+
+                        animate()
+                            .translationY(0F)
+                            .setDuration(shortAnimationDuration.toLong())
+                            .setListener(null)
+                    }
+                }
             }
             true
         }
     }
 
-    private fun keyboardShown(rootView: View): Boolean {
-        val softKeyboardHeight = 100
-        val rect = Rect()
-        rootView.getWindowVisibleDisplayFrame(rect)
-        val metrics = rootView.resources.displayMetrics
-        val heightDiff: Int = rootView.bottom - rect.bottom
-        return heightDiff > softKeyboardHeight * metrics.density
+    override fun onStop() {
+        super.onStop()
+        uri = null
+
+        if (this::recognizer.isInitialized) { recognizer.destroy() }
+
+        (activity as MainActivity).setCurrentFragment(null)
+        (activity as MainActivity).showFloatingActionButton()
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -150,192 +165,6 @@ class WriteFragment : Fragment() {
             R.id.save -> finish(SAVE)
         }
         return super.onOptionsItemSelected(item)
-    }
-
-    private fun setTitleContent() {
-        title = binding.editTextTitle.text.toString()
-        content = binding.editTextContent.text.toString()
-    }
-
-    private fun showImage() {
-        if(uri == null) return
-        else {
-            crossFade(true)
-            Glide.with(binding.imageView.context)
-                .load(Uri.parse(uri))
-                .into(binding.imageView)
-        }
-    }
-
-    private fun startCameraFragment() {
-        binding.bottomNavigationView.visibility = View.GONE
-
-        (activity as MainActivity).fragmentManager.beginTransaction()
-            .addToBackStack(null)
-            .setCustomAnimations(R.anim.slide_up, R.anim.slide_up, R.anim.slide_down, R.anim.slide_down)
-            .replace(R.id.add_container, (activity as MainActivity).cameraFragment).commit()
-    }
-
-    private fun startSpeechRecognition() {
-        recognizer.setRecognitionListener(recognitionListener)
-        recognizer.startListening(intent)
-    }
-
-    private fun startPhotoFragment() {
-        (activity as MainActivity).photoFragment.uri = uri
-        (activity as MainActivity).fragmentManager.beginTransaction()
-            .addToBackStack(null)
-            .setCustomAnimations(R.anim.slide_up, R.anim.slide_up, R.anim.slide_down, R.anim.slide_down)
-            .replace(R.id.add_container, (activity as MainActivity).photoFragment).commit()
-    }
-
-    private fun isEmpty() = title == "" && content == "" && uri == null
-
-    private fun showCheckMessage() {
-        val builder = context?.let { AlertDialog.Builder(it) }
-        builder?.setTitle("노트 저장")
-        builder?.setMessage("지금까지 작성한 내용을 저장하시겠습니까?")
-        builder?.setPositiveButton("저장") { _: DialogInterface?, _: Int ->
-            finishWithSaving()
-        }
-        builder?.setNeutralButton("계속쓰기") { _: DialogInterface?, _: Int -> }
-        builder?.setNegativeButton("아니요") { _: DialogInterface?, _: Int ->
-            finishWithoutSaving()
-        }
-        builder?.create()
-        builder?.show()
-    }
-
-    private fun showPictureChangeMessage() {
-        val builder = context?.let { AlertDialog.Builder(it) }
-        builder?.setTitle("사진 변경")
-        builder?.setMessage("새로운 사진을 찍으시겠습니까?")
-        builder?.setPositiveButton("네") { _: DialogInterface?, _: Int ->
-            startCameraFragment()
-        }
-        builder?.setNegativeButton("아니요") { _: DialogInterface?, _: Int -> }
-        builder?.create()
-        builder?.show()
-    }
-
-    private fun save() {
-        if (title == "" && content == "")
-            title = MainActivity.getCurrentTime().toString()
-        else {
-            if (title == "") title = if (content.length > 12) content.substring(0, 12)
-            else content
-        }
-
-        val note = Note(
-            title,
-            MainActivity.getCurrentTime(),
-            uri
-        )
-        note.content = content
-
-        (activity as MainActivity).viewModel.insert(note)
-
-        Toast.makeText(context, "저장되었습니다.", Toast.LENGTH_SHORT).show()
-    }
-
-    fun finish(save: Int) {
-        setTitleContent()
-        if (isEmpty()) finishWithoutSaving()
-        else {
-            when (save) {
-                SAVE -> finishWithSaving()
-                BACK_PRESSED -> showCheckMessage()
-            }
-        }
-    }
-
-    private fun finishWithSaving() {
-        save()
-        (activity as MainActivity).backPressed()
-    }
-
-    private fun finishWithoutSaving() {
-        Toast.makeText(context, "저장되지 않았습니다.", Toast.LENGTH_SHORT).show()
-        (activity as MainActivity).backPressed()
-    }
-
-    private fun crossFade(fadeIn: Boolean) {
-        if (fadeIn) {
-            binding.imageView.apply {
-                alpha = 0F
-                visibility = View.VISIBLE
-
-                animate()
-                    .alpha(1F)
-                    .setDuration(shortAnimationDuration.toLong())
-                    .setListener(null)
-            }
-        } else {
-            binding.imageView.animate()
-                .alpha(0F)
-                .setDuration(shortAnimationDuration.toLong())
-                .setListener(object : AnimatorListenerAdapter() {
-                    override fun onAnimationEnd(animation: Animator) {
-                        binding.imageView.visibility = View.GONE
-                    }
-                })
-        }
-    }
-
-    private fun clear() {
-        binding.editTextTitle.text = null
-        binding.editTextContent.text = null
-    }
-
-    private val recognitionListener = object: RecognitionListener {
-
-
-        override fun onReadyForSpeech(params: Bundle?) {
-            previousPartialText = ""
-        }
-
-        override fun onRmsChanged(rmsdB: Float) {
-
-        }
-
-        override fun onBufferReceived(buffer: ByteArray?) {
-
-        }
-
-        override fun onPartialResults(partialResults: Bundle?) {
-
-            val results: List<String>? =
-                partialResults!!.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
-            if (results != null) {
-                val text = results[0]
-                if (text != previousPartialText) {
-                    Log.d("PARTIAL", text)
-                    binding.editTextContent.append(text.subSequence(previousPartialText.length,
-                        text.length))
-                    previousPartialText = text
-                }
-            }
-        }
-
-        override fun onEvent(eventType: Int, params: Bundle?) {
-
-        }
-
-        override fun onBeginningOfSpeech() {
-
-        }
-
-        override fun onEndOfSpeech() {
-
-        }
-
-        override fun onError(error: Int) {
-
-        }
-
-        override fun onResults(results: Bundle?) {
-
-        }
     }
 
     override fun onRequestPermissionsResult(
@@ -378,9 +207,316 @@ class WriteFragment : Fragment() {
         }
     }
 
+    private fun keyboardShown(rootView: View): Boolean {
+        val softKeyboardHeight = 100
+        val rect = Rect()
+        rootView.getWindowVisibleDisplayFrame(rect)
+
+        val metrics = rootView.resources.displayMetrics
+        val heightDiff: Int = rootView.bottom - rect.bottom
+
+        return heightDiff > softKeyboardHeight * metrics.density
+    }
+
+    private fun setTitleContent() {
+        title = binding.editTextTitle.text.toString()
+        content = binding.editTextContent.text.toString()
+    }
+
+    private fun showImage() {
+        if(uri == null) return
+        else {
+            crossFadeImageView(true)
+            Glide.with(binding.imageView.context)
+                .load(Uri.parse(uri))
+                .into(binding.imageView)
+        }
+    }
+
+    private fun startCameraFragment() {
+        binding.bottomNavigationView.apply {
+            translationY = 0F
+
+            animate()
+                .translationY(bottomNavigationView.height.toFloat())
+                .setDuration(128.toLong())
+                .setListener(object : AnimatorListenerAdapter() {
+                    override fun onAnimationEnd(animation: Animator) {
+                        binding.bottomNavigationView.visibility = View.GONE
+
+                        (activity as MainActivity).fragmentManager.beginTransaction()
+                            .addToBackStack(null)
+                            .setCustomAnimations(R.anim.anim_camera_fragment_enter,
+                                R.anim.anim_camera_fragment_exit,
+                                R.anim.anim_camera_fragment_pop_enter,
+                                R.anim.anim_camera_fragment_pop_exit)
+                            .replace(R.id.add_container, (activity as MainActivity).cameraFragment).commit()
+                    }
+                })
+        }
+    }
+
+    private fun startPhotoFragment() {
+        (activity as MainActivity).photoFragment.uri = uri
+        (activity as MainActivity).fragmentManager.beginTransaction()
+            .addToBackStack(null)
+            .setCustomAnimations(R.anim.slide_up, R.anim.slide_up, R.anim.slide_down, R.anim.slide_down)
+            .replace(R.id.add_container, (activity as MainActivity).photoFragment).commit()
+    }
+
+    private fun startSpeechRecognition() {
+        recognizer = SpeechRecognizer.createSpeechRecognizer(context)
+        recognizer.setRecognitionListener(recognitionListener)
+
+        isFirstOnResults = true
+        binding.linearLayoutSpeechRecognition.apply {
+            alpha = 0F
+            visibility = View.VISIBLE
+
+            animate()
+                .alpha(1F)
+                .setDuration(shortAnimationDuration.toLong())
+                .setListener(object : AnimatorListenerAdapter() {
+                    override fun onAnimationEnd(animation: Animator) {
+                        isRecognizingSpeech = true
+                    }
+                })
+        }
+
+        recognizer.startListening(intent)
+        setEditTextDisable()
+    }
+
+    private fun finishSpeechRecognition() {
+        audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, originalVolume, 0)
+        binding.linearLayoutSpeechRecognition.animate()
+            .alpha(0F)
+            .setDuration(shortAnimationDuration.toLong())
+            .setListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator) {
+                    binding.linearLayoutSpeechRecognition.visibility = View.GONE
+                    recognizer.stopListening()
+                    recognizer.cancel()
+                    recognizer.destroy()
+
+                    isRecognizingSpeech = false
+                }
+            })
+        setEditTextEnable()
+    }
+
+    private fun setEditTextEnable() {
+        binding.editTextTitle.isEnabled = true
+        binding.editTextContent.isEnabled = true
+    }
+
+    private fun setEditTextDisable() {
+        binding.editTextTitle.isEnabled = false
+        binding.editTextContent.isEnabled = false
+    }
+
+    private fun showCheckMessage() {
+        val builder = context?.let { AlertDialog.Builder(it) }
+        builder?.setTitle("노트 저장")
+        builder?.setMessage("지금까지 작성한 내용을 저장하시겠습니까?")
+        builder?.setPositiveButton("저장") { _: DialogInterface?, _: Int ->
+            finishWithSaving()
+        }
+        builder?.setNeutralButton("계속쓰기") { _: DialogInterface?, _: Int -> }
+        builder?.setNegativeButton("아니요") { _: DialogInterface?, _: Int ->
+            finishWithoutSaving()
+        }
+        builder?.create()
+        builder?.show()
+    }
+
+    private fun showPictureChangeMessage() {
+        val builder = context?.let { AlertDialog.Builder(it) }
+        builder?.setTitle("사진 변경")
+        builder?.setMessage("새로운 사진을 찍으시겠습니까?")
+        builder?.setPositiveButton("네") { _: DialogInterface?, _: Int ->
+            startCameraFragment()
+        }
+        builder?.setNegativeButton("아니요") { _: DialogInterface?, _: Int -> }
+        builder?.create()
+        builder?.show()
+    }
+
+    private fun save() {
+        if (title.isBlank() && content.isBlank())
+            title = MainActivity.getCurrentTime().toString()
+        else {
+            if (title.isBlank()) title = if (content.length > 12) content.substring(0, 12)
+            else content
+        }
+
+        val note = Note(
+            title,
+            MainActivity.getCurrentTime(),
+            uri
+        )
+        note.content = content
+
+        (activity as MainActivity).viewModel.insert(note)
+
+        Toast.makeText(context, "저장되었습니다.", Toast.LENGTH_SHORT).show()
+    }
+
+    fun finish(save: Int) {
+        if (isRecognizingSpeech) finishSpeechRecognition()
+        else {
+            setTitleContent()
+            if (isEmpty()) finishWithoutSaving()
+            else {
+                when (save) {
+                    SAVE -> finishWithSaving()
+                    BACK_PRESSED -> showCheckMessage()
+                }
+            }
+        }
+    }
+
+    private fun isEmpty() = title == "" && content == "" && uri == null
+
+    private fun finishWithSaving() {
+        save()
+        (activity as MainActivity).backPressed()
+    }
+
+    private fun finishWithoutSaving() {
+        Toast.makeText(context, "저장되지 않았습니다.", Toast.LENGTH_SHORT).show()
+        (activity as MainActivity).backPressed()
+    }
+
+    private fun clearText() {
+        binding.editTextTitle.text = null
+        binding.editTextContent.text = null
+    }
+
+    private fun crossFadeImageView(fadeIn: Boolean) {
+        if (fadeIn) {
+            binding.imageView.apply {
+                alpha = 0F
+                visibility = View.VISIBLE
+
+                animate()
+                    .alpha(1F)
+                    .setDuration(shortAnimationDuration.toLong())
+                    .setListener(null)
+            }
+        } else {
+            binding.imageView.animate()
+                .alpha(0F)
+                .setDuration(shortAnimationDuration.toLong())
+                .setListener(object : AnimatorListenerAdapter() {
+                    override fun onAnimationEnd(animation: Animator) {
+                        binding.imageView.visibility = View.GONE
+                    }
+                })
+        }
+    }
+
+    private val recognitionListener = object: RecognitionListener {
+        override fun onReadyForSpeech(params: Bundle?) {
+            isFirstOnResults = true
+            previousPartialText = ""
+        }
+
+        override fun onRmsChanged(rmsdB: Float) {
+
+        }
+
+        override fun onBufferReceived(buffer: ByteArray?) {
+
+        }
+
+        // not receiving complete results.
+        override fun onPartialResults(partialResults: Bundle?) {
+            val results: List<String>? =
+                partialResults!!.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
+            if (results != null) {
+                val text = results[0]
+                if (text != previousPartialText && text.length > previousPartialText.length) {
+                    binding.editTextContent.append(text.subSequence(previousPartialText.length,
+                        text.length))
+                    previousPartialText = text
+                }
+            }
+        }
+
+        override fun onEvent(eventType: Int, params: Bundle?) {
+
+        }
+
+        override fun onBeginningOfSpeech() {
+
+        }
+
+        override fun onEndOfSpeech() {
+
+        }
+
+        override fun onError(error: Int) {
+            audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_MUTE, 0)
+            when (error) {
+                SpeechRecognizer.ERROR_AUDIO -> Log.e(SPEECH_RECOGNIZER_ERROR_TAG, "Audio")
+                SpeechRecognizer.ERROR_CLIENT -> Log.e(SPEECH_RECOGNIZER_ERROR_TAG, "Client")
+                SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS ->
+                    Log.e(SPEECH_RECOGNIZER_ERROR_TAG, "Insufficient Permission")
+                SpeechRecognizer.ERROR_NETWORK -> Log.e(SPEECH_RECOGNIZER_ERROR_TAG, "Network")
+                SpeechRecognizer.ERROR_NETWORK_TIMEOUT ->
+                    Log.e(SPEECH_RECOGNIZER_ERROR_TAG, "Network Timeout")
+                SpeechRecognizer.ERROR_NO_MATCH -> {
+                    Log.e(SPEECH_RECOGNIZER_ERROR_TAG, "No Match")
+
+                    if (isRecognizingSpeech) {
+                        recognizer.stopListening()
+                        recognizer.startListening(intent)
+                    }
+                }
+                SpeechRecognizer.ERROR_RECOGNIZER_BUSY ->
+                    Log.e(SPEECH_RECOGNIZER_ERROR_TAG, "Recognizer Busy")
+                SpeechRecognizer.ERROR_SPEECH_TIMEOUT -> {
+                    Log.e(SPEECH_RECOGNIZER_ERROR_TAG, "Speech Timeout")
+                    finishSpeechRecognition()
+                    (requireActivity() as MainActivity).showToast("시간이 초과되었습니다.")
+                }
+            }
+        }
+
+        override fun onResults(results: Bundle?) {
+            val recognitionResults: List<String>? =
+                results!!.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
+            if (recognitionResults != null) {
+                if (isFirstOnResults) {
+                    audioManager.adjustStreamVolume(
+                        AudioManager.STREAM_MUSIC,
+                        AudioManager.ADJUST_MUTE,
+                        0
+                    )
+
+                    val text = recognitionResults[0]
+                    binding.editTextContent.append(text
+                        .substring(previousPartialText.length, text.length))
+
+                    binding.editTextContent.append(" ")
+                    recognizer.stopListening()
+                    recognizer.startListening(intent)
+
+                    isFirstOnResults = false
+                }
+            }
+        }
+    }
+
     companion object {
         const val SHOW_BOTTOM_NAVIGATION_VIEW = 0
         const val BACK_PRESSED = 0
         const val SAVE = 1
+
+        private const val TITLE_TOOLBAR = "새 노트"
+        private const val VALUE_LANGUAGE = "ko-KR"
+        private const val VALUE_MAX_RESULTS = 64
+        private const val SPEECH_RECOGNIZER_ERROR_TAG = "Speech Recognizer Error"
     }
 }

@@ -18,9 +18,7 @@ import android.view.ViewGroup
 import android.widget.*
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import com.elliot.kim.kotlin.dimcatcamnote.MainActivity
-import com.elliot.kim.kotlin.dimcatcamnote.Note
-import com.elliot.kim.kotlin.dimcatcamnote.R
+import com.elliot.kim.kotlin.dimcatcamnote.*
 import com.elliot.kim.kotlin.dimcatcamnote.broadcast_receivers.AlarmReceiver
 import com.elliot.kim.kotlin.dimcatcamnote.broadcast_receivers.DeviceBootReceiver
 import com.elliot.kim.kotlin.dimcatcamnote.databinding.FragmentAlarmBinding
@@ -108,7 +106,7 @@ class AlarmFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        (activity as MainActivity).setCurrentFragment(MainActivity.CurrentFragment.ALARM_FRAGMENT)
+        (activity as MainActivity).setCurrentFragment(CurrentFragment.ALARM_FRAGMENT)
     }
 
     override fun onStop() {
@@ -116,7 +114,7 @@ class AlarmFragment : Fragment() {
         if (isFromEditFragment) {
             isFromEditFragment = false
             (activity as MainActivity).editFragment.setContent(note)
-            (activity as MainActivity).setCurrentFragment(MainActivity.CurrentFragment.EDIT_FRAGMENT)
+            (activity as MainActivity).setCurrentFragment(CurrentFragment.EDIT_FRAGMENT)
         } else (activity as MainActivity).setCurrentFragment(null)
     }
 
@@ -135,9 +133,9 @@ class AlarmFragment : Fragment() {
         var content = note.content
         if (content.length > 16) content = content.substring(0, 16)
 
-        intent.putExtra(KEY_ID_EXTRA, id)
-        intent.putExtra(KEY_TITLE_EXTRA, title)
-        intent.putExtra(KEY_CONTENT_EXTRA, content)
+        intent.putExtra(KEY_NOTE_ID, id)
+        intent.putExtra(KEY_NOTE_TITLE, title)
+        intent.putExtra(KEY_NOTE_CONTENT, content)
 
         val pendingIntent = PendingIntent.getBroadcast(
             activity,
@@ -259,13 +257,5 @@ class AlarmFragment : Fragment() {
                 e.printStackTrace()
             }
         }
-    }
-
-    companion object {
-        const val KEY_ID_EXTRA = "key_id_extra"
-        const val KEY_TITLE_EXTRA = "key_title_extra"
-        const val KEY_CONTENT_EXTRA = "key_content_extra"
-        const val DEFAULT_VALUE_EXTRA = -1
-        const val PREFERENCES_NAME_ALARM = "preferences_name_alarm"
     }
 }

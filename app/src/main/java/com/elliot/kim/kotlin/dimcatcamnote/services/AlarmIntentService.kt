@@ -4,27 +4,21 @@ import android.app.ActivityManager
 import android.app.IntentService
 import android.content.Context
 import android.content.Intent
-import android.util.Log
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.room.Room
-import com.elliot.kim.kotlin.dimcatcamnote.AppDatabase
-import com.elliot.kim.kotlin.dimcatcamnote.MainActivity
-import com.elliot.kim.kotlin.dimcatcamnote.Note
-import com.elliot.kim.kotlin.dimcatcamnote.NoteDao
-import com.elliot.kim.kotlin.dimcatcamnote.broadcast_receivers.AlarmReceiver
-import com.elliot.kim.kotlin.dimcatcamnote.fragments.AlarmFragment
+import com.elliot.kim.kotlin.dimcatcamnote.*
 
 class AlarmIntentService : IntentService("AlarmIntentService") {
 
     override fun onHandleIntent(intent: Intent?) {
         val id = intent?.getIntExtra(
-            AlarmFragment.KEY_ID_EXTRA,
-            AlarmFragment.DEFAULT_VALUE_EXTRA
-        ) ?: AlarmFragment.DEFAULT_VALUE_EXTRA
+            KEY_NOTE_ID,
+            DEFAULT_VALUE_NOTE_ID
+        ) ?: DEFAULT_VALUE_NOTE_ID
 
         if (isAppRunning(this)) notifyIsAppRunning(id)
         else {
-            if (id != AlarmFragment.DEFAULT_VALUE_EXTRA) {
+            if (id != DEFAULT_VALUE_NOTE_ID) {
                 val database: AppDatabase = Room.databaseBuilder(
                     application, AppDatabase::class.java,
                     MainActivity.DATABASE_NAME
@@ -50,7 +44,7 @@ class AlarmIntentService : IntentService("AlarmIntentService") {
 
     private fun notifyIsAppRunning(id: Int) {
         val intent = Intent(MainActivity.ACTION_IS_APP_RUNNING)
-        intent.putExtra(AlarmFragment.KEY_ID_EXTRA, id)
+        intent.putExtra(KEY_NOTE_ID, id)
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
     }
 }

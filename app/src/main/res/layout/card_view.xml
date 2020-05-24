@@ -83,6 +83,17 @@
                             android:visibility="gone"
                             android:src="@drawable/ic_clock_card_view"/>
 
+                        <ImageView
+                            android:id="@+id/image_view_lock"
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:layout_alignParentEnd="true"
+                            android:layout_marginTop="6dp"
+                            android:layout_marginEnd="6dp"
+                            android:layout_marginBottom="6dp"
+                            android:visibility="gone"
+                            android:src="@drawable/ic_lock_outline_black_24dp"/>
+
                     </RelativeLayout>
 
                     <TextView

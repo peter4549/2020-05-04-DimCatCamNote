@@ -2,7 +2,10 @@
 <set xmlns:android="http://schemas.android.com/apk/res/android"
     android:duration="500">
 
+    <!-- 왼쪽에서 오른쪽으로나오네@ -->
     <translate
+        android:fromXDelta="-50%"
+        android:toXDelta="0%"
         android:fromYDelta="-20%"
         android:toYDelta="0"
         android:interpolator="@android:anim/decelerate_interpolator"/>

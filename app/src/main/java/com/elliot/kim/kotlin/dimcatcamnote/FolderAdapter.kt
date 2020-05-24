@@ -41,7 +41,7 @@ class FolderAdapter(private val context: Context?, private val folderManager: Fo
         private val menuItemClickListener = MenuItem.OnMenuItemClickListener {
             val folder = folderManager.folders[adapterPosition]
             when (it.itemId) {
-                MenuItemId.OPEN.id -> { (context as MainActivity)._setCurrentFolderName(folder.name) }
+                MenuItemId.OPEN.id -> { (context as MainActivity).showCurrentFolderItems(folder) }
                 MenuItemId.LOCK.id -> {}
                 MenuItemId.REMOVE.id -> {
                     folderManager.removeFolder(folder)
@@ -70,7 +70,8 @@ class FolderAdapter(private val context: Context?, private val folderManager: Fo
 
         holder.binding.textView.text = name
         holder.binding.cardView.setOnClickListener {
-            (context as MainActivity).showToast("HELLO")
+            (context as MainActivity).showCurrentFolderItems(folder)
+            context.onBackPressed()
         }
         holder.binding.cardView.setOnLongClickListener { false }
     }

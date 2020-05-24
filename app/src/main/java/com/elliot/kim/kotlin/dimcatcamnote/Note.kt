@@ -13,7 +13,9 @@ data class Note(
     var editTime: Long? = null
     var alarmTime: Long? = null
     var isDone: Boolean = false
-    var folderName: String? = null
+    var folderId: Int = 0
+    var isLocked = false
+    var password: String? = null
 
     fun toSharedString(): String =
         """

@@ -105,12 +105,12 @@ class CameraFragment : Fragment() {
 
         uri = null
 
-        (activity as MainActivity).setCurrentFragment(MainActivity.CurrentFragment.CAMERA_FRAGMENT)
+        (activity as MainActivity).setCurrentFragment(CurrentFragment.CAMERA_FRAGMENT)
     }
 
     override fun onStop() {
         if (uri != null) (activity as MainActivity).writeFragment.uri = uri.toString()
-        (activity as MainActivity).setCurrentFragment(MainActivity.CurrentFragment.WRITE_FRAGMENT)
+        (activity as MainActivity).setCurrentFragment(CurrentFragment.WRITE_FRAGMENT)
 
         val message = (activity as MainActivity).writeFragment.handler.obtainMessage()
         (activity as MainActivity).writeFragment.handler.sendMessage(message)
@@ -214,6 +214,7 @@ class CameraFragment : Fragment() {
                 .build()
 
             // ImageAnalysis
+
             imageAnalyzer = ImageAnalysis.Builder()
                 // We request aspect ratio but no resolution
                 .setTargetAspectRatio(screenAspectRatio)
@@ -352,8 +353,10 @@ class CameraFragment : Fragment() {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 
                     // Display flash animation to indicate that photo was captured
+
                     container.postDelayed({
-                        container.foreground = ColorDrawable(Color.WHITE)
+                        // 뒤에 고양이 이미지 넣든가 하면 될듯.
+                        container.foreground = ColorDrawable(Color.CYAN)
                         container.postDelayed(
                             { container.foreground = null },
                             ANIMATION_FAST_MILLIS

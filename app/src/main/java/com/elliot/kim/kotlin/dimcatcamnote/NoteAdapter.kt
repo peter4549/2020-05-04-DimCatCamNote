@@ -103,6 +103,14 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
             holder.binding.imageViewAlarm.visibility = View.VISIBLE
         }
 
+        if (note.isLocked) {
+            holder.binding.imageViewLock.visibility = View.VISIBLE
+            holder.binding.textViewContent.visibility = View.INVISIBLE
+        } else {
+            holder.binding.imageViewLock.visibility = View.GONE
+            holder.binding.textViewContent.visibility = View.VISIBLE
+        }
+
         holder.binding.cardView.setOnTouchListener { _, _ ->
             selectedNote = note
             false
@@ -120,10 +128,10 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
     fun getFilter(): Filter {
         return object : Filter() {
             override fun performFiltering(constraint: CharSequence): FilterResults {
-                val currentFolderName = (context as MainActivity).currentFolderName
+                val currentFolderId = (context as MainActivity).currentFolder.id
                 val searchWord = constraint.toString()
-                if (searchWord.isEmpty() && currentFolderName == null)  notesFiltered = notes
-                else if (searchWord.isNotEmpty() && currentFolderName == null){
+                if (searchWord.isEmpty() && currentFolderId == DEFAULT_FOLDER_ID)  notesFiltered = notes
+                else if (searchWord.isNotEmpty() && currentFolderId == 0){
                     val noteListFiltering: MutableList<Note> =
                         ArrayList()
                     for (note in notes) {
@@ -133,11 +141,11 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
                         }
                     }
                     notesFiltered = noteListFiltering
-                } else if (searchWord.isEmpty() && currentFolderName != null){
+                } else if (searchWord.isEmpty() && currentFolderId != DEFAULT_FOLDER_ID){
                     val noteListFiltering: MutableList<Note> =
                         ArrayList()
                     for (note in notes) {
-                        if (note.folderName == currentFolderName) {
+                        if (note.folderId == currentFolderId) {
                             noteListFiltering.add(note)
                         }
                     }
@@ -148,7 +156,7 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
                     for (note in notes) {
                         if (note.title.toLowerCase(Locale.ROOT)
                                 .contains(searchWord.toLowerCase(Locale.ROOT)) &&
-                            (note.folderName == currentFolderName)) {
+                            (note.folderId == currentFolderId)) {
                             noteListFiltering.add(note)
                         }
                     }
