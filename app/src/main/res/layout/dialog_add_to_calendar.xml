@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="320dp"
+    android:layout_height="120dp">
+
+    <TextView
+        android:id="@+id/text_view"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:text = "날짜를 선택해주세요." />
+
+    <!-- 이미지 버튼으로 하는것도 고려 걍 알람이랑 유사한 방식으로 처리,.???-->
+    <Button
+        android:id="@+id/button_set_date"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:layout_below="@+id/text_view"/>
+
+    <Button
+        android:id="@+id/button_register"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:layout_below="@+id/button_set_date"
+        android:text="등록하기"/>
+
+</RelativeLayout>

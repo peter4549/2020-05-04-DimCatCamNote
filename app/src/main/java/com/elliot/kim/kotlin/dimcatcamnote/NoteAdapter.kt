@@ -112,13 +112,20 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
         }
 
         holder.binding.cardView.setOnTouchListener { _, _ ->
+
             selectedNote = note
             false
         }
 
         holder.binding.cardView.setOnClickListener {
-            (context as MainActivity).startEditFragment(note)
+            if (note.isLocked)
+                (context as MainActivity).showDialog(DialogManager.Companion.DialogType.REQUEST_PASSWORD)
+            else (context as MainActivity).startEditFragment(note)
         }
+    }
+
+    override fun getItemId(position: Int): Long {
+        return super.getItemId(position)
     }
 
     override fun getItemCount(): Int {
@@ -215,6 +222,14 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
             }
         )
         return 0L
+    }
+
+    // 노트 어댑터에서 관리하도록 하는 형태로 하는게 맞는거 같다. 어댑터가 매니저 역할도 하도록??
+    // 아니아니.. 잘못햇네 걍 노트 매니저가 있는게 맞는듯. 노트어레이를 관장하는 매니저가 필요한 것으로 생각됩니다..
+    fun unlock(note: Note) {
+        note.isLocked = false
+        note.password = null
+        (context as MainActivity).viewModel.update(note) // 뷰 모델을 전달받아 처리하거나..
     }
 
     fun getPosition(note: Note?): Int = notesFiltered.indexOf(note)

@@ -94,6 +94,12 @@
                 android:orientation="vertical">
 
                 <Button
+                    android:id="@+id/navigation_drawer_button_calender"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:text="달력" />
+
+                <Button
                     android:id="@+id/button_trash"
                     android:layout_width="match_parent"
                     android:layout_height="40dp"

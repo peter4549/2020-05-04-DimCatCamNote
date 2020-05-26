@@ -16,17 +16,16 @@ import android.os.Build
 import android.os.Bundle
 import android.util.DisplayMetrics
 import android.util.Log
-import android.view.KeyEvent
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.webkit.MimeTypeMap
 import android.widget.ImageButton
+import android.widget.SeekBar
 import android.widget.Toast
 import androidx.annotation.RequiresPermission
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
+import androidx.camera.view.TextureViewMeteringPointFactory
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.core.net.toFile
@@ -55,6 +54,7 @@ class CameraFragment : Fragment() {
 
     private var displayId: Int = -1
     private var lensFacing: Int = CameraSelector.LENS_FACING_BACK
+
     private var preview: Preview? = null
     private var imageCapture: ImageCapture? = null
     private var imageAnalyzer: ImageAnalysis? = null
@@ -133,10 +133,6 @@ class CameraFragment : Fragment() {
         container = view as ConstraintLayout
         viewFinder = container.findViewById(R.id.view_finder)
 
-        viewFinder.setOnTouchListener { v, event ->
-            Toast.makeText(context, "Touch", Toast.LENGTH_SHORT).show()
-            true }
-
         // Initialize our background executor
         cameraExecutor = Executors.newSingleThreadExecutor()
 
@@ -167,7 +163,26 @@ class CameraFragment : Fragment() {
             // Bind use cases
             bindCameraUseCases()
         }
+
+        val scaleGestureDetector = ScaleGestureDetector(context, listener)
+
+        viewFinder.setOnTouchListener { _, event ->
+            scaleGestureDetector.onTouchEvent(event)
+            return@setOnTouchListener true
+        }
     }
+
+    // slide해서 뷰 바꾸는 법.
+
+    // pinch zoom,, 어떻게 등록된건지 확인할것.
+    val listener = object : ScaleGestureDetector.SimpleOnScaleGestureListener() {
+        override fun onScale(detector: ScaleGestureDetector): Boolean {
+            val scale = camera!!.cameraInfo.zoomState.value!!.zoomRatio * detector.scaleFactor
+            camera!!.cameraControl.setZoomRatio(scale)
+            return true
+        }
+    }
+
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
@@ -376,6 +391,16 @@ class CameraFragment : Fragment() {
             // Re-bind use cases to update selected camera
             bindCameraUseCases()
         }
+
+        controls.findViewById<SeekBar>(R.id.zoomSeekBar).setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                camera!!.cameraControl.setLinearZoom(progress / 100.toFloat())
+            }
+
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+        })
     }
 
 
@@ -483,6 +508,46 @@ class CameraFragment : Fragment() {
             File(baseFolder, SimpleDateFormat(format, Locale.KOREA)
                 .format(System.currentTimeMillis()) + extension)
     }
+
+    /* 아마 안쓸거같은데.
+
+    private fun setUpPinchToZoom() {
+        val listener = object : ScaleGestureDetector.SimpleOnScaleGestureListener() {
+            override fun onScale(detector: ScaleGestureDetector): Boolean {
+                val currentZoomRatio: Float = cameraInfo.zoomRatio.value ?: 0F
+                val delta = detector.scaleFactor
+                cameraControl.setZoomRatio(currentZoomRatio * delta)
+                return true
+            }
+        }
+
+        val scaleGestureDetector = ScaleGestureDetector(context, listener)
+
+        cameraTextureView.setOnTouchListener { _, event ->
+            scaleGestureDetector.onTouchEvent(event)
+            return@setOnTouchListener true
+        }
+        }
+        */
+    /*
+    private fun setUpTapToFocus(textureView: TextureView, cameraControl: CameraControl) {
+        textureView.setOnTouchListener { _, event ->
+            if (event.action != MotionEvent.ACTION_UP) {
+                return@setOnTouchListener false
+            }
+
+            val factory = TextureViewMeteringPointFactory(textureView)
+            val point = factory.createPoint(event.x, event.y)
+            val action = FocusMeteringAction.Builder.from(point).build()
+            cameraControl.startFocusAndMetering(action)
+            return@setOnTouchListener true
+        }
+    }
+
+     */
+
+
+
 }
 
 

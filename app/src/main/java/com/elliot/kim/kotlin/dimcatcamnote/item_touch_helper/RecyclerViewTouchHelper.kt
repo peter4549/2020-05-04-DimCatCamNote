@@ -15,8 +15,8 @@ import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 
-const val toLeft = 0
-const val toRight = 1
+private const val toLeft = 0
+private const val toRight = 1
 
 @SuppressLint("ClickableViewAccessibility")
 abstract class RecyclerViewTouchHelper(val context: Context, private val recyclerView: RecyclerView,
@@ -139,7 +139,12 @@ abstract class RecyclerViewTouchHelper(val context: Context, private val recycle
     override fun getMovementFlags(recyclerView: RecyclerView,
                                   viewHolder: RecyclerView.ViewHolder): Int {
         val dragFlags = ItemTouchHelper.DOWN or ItemTouchHelper.UP
-        val swipeFlags = ItemTouchHelper.START or ItemTouchHelper.END
+        var swipeFlags = ItemTouchHelper.START or ItemTouchHelper.END
+
+        // Prevent swipe if note is locked.
+        if ((recyclerView.adapter as NoteAdapter).selectedNote!!.isLocked)
+            swipeFlags = 0
+
         return makeMovementFlags(dragFlags, swipeFlags)
     }
 

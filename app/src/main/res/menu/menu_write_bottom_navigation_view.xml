@@ -9,4 +9,8 @@
         android:title="Voice Note"
         android:icon="@drawable/microphone" />
 
+    <item android:id="@+id/menu_location"
+        android:title="Location"
+        android:icon="@drawable/ic_location_on_write_24dp" />
+
 </menu>

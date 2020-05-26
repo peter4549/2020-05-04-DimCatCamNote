@@ -10,22 +10,19 @@ import android.view.View.OnTouchListener
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
-import com.elliot.kim.kotlin.dimcatcamnote.CurrentFragment
-import com.elliot.kim.kotlin.dimcatcamnote.MainActivity
-import com.elliot.kim.kotlin.dimcatcamnote.Note
-import com.elliot.kim.kotlin.dimcatcamnote.R
+import com.elliot.kim.kotlin.dimcatcamnote.*
 import com.elliot.kim.kotlin.dimcatcamnote.databinding.FragmentEditBinding
 
-class EditFragment : Fragment() {
+class EditFragment() : Fragment() {
 
+    private lateinit var activity: MainActivity
     private lateinit var binding: FragmentEditBinding
     private lateinit var modeIcon: MenuItem
     private lateinit var note: Note
     private lateinit var originContent: String
-
+    private lateinit var viewModel: MainViewModel
     private var isEditMode = false
     private var originAlarmTime: Long? = null
 
@@ -38,18 +35,21 @@ class EditFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? =
-    inflater.inflate(R.layout.fragment_edit, container, false)
+    ): View? {
+        activity = requireActivity() as MainActivity
+        viewModel = activity.viewModel
+
+        return inflater.inflate(R.layout.fragment_edit, container, false)
+    }
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
         binding = FragmentEditBinding.bind(view)
         textViewTime = binding.textViewTime
 
-        (activity as MainActivity).setSupportActionBar(binding.toolBar)
-        (activity as AppCompatActivity).supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        activity.setSupportActionBar(binding.toolBar)
+        activity.supportActionBar?.setDisplayHomeAsUpEnabled(true)
         setHasOptionsMenu(true)
 
         binding.focusBlock.setOnTouchListener(object : OnTouchListener {
@@ -76,21 +76,18 @@ class EditFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-
         setContent(note)
-        (activity as MainActivity).setCurrentFragment(CurrentFragment.EDIT_FRAGMENT)
+        activity.setCurrentFragment(CurrentFragment.EDIT_FRAGMENT)
     }
 
     override fun onStop() {
         super.onStop()
-
-        (activity as MainActivity).setCurrentFragment(null)
-        (activity as MainActivity).showFloatingActionButton()
+        activity.setCurrentFragment(null)
+        activity.showFloatingActionButton()
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
-
         menu.clear()
         inflater.inflate(R.menu.menu_edit, menu)
         modeIcon = menu.findItem(R.id.menu_mode_icon)
@@ -100,8 +97,10 @@ class EditFragment : Fragment() {
         val menuDone = menu.findItem(R.id.menu_done)
         val menuAlarm = menu.findItem(R.id.menu_alarm)
         val menuChangeAlarm = menu.findItem(R.id.menu_change_alarm)
+        val menuLock = menu.findItem(R.id.menu_lock)
 
         if (note.isDone) menuDone.title = "완료해제" else menuDone.title = "완료체크"
+
         if (note.alarmTime == null) {
             menuAlarm.title = "알림설정"
             menuChangeAlarm.isVisible = false
@@ -109,6 +108,8 @@ class EditFragment : Fragment() {
             menuAlarm.title = "알림해제"
             menuChangeAlarm.isVisible = true
         }
+
+        if (note.isLocked) menuLock.title = "잠금해제" else menuLock.title = "잠금설정"
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -130,27 +131,47 @@ class EditFragment : Fragment() {
 
                 isEditMode = !isEditMode
             }
-            R.id.menu_alarm -> if (note.alarmTime == null)
-                startAlarmFragment(note)
-            else {
-                (activity as MainActivity).cancelAlarm(note, false)
-                setTimeText(note)
+            R.id.menu_alarm -> {
+                if (note.alarmTime == null)
+                    startAlarmFragment(note)
+                else {
+                    activity.cancelAlarm(note, false)
+                    setTimeText(note)
+                }
             }
             R.id.menu_change_alarm -> startAlarmFragment(note)
-            R.id.menu_share -> (activity as MainActivity).share(note)
+            R.id.menu_share -> activity.share(note)
             R.id.menu_done -> {
                 note.isDone = !note.isDone
-                (activity as MainActivity).viewModel.update(note)
+                viewModel.update(note)
+            }
+            R.id.menu_lock -> {
+                if (note.isLocked) {
+                    unlock()
+                } else {
+                    lock()
+                }
             }
             R.id.menu_delete -> {
-                (activity as MainActivity).closeOptionsMenu()
-                (activity as MainActivity).viewModel.delete(note)
+                activity.closeOptionsMenu()
+                activity.viewModel.delete(note)
 
                 Toast.makeText(context, "노트가 삭제되었습니다.", Toast.LENGTH_SHORT).show()
-                (activity as MainActivity).backPressed()
+                activity.backPressed()
             }
         }
         return super.onOptionsItemSelected(item)
+    }
+
+    private fun lock() {
+        activity.showDialog(DialogManager.Companion.DialogType.SET_PASSWORD)
+    }
+
+    private fun unlock() {
+        note.isLocked = false
+        note.password = ""
+        activity.viewModel.update(note)
+        activity.showToast("잠금이 해제되었습니다.")
     }
 
     fun setContent(note: Note) {
@@ -171,13 +192,13 @@ class EditFragment : Fragment() {
     }
 
     private fun startAlarmFragment(note: Note) {
-        (activity as MainActivity).alarmFragment.isFromEditFragment = true
-        (activity as MainActivity).alarmFragment.note = note
-        (activity as MainActivity).fragmentManager.beginTransaction()
+        activity.alarmFragment.isFromEditFragment = true
+        activity.alarmFragment.note = note
+        activity.fragmentManager.beginTransaction()
             .addToBackStack(null)
             .setCustomAnimations(R.anim.slide_up, R.anim.slide_up, R.anim.slide_down, R.anim.slide_down)
             .replace(R.id.edit_note_container,
-                (activity as MainActivity).alarmFragment).commit()
+                activity.alarmFragment).commit()
     }
 
     private fun showCheckMessage() {
@@ -209,15 +230,15 @@ class EditFragment : Fragment() {
     private fun finishWithSaving() {
         note.editTime =  MainActivity.getCurrentTime()
         note.content = binding.editTextContent.text.toString()
-        (activity as MainActivity).viewModel.update(note)
+        activity.viewModel.update(note)
 
         Toast.makeText(context, "노트가 수정되었습니다.", Toast.LENGTH_SHORT).show()
-        (activity as MainActivity).backPressed()
+        activity.backPressed()
     }
 
     private fun finishWithoutSaving() {
         Toast.makeText(context, "변경사항이 없습니다.", Toast.LENGTH_SHORT).show()
-        (activity as MainActivity).backPressed()
+        activity.backPressed()
     }
 
     private fun getFocus() {
@@ -243,12 +264,15 @@ class EditFragment : Fragment() {
             var timeText = "최초 작성일: " + MainActivity.timeToString(
                 note.creationTime
             )
+
             if (note.editTime != null) timeText += "\n최근 수정일: ${MainActivity.timeToString(
                 note.editTime
             )}"
+
             if (note.alarmTime != null) timeText += "\n알림 시간: ${MainActivity.timeToString(
                 note.alarmTime
             )}"
+
             textViewTime.text = timeText
         }
     }

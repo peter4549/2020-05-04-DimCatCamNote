@@ -12,6 +12,7 @@ import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Bundle
 import android.os.Process
+import android.provider.CalendarContract
 import android.util.Log
 import android.view.*
 import android.view.animation.LayoutAnimationController
@@ -565,7 +566,7 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
     fun showCurrentFolderItems(folder: Folder) { // showCurrentFolderItems 로 바꾸는게 나은듯.
         currentFolder = folder
         saveCurrentFolder(currentFolder)
-        binding.textViewCurrentFolderName.text = currentFolder.name ?: "전체"
+        binding.textViewCurrentFolderName.text = currentFolder.name
         noteAdapter.getFilter().filter("")
     }
 
@@ -585,6 +586,41 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         showCurrentFolderItems(folderManager.getFolderById(preferences.getInt(KEY_CURRENT_FOLDER, 0)))
     }
 
+    fun showDialog(dialogType: DialogManager.Companion.DialogType) {
+        dialogManager.showDialog(dialogType)
+    }
+
+    // 로케일에 따라서 시간은 current time을 찾도록 하고, Locale 만 건드리면 될거같음.
+    fun addToCalendar() {
+
+        // 커스텀 달력 뷰에서
+
+        val startMillis: Long = Calendar.getInstance().run {
+            set(2020, 4, 26, 8, 0)
+            timeInMillis
+        }
+        val endMillis: Long = Calendar.getInstance().run {
+            set(2020, 4, 26, 9, 0)
+            timeInMillis
+        }
+        val intent = Intent(Intent.ACTION_INSERT)
+            .setData(CalendarContract.Events.CONTENT_URI)
+            .putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, startMillis)
+            .putExtra(CalendarContract.EXTRA_EVENT_END_TIME, endMillis)
+            .putExtra(CalendarContract.Events.TITLE, "Yoga")
+            .putExtra(CalendarContract.Events.DESCRIPTION, "Group class")
+            .putExtra(CalendarContract.Events.EVENT_LOCATION, "The gym")
+            .putExtra(
+                CalendarContract.Events.AVAILABILITY,
+                CalendarContract.Events.AVAILABILITY_BUSY
+            )
+            .putExtra(Intent.EXTRA_EMAIL, "rowan@example.com,trevor@example.com")
+            // 알림은 나의앱꼐서 진행하는 걸로.
+        if (intent.resolveActivity(packageManager) != null) {
+            startActivity(intent)
+        }
+    }
+
     companion object {
         const val DATABASE_NAME = "dim_cat_cam_notes_5"
 
@@ -597,9 +633,12 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         const val PERMISSIONS_REQUEST_CODE = 10
         const val CAMERA_PERMISSIONS_REQUEST_CODE = 11
         const val RECORD_AUDIO_PERMISSIONS_REQUEST_CODE = 12
+        const val LOCATION_PERMISSIONS_REQUEST_CODE = 13
 
         val CAMERA_PERMISSIONS_REQUIRED = arrayOf(Manifest.permission.CAMERA)
         val RECORD_AUDIO_PERMISSIONS_REQUESTED = arrayOf(Manifest.permission.RECORD_AUDIO)
+        val LOCATION_PERMISSIONS_REQUESTED = arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION,
+            Manifest.permission.ACCESS_FINE_LOCATION)
 
         var currentFragment: CurrentFragment? = null
 
@@ -614,10 +653,12 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
 
         private const val pattern = "yyyy-MM-dd-a-hh:mm:ss"
 
+        // 권한 관련해서 클래스 하나 만들어야될듯.
         fun getPermissionsRequired(context: Context): Array<String> {
             var permissionsRequired = arrayOf<String>()
             if (!hasCameraPermissions(context)) permissionsRequired += CAMERA_PERMISSIONS_REQUIRED
             if (!hasRecordAudioPermission(context)) permissionsRequired += RECORD_AUDIO_PERMISSIONS_REQUESTED
+            if (!hasLocationPermissions(context)) permissionsRequired += LOCATION_PERMISSIONS_REQUESTED
             return permissionsRequired
         }
 
@@ -626,6 +667,10 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         }
 
         fun hasRecordAudioPermission(context: Context) = RECORD_AUDIO_PERMISSIONS_REQUESTED.all {
+            ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
+        }
+
+        fun hasLocationPermissions(context: Context) = LOCATION_PERMISSIONS_REQUESTED.all {
             ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
         }
 

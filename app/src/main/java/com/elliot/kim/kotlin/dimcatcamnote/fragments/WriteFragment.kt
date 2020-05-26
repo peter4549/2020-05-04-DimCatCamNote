@@ -24,6 +24,7 @@ import com.bumptech.glide.Glide
 import com.elliot.kim.kotlin.dimcatcamnote.CurrentFragment
 import com.elliot.kim.kotlin.dimcatcamnote.MainActivity
 import com.elliot.kim.kotlin.dimcatcamnote.MainActivity.Companion.CAMERA_PERMISSIONS_REQUEST_CODE
+import com.elliot.kim.kotlin.dimcatcamnote.MainActivity.Companion.LOCATION_PERMISSIONS_REQUEST_CODE
 import com.elliot.kim.kotlin.dimcatcamnote.MainActivity.Companion.RECORD_AUDIO_PERMISSIONS_REQUEST_CODE
 import com.elliot.kim.kotlin.dimcatcamnote.Note
 import com.elliot.kim.kotlin.dimcatcamnote.R
@@ -108,7 +109,17 @@ class WriteFragment : Fragment() {
                         requestPermissions(MainActivity.RECORD_AUDIO_PERMISSIONS_REQUESTED,
                             RECORD_AUDIO_PERMISSIONS_REQUEST_CODE)
 
-                    it.isChecked = false
+                    // it.isChecked = false ?? 아마 마이크 버튼 포커스 해제하려고 시도한듯? 일단 주석.
+                }
+                R.id.menu_location -> {
+                    /*
+                    if (MainActivity.hasLocationPermissions(requireContext()))
+
+                    else
+                        requestPermissions(MainActivity.LOCATION_PERMISSIONS_REQUESTED,
+                            LOCATION_PERMISSIONS_REQUEST_CODE)
+
+                     */
                 }
             }
             return@setOnNavigationItemSelectedListener true
@@ -157,13 +168,13 @@ class WriteFragment : Fragment() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-
         MainActivity.hideKeyboard(context, view)
 
         when (item.itemId) {
             android.R.id.home -> finish(BACK_PRESSED)
             R.id.save -> finish(SAVE)
         }
+
         return super.onOptionsItemSelected(item)
     }
 
