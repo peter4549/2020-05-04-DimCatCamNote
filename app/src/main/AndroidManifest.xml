@@ -24,15 +24,19 @@
             android:exported="false" />
 
         <activity
-            android:name=".MainActivity"
-            android:theme="@style/AppTheme.NoActionBar"
-            android:windowSoftInputMode="adjustPan">
+            android:name=".SplashActivity"
+            android:theme="@style/SplashTheme" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".MainActivity"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:windowSoftInputMode="adjustPan" />
 
         <receiver
             android:name=".broadcast_receivers.DeviceBootReceiver"
