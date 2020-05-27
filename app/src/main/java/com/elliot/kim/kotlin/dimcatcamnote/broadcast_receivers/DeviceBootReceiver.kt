@@ -43,7 +43,7 @@ class DeviceBootReceiver : BroadcastReceiver()  {
                     3 -> content = preferences.getString(key, "")
                 }
 
-                if (++count == 4) {
+                if (++count >= 4) {
                     receiverIntent.putExtra(KEY_NOTE_ID, id)
                     receiverIntent.putExtra(KEY_NOTE_TITLE, title)
                     receiverIntent.putExtra(KEY_NOTE_CONTENT, content)

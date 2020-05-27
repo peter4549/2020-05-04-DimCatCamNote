@@ -1,6 +1,7 @@
 package com.elliot.kim.kotlin.dimcatcamnote
 
 import android.annotation.SuppressLint
+import android.app.ProgressDialog.show
 import android.content.Context
 import android.graphics.Paint
 import android.net.Uri
@@ -13,6 +14,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CircleCrop
 import com.elliot.kim.kotlin.dimcatcamnote.databinding.CardViewBinding
 import com.elliot.kim.kotlin.dimcatcamnote.databinding.CardViewBinding.bind
+import com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments.PasswordConfirmationDialogFragment
 import com.elliot.kim.kotlin.dimcatcamnote.item_touch_helper.ItemMovedListener
 import java.util.*
 
@@ -119,9 +121,15 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
 
         holder.binding.cardView.setOnClickListener {
             if (note.isLocked)
-                (context as MainActivity).showDialog(DialogManager.Companion.DialogType.REQUEST_PASSWORD)
+                confirmPassword()
             else (context as MainActivity).startEditFragment(note)
+            // (context as MainActivity).showDialog(DialogManager.Companion.DialogType.REQUEST_PASSWORD)
         }
+    }
+
+    private fun confirmPassword() {
+        PasswordConfirmationDialogFragment(this).show((context as MainActivity).fragmentManager,
+        "")
     }
 
     override fun getItemId(position: Int): Long {
@@ -187,6 +195,7 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
     fun insert(camNote: Note) {
         notes.add(camNote)
         notifyItemInserted(notes.size - 1)
+        (context as MainActivity).showCurrentFolderItems((context).currentFolder)
     }
 
     fun update(note: Note) {

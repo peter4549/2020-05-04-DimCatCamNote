@@ -55,7 +55,6 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
     private lateinit var noteAdapter: NoteAdapter
     private lateinit var folderAdapter: FolderAdapter
     private lateinit var recyclerViewTouchHelper: RecyclerViewTouchHelper
-    lateinit var folderManager: FolderManager
 
     var currentFolder = Folder(DEFAULT_FOLDER_ID, DEFAULT_FOLDER_NAME)
 
@@ -531,9 +530,8 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
     }
 
     private fun initialize() {
-        folderManager = FolderManager(this)
+        folderAdapter = FolderAdapter(this)
 
-        folderAdapter = FolderAdapter(this, folderManager)
         binding.navDrawerRecyclerview.apply {
             setHasFixedSize(true)
             adapter = folderAdapter
@@ -547,7 +545,6 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
     private fun initializeDialogManager() {
         dialogManager = DialogManager(this)
         dialogManager.setFolderAdapter(folderAdapter)
-        dialogManager.setFolderManager(folderManager)
         dialogManager.setNoteAdapter(noteAdapter)
     }
 
@@ -583,7 +580,7 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         val preferences = getSharedPreferences(
             PREFERENCES_CURRENT_FOLDER,
             Context.MODE_PRIVATE)
-        showCurrentFolderItems(folderManager.getFolderById(preferences.getInt(KEY_CURRENT_FOLDER, 0)))
+        showCurrentFolderItems(folderAdapter.getFolderById(preferences.getInt(KEY_CURRENT_FOLDER, 0)))
     }
 
     fun showDialog(dialogType: DialogManager.Companion.DialogType) {

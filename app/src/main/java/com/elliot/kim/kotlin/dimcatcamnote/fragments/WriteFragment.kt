@@ -367,6 +367,7 @@ class WriteFragment : Fragment() {
             uri
         )
         note.content = content
+        note.folderId = (activity as MainActivity).currentFolder.id
 
         (activity as MainActivity).viewModel.insert(note)
 
