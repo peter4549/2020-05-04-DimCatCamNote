@@ -14,15 +14,17 @@ class PasswordConfirmationDialogFragment(private val adapter: Any,
     private lateinit var activity: MainActivity
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+
         activity = requireActivity() as MainActivity
 
-        val dialog = Dialog(requireContext())
+        val dialog = Dialog(activity)
         dialog.setContentView(R.layout.dialog_set_password)
 
         val editText = dialog.findViewById<EditText>(R.id.edit_text_password)
+
         dialog.findViewById<Button>(R.id.button_enter_password).setOnClickListener {
             val password = editText.text.toString()
-            if (password.isBlank()) activity.showToast("비밀번호를 입력해주세요.")
+            if (password.isBlank()) activity.showToast(PASSWORD_REQUEST_MESSAGE)
             else confirmPassword(dialog, password)
         }
 
@@ -42,14 +44,14 @@ class PasswordConfirmationDialogFragment(private val adapter: Any,
                         activity.onBackPressed()
                     }
                 } else {
-                    activity.showToast("비밀번호가 일치하지 않습니다.")
+                    activity.showToast(PASSWORD_MISMATCH_MESSAGE)
                 }
             }
             is NoteAdapter -> {
                 if (adapter.selectedNote!!.password == password)
                     activity.startEditFragment(adapter.selectedNote!!)
                 else
-                    activity.showToast("비밀번호가 일치하지 않습니다.")
+                    activity.showToast(PASSWORD_MISMATCH_MESSAGE)
             }
             else -> throw RuntimeException()
         }
@@ -61,6 +63,6 @@ class PasswordConfirmationDialogFragment(private val adapter: Any,
         (adapter as FolderAdapter).selectedFolder!!.isLocked = false
         adapter.selectedFolder!!.password = ""
         adapter.update(adapter.selectedFolder!!)
-        activity.showToast("폴더 잠금이 해제되었습니다.")
+        activity.showToast(FOLDER_UNLOCK_NOTIFICATION_MESSAGE)
     }
 }

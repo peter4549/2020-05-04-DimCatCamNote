@@ -5,6 +5,7 @@ import androidx.room.*
 
 @Dao
 interface NoteDao {
+
     @Query("SELECT * FROM note")
     fun getAll(): LiveData<MutableList<Note>>
 

@@ -11,15 +11,13 @@ import com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments.PasswordConfirmation
 import com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments.PasswordSettingDialogFragment
 import java.util.*
 
-private const val TAG = "FolderAdapter"
-
 class FolderAdapter(private val context: Context?):
     RecyclerView.Adapter<FolderAdapter.ViewHolder>() {
+    private val tag = "FolderAdapter"
 
     var folders: MutableList<Folder>
     var selectedFolder: Folder? = null
     var lastId = 0
-    var isAdded = false
 
     init {
         folders = loadFolders()
@@ -85,7 +83,7 @@ class FolderAdapter(private val context: Context?):
 
     private fun confirmPassword() {
         PasswordConfirmationDialogFragment(this)
-            .show((context as MainActivity).fragmentManager, TAG)
+            .show((context as MainActivity).fragmentManager, tag)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -221,16 +219,14 @@ class FolderAdapter(private val context: Context?):
         const val PREFERENCES_NAME = "folder_preferences"
     }
 
-    //////
-
     fun lock() {
         PasswordSettingDialogFragment(this)
-            .show((context as MainActivity).fragmentManager, TAG)
+            .show((context as MainActivity).fragmentManager, tag)
     }
 
     fun unlock() {
         PasswordConfirmationDialogFragment(this, true)
-            .show((context as MainActivity).fragmentManager, TAG)
+            .show((context as MainActivity).fragmentManager, tag)
     }
 
     fun update(folder: Folder) {

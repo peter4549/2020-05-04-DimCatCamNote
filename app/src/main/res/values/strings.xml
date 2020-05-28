@@ -17,6 +17,7 @@
     <string name="delete_dialog">Delete current photo?</string>
     <string name="delete_title">Confirm</string>
 
+    <string name="creation_date">최초 작성일</string>
     <string name="creation_time">생성시간</string>
     <string name="edit_time">수정시간</string>
     <string name="alarm_time">알람시간</string>
@@ -39,5 +40,7 @@
     <string name="menu_slideshow">Slideshow</string>
 
     <string name="home_second">Home Second</string>
+    <string name="title_add_folder_dialog_fragment">폴더 생성</string>
+    <string name="hint_add_folder_dialog_fragment">여기에 폴더 이름을 입력해주세요.</string>
 
 </resources>

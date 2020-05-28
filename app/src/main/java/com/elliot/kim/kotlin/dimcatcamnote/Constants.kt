@@ -17,3 +17,8 @@ enum class CurrentFragment {
     EDIT_FRAGMENT,
     WRITE_FRAGMENT
 }
+
+const val PATTERN_YYYY_MM_dd = "yyyy년 MM월 dd일"
+
+// 유틸리티 클래스나 파일 만들것.
+fun dateToText(year: Int, month: Int, dayOfMonth: Int) = "${year}년 ${month + 1}월 ${dayOfMonth}일"

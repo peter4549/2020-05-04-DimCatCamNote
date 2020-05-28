@@ -26,7 +26,7 @@ class AddToCalendarDialog(private val activity: Activity,
     private var dayOfMonth = 0
     private var hourOfDay = 0
     private var minute = 0
-    private lateinit var registerButton: Button
+    //private lateinit var registerButton: Button
     private lateinit var setDateButton: Button
 
     override fun show() {
@@ -37,7 +37,7 @@ class AddToCalendarDialog(private val activity: Activity,
     override fun buildDialog() {
         dialog.setContentView(R.layout.dialog_add_to_calendar)
 
-        registerButton = dialog.findViewById<Button>(R.id.button_register)
+        val registerButton = dialog.findViewById<Button>(R.id.button_register)
         setDateButton = dialog.findViewById<Button>(R.id.button_set_date)
         initializeButtonText(setDateButton)
 
@@ -184,22 +184,5 @@ class AddToCalendarDialog(private val activity: Activity,
     }
 
     // 이 함수도 유틸 클래스로 돌리는게 맞는 듯..
-    private fun showDatePicker() {
-        val calendar = Calendar.getInstance()
-        val dialog = DatePickerDialog(
-            activity,
-            DatePickerDialog.OnDateSetListener { _: DatePicker?, year: Int, month: Int, dayOfMonth: Int ->
-                setButtonText(setDateButton, String.format("${year}년 ${month + 1}월 ${dayOfMonth}일"))
-                setTime(year, month, dayOfMonth)
 
-                // 알람프래그먼트에
-                // 리터럴 문법으로 교체할것. ,, year, month+1, dayOfMonth 받아서 , 전달할 것.
-                // 여기서 1차적인 , 데이트 설정, // 여기서 설정한 값을 저장하고 있다가 에드투 함수 호출시 캘린더 실행.
-            },
-            calendar[Calendar.YEAR],
-            calendar[Calendar.MONTH],
-            calendar[Calendar.DAY_OF_MONTH]
-        )
-        dialog.show()
-    }
 }

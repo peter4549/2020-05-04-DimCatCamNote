@@ -11,10 +11,10 @@ import androidx.core.app.NotificationCompat
 import com.elliot.kim.kotlin.dimcatcamnote.*
 import com.elliot.kim.kotlin.dimcatcamnote.services.AlarmIntentService
 
-
 class AlarmReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context?, intent: Intent?) {
+
         val builder = NotificationCompat.Builder(context!!, CHANNEL_ID)
         val manager =
             context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -62,8 +62,8 @@ class AlarmReceiver : BroadcastReceiver() {
     companion object {
         private const val ACTION_ALARM = "action_alarm"
         private const val CHANNEL_ID = "default"
-        private const val CHANNEL_NAME = "com_duke_elliot_kim_kotlin_cat_note" // 이름 차후 수정 아래도.
+        private const val CHANNEL_NAME = "com_duke_elliot_kim_kotlin_cat_note"
         private const val CHANNEL_DESCRIPTION = "dim_cat_note_channel"
-        private const val CONTENT_INFO = "note_info"
+        private const val CONTENT_INFO = "title and content"
     }
 }

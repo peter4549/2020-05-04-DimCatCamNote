@@ -17,18 +17,19 @@ class AlarmIntentService : IntentService("AlarmIntentService") {
         ) ?: DEFAULT_VALUE_NOTE_ID
 
         if (isAppRunning(this)) notifyIsAppRunning(id)
-        else {
-            if (id != DEFAULT_VALUE_NOTE_ID) {
-                val database: AppDatabase = Room.databaseBuilder(
-                    application, AppDatabase::class.java,
-                    MainActivity.DATABASE_NAME
-                ).fallbackToDestructiveMigration().build()
-                val dao = database.dao()
-                val note = dao.findNoteById(id)
-                note.alarmTime = null
-                dao.update(note)
-            }
-        }
+        else
+            if (id != DEFAULT_VALUE_NOTE_ID) updateDatabase(id)
+    }
+
+    private fun updateDatabase(id: Int) {
+        val database: AppDatabase = Room.databaseBuilder(
+            application, AppDatabase::class.java,
+            MainActivity.DATABASE_NAME
+        ).fallbackToDestructiveMigration().build()
+        val dao = database.dao()
+        val note = dao.findNoteById(id)
+        note.alarmTime = null
+        dao.update(note)
     }
 
     private fun isAppRunning(context: Context?): Boolean {

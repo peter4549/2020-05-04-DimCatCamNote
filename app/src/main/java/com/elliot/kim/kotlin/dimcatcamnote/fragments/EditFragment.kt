@@ -14,6 +14,7 @@ import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
 import com.elliot.kim.kotlin.dimcatcamnote.*
 import com.elliot.kim.kotlin.dimcatcamnote.databinding.FragmentEditBinding
+import com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments.PasswordSettingDialogFragment
 
 class EditFragment() : Fragment() {
 
@@ -164,7 +165,7 @@ class EditFragment() : Fragment() {
     }
 
     private fun lock() {
-        activity.showDialog(DialogManager.Companion.DialogType.SET_PASSWORD)
+        PasswordSettingDialogFragment
     }
 
     private fun unlock() {

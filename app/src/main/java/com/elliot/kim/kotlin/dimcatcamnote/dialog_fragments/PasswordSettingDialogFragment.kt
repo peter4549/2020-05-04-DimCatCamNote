@@ -13,9 +13,13 @@ class PasswordSettingDialogFragment(private val adapter: Any) : DialogFragment()
 
     private var firstEnteredPassword: String? = null
     private var isPasswordEntered = false
+    private lateinit var activity: MainActivity
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val dialog = Dialog(requireContext())
+
+        activity = requireActivity() as MainActivity
+
+        val dialog = Dialog(activity)
         dialog.setContentView(R.layout.dialog_set_password)
 
         val editText = dialog.findViewById<EditText>(R.id.edit_text_password)
@@ -30,11 +34,11 @@ class PasswordSettingDialogFragment(private val adapter: Any) : DialogFragment()
     }
 
     private fun getEnteredPassword(editText: EditText, textView: TextView) {
-        if (editText.text.isBlank()) (activity as MainActivity).showToast("비밀번호를 입력해주세요.")
+        if (editText.text.isBlank()) activity.showToast(PASSWORD_REQUEST_MESSAGE)
         else {
             firstEnteredPassword = editText.text.toString()
-            editText.setText("")
-            textView.text = "비밀번호를 확인해주세요."
+            editText.text = null
+            textView.text = PASSWORD_CONFIRMATION_MESSAGE
             isPasswordEntered = true
         }
     }
@@ -45,9 +49,7 @@ class PasswordSettingDialogFragment(private val adapter: Any) : DialogFragment()
             isPasswordEntered = false
             setPassword(password)
             dialog.dismiss()
-        } else {
-            (activity as MainActivity).showToast("비밀번호가 일치하지 않습니다.\n다시 확인해주세요.")
-        }
+        } else activity.showToast(PASSWORD_MISMATCH_MESSAGE)
     }
 
     private fun setPassword(password: String) {
@@ -57,7 +59,7 @@ class PasswordSettingDialogFragment(private val adapter: Any) : DialogFragment()
             else -> throw RuntimeException()
         }
 
-        (activity as MainActivity).showToast("비밀번호가 설정되었습니다.")
+        activity.showToast(PASSWORD_SETTING_NOTIFICATION_MESSAGE)
     }
 
     private fun setFolderPassword(password: String) {
@@ -69,6 +71,6 @@ class PasswordSettingDialogFragment(private val adapter: Any) : DialogFragment()
     private fun setNotePassword(password: String) {
         (adapter as NoteAdapter).selectedNote?.isLocked = true
         adapter.selectedNote?.password = password
-        (activity as MainActivity).viewModel.update(adapter.selectedNote!!)
+        activity.viewModel.update(adapter.selectedNote!!)
     }
 }

@@ -36,7 +36,15 @@
         <activity
             android:name=".MainActivity"
             android:theme="@style/AppTheme.NoActionBar"
-            android:windowSoftInputMode="adjustPan" />
+            android:windowSoftInputMode="adjustPan" >
+        </activity>
+
+        <activity android:name=".SingleNoteConfigureActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
+            </intent-filter>
+        </activity>
 
         <receiver
             android:name=".broadcast_receivers.DeviceBootReceiver"
@@ -46,6 +54,15 @@
             </intent-filter>
         </receiver>
         <receiver android:name=".broadcast_receivers.AlarmReceiver" />
+
+        <receiver android:name=".NoteAppWidgetProvider" >
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data android:name="android.appwidget.provider"
+                android:resource="@xml/note_widget" />
+        </receiver>
+
     </application>
 
 </manifest>

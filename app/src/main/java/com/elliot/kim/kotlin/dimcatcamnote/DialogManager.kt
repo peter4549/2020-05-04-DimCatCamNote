@@ -14,11 +14,9 @@ import com.elliot.kim.kotlin.dimcatcamnote.R
 import com.elliot.kim.kotlin.dimcatcamnote.dialogs.AddToCalendarDialog
 import java.util.*
 
-// 다이얼로그 들을 배열로 가진 형태로 변경할 것. 각 기능을 갖는 다이얼로그들은 개별적으로 작성하는 형태로. 굿.
 
 
-
-class DialogManager(private val context: Context) {
+class DialogManagers(private val context: Context) {
 
     private lateinit var folderAdapter: FolderAdapter
     private lateinit var noteAdapter: NoteAdapter
@@ -38,37 +36,13 @@ class DialogManager(private val context: Context) {
     // 노트를 전달받는 형태도 갠춘할거 같음.
     fun showDialog(dialog: DialogType, target: Target = Target.NOTE) {
         when (dialog) {
-            DialogType.ADD_FOLDER -> showAddFolderDialog()
+            DialogType.ADD_FOLDER -> "showAddFolderDialog()"
             DialogType.FOLDER_OPTIONS -> showFolderOptionsDialog()
             DialogType.MORE_OPTIONS -> showMoreOptionDialog()
-            DialogType.REQUEST_PASSWORD -> showRequestPasswordDialog()
+            DialogType.REQUEST_PASSWORD -> ""
             DialogType.SET_PASSWORD -> showSetPasswordDialog(target)
             DialogType.SORT -> showSortDialog()
         }
-    }
-
-    private fun showAddFolderDialog() {
-        val builder = AlertDialog.Builder(activity)
-
-        builder.setTitle("폴더 생성")
-        builder.setMessage("폴더이름을 입력해주세요.")
-
-        val editText = EditText(activity)
-        builder.setView(editText)
-
-        builder.setPositiveButton("확인") { _: DialogInterface?, _: Int ->
-            if (editText.text.toString() == "") {
-                activity.showToast("폴더이름을 입력해주세요.")
-            } else {
-                folderAdapter.addFolder(editText.text.toString())
-                //folderAdapter.notifyItemInserted(folderManager.folders.size - 1)
-            }
-        }
-
-        builder.setNegativeButton("취소") { _: DialogInterface?, _: Int -> }
-
-        builder.create()
-        builder.show()
     }
 
     private fun showFolderOptionsDialog() {
@@ -179,10 +153,12 @@ class DialogManager(private val context: Context) {
                 noteAdapter.notifyDataSetChanged()
             }
 
+
         builder.create()
         builder.show()
     }
 
+    /*
     private fun showRequestPasswordDialog() {
         val dialog = Dialog(activity)
         dialog.setContentView(R.layout.dialog_set_password)
@@ -196,6 +172,8 @@ class DialogManager(private val context: Context) {
 
         dialog.show()
     }
+
+     */
 
     private fun confirmPassword(dialog: Dialog, note: Note, password: String) {
         if (note.password == password) activity.startEditFragment(note)

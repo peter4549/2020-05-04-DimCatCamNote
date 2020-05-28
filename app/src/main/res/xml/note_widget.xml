@@ -1,0 +1,14 @@
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:minWidth="40dp"
+    android:minHeight="40dp"
+    android:minResizeWidth="40dp"
+    android:minResizeHeight="40dp"
+    android:initialLayout="@layout/widget"
+    android:configure="com.elliot.kim.kotlin.dimcatcamnote.SingleNoteConfigureActivity"
+    android:resizeMode="horizontal|vertical"
+    android:widgetCategory="home_screen">
+</appwidget-provider>
+    <!-- configure에는 관련 액티비티가 들어갸야 될듯. 메인을 써도 적합하련지... 확인.아마 메인 써야될듯
+     리스트까지 지원하고자 한다면??-->
+
+<!-- android:configure="com.elliot.kim.kotlin.dimcatcamnote.MainActivity"-->

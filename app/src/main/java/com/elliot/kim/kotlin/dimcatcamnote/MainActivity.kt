@@ -34,6 +34,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.elliot.kim.kotlin.dimcatcamnote.broadcast_receivers.AlarmReceiver
 import com.elliot.kim.kotlin.dimcatcamnote.databinding.ActivityMainBinding
+import com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments.AddFolderDialogFragment
 import com.elliot.kim.kotlin.dimcatcamnote.fragments.*
 import com.elliot.kim.kotlin.dimcatcamnote.item_touch_helper.RecyclerViewTouchHelper
 import com.elliot.kim.kotlin.dimcatcamnote.item_touch_helper.UnderlayButton
@@ -47,6 +48,7 @@ const val KEY_EVENT_ACTION = "key_event_action"
 const val KEY_EVENT_EXTRA = "key_event_extra"
 
 class MainActivity : AppCompatActivity(), LifecycleOwner {
+    private var tag = "MainActivity"
 
     private lateinit var binding: ActivityMainBinding
 
@@ -98,9 +100,6 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         binding.writeFloatingActionButton.setOnClickListener { startWriteFragment() }
 
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-
-
-
 
         val viewModelFactory = ViewModelProvider.AndroidViewModelFactory.getInstance(application)
         viewModel = ViewModelProvider(this, viewModelFactory)[MainViewModel::class.java]
@@ -543,9 +542,12 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
     }
 
     private fun initializeDialogManager() {
+        /*
         dialogManager = DialogManager(this)
         dialogManager.setFolderAdapter(folderAdapter)
         dialogManager.setNoteAdapter(noteAdapter)
+
+         */
     }
 
     private fun initializeNavigationDrawer() {
@@ -556,7 +558,8 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         toggle.syncState()
 
         binding.buttonAddFolder.setOnClickListener {
-            dialogManager.showDialog(DialogManager.Companion.DialogType.ADD_FOLDER)
+            dialogManager.showDialog(AddFolderDialogFragment(folderAdapter)
+                .show(fragmentManager, tag))
         }
     }
 
