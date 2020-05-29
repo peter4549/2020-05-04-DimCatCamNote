@@ -40,7 +40,9 @@
                 android:id="@+id/imageView"
                 android:layout_width="match_parent"
                 android:layout_height="224dp"
-                android:layout_margin="2dp" />
+                android:layout_margin="2dp"
+                android:clickable="true"
+                android:focusable="true"/>
 
             <EditText
                 android:id="@+id/edit_text_content"
@@ -55,10 +57,11 @@
                 android:textColor="@color/textColorHintAddEditText"
                 android:autofillHints="" />
 
-            <TextView
+            <View
                 android:id="@+id/focus_block"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:layout_below="@id/imageView"
                 android:focusable="true"/>
 
         </RelativeLayout>

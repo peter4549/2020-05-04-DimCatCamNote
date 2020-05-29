@@ -24,7 +24,7 @@ class PasswordConfirmationDialogFragment(private val adapter: Any,
 
         dialog.findViewById<Button>(R.id.button_enter_password).setOnClickListener {
             val password = editText.text.toString()
-            if (password.isBlank()) activity.showToast(PASSWORD_REQUEST_MESSAGE)
+            if (password.isBlank()) activity.showToast(getString(R.string.password_request))
             else confirmPassword(dialog, password)
         }
 
@@ -43,15 +43,13 @@ class PasswordConfirmationDialogFragment(private val adapter: Any,
                         // Close the navigation drawer.
                         activity.onBackPressed()
                     }
-                } else {
-                    activity.showToast(PASSWORD_MISMATCH_MESSAGE)
-                }
+                } else activity.showToast(getString(R.string.password_mismatch))
             }
             is NoteAdapter -> {
                 if (adapter.selectedNote!!.password == password)
                     activity.startEditFragment(adapter.selectedNote!!)
                 else
-                    activity.showToast(PASSWORD_MISMATCH_MESSAGE)
+                    activity.showToast(getString(R.string.password_mismatch))
             }
             else -> throw RuntimeException()
         }
@@ -63,6 +61,6 @@ class PasswordConfirmationDialogFragment(private val adapter: Any,
         (adapter as FolderAdapter).selectedFolder!!.isLocked = false
         adapter.selectedFolder!!.password = ""
         adapter.update(adapter.selectedFolder!!)
-        activity.showToast(FOLDER_UNLOCK_NOTIFICATION_MESSAGE)
+        activity.showToast(getString(R.string.folder_unlock_notification))
     }
 }

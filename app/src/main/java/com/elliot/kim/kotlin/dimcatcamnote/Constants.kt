@@ -15,7 +15,14 @@ enum class CurrentFragment {
     ALARM_FRAGMENT,
     CAMERA_FRAGMENT,
     EDIT_FRAGMENT,
+    PHOTO_FRAGMENT,
     WRITE_FRAGMENT
+}
+
+enum class SortBy {
+    EDIT_TIME,
+    CREATION_TIME,
+    NAME
 }
 
 const val PATTERN_YYYY_MM_dd = "yyyy년 MM월 dd일"

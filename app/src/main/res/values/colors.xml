@@ -1,5 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
+    <!-- 100% — FF
+95% — F2
+90% — E6
+85% — D9
+80% — CC
+75% — BF
+70% — B3
+65% — A6
+60% — 99
+55% — 8C
+50% — 80
+45% — 73
+40% — 66
+35% — 59
+30% — 4D
+25% — 40
+20% — 33
+15% — 26
+10% — 1A
+5% — 0D
+0% — 00-->
+
     <color name="colorPrimary">#6200EE</color>
     <color name="colorPrimaryDark">#3700B3</color>
     <color name="colorAccent">#03DAC5</color>
@@ -44,5 +67,8 @@
     <color name="colorUnderlayButtonAlarm">#29b6f6</color>
     <color name="colorUnderlayButtonShare">#26a69a</color>
     <color name="colorUnderlayButtonCheck">#66bb6a</color>
+
+    <color name="colorAddWidgetTextViewContent">#80fffde7</color>
+    <color name="backgroundColorPhotoFragment">#263238</color>
 
 </resources>

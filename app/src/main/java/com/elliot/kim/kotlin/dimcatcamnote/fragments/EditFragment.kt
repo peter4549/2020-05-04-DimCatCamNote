@@ -1,5 +1,7 @@
 package com.elliot.kim.kotlin.dimcatcamnote.fragments
 
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
 import android.annotation.SuppressLint
 import android.content.DialogInterface
 import android.net.Uri
@@ -15,8 +17,9 @@ import com.bumptech.glide.Glide
 import com.elliot.kim.kotlin.dimcatcamnote.*
 import com.elliot.kim.kotlin.dimcatcamnote.databinding.FragmentEditBinding
 import com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments.PasswordSettingDialogFragment
+import kotlinx.android.synthetic.main.fragment_write.view.*
 
-class EditFragment() : Fragment() {
+class EditFragment : Fragment() {
 
     private lateinit var activity: MainActivity
     private lateinit var binding: FragmentEditBinding
@@ -52,6 +55,8 @@ class EditFragment() : Fragment() {
         activity.setSupportActionBar(binding.toolBar)
         activity.supportActionBar?.setDisplayHomeAsUpEnabled(true)
         setHasOptionsMenu(true)
+
+        binding.imageView.setOnClickListener { startPhotoFragment() }
 
         binding.focusBlock.setOnTouchListener(object : OnTouchListener {
             private val gestureDetector = GestureDetector(activity,
@@ -147,11 +152,8 @@ class EditFragment() : Fragment() {
                 viewModel.update(note)
             }
             R.id.menu_lock -> {
-                if (note.isLocked) {
-                    unlock()
-                } else {
-                    lock()
-                }
+                if (note.isLocked) unlock()
+                else lock()
             }
             R.id.menu_delete -> {
                 activity.closeOptionsMenu()
@@ -165,7 +167,7 @@ class EditFragment() : Fragment() {
     }
 
     private fun lock() {
-        PasswordSettingDialogFragment
+        PasswordSettingDialogFragment(activity.getNoteAdapter()).show(activity.fragmentManager, tag)
     }
 
     private fun unlock() {
@@ -200,6 +202,16 @@ class EditFragment() : Fragment() {
             .setCustomAnimations(R.anim.slide_up, R.anim.slide_up, R.anim.slide_down, R.anim.slide_down)
             .replace(R.id.edit_note_container,
                 activity.alarmFragment).commit()
+    }
+
+    private fun startPhotoFragment() {
+        activity.fragmentManager.beginTransaction()
+            .addToBackStack(null)
+            .setCustomAnimations(R.anim.anim_slide_up_enter,
+                R.anim.anim_slide_up_exit,
+                R.anim.anim_slide_down_pop_enter,
+                R.anim.anim_slide_down_pop_exit)
+            .replace(R.id.edit_note_container, PhotoFragment(this, note.uri!!)).commit()
     }
 
     private fun showCheckMessage() {

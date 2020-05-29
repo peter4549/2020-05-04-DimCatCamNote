@@ -9,16 +9,16 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
+import com.elliot.kim.kotlin.dimcatcamnote.CurrentFragment
+import com.elliot.kim.kotlin.dimcatcamnote.MainActivity
 import com.elliot.kim.kotlin.dimcatcamnote.R
 import java.io.File
 
+class PhotoFragment(private val fragment: Any, private val uri: String) : Fragment() {
 
-/** Fragment used for each individual page showing a photo inside of [GalleryFragment] */
-class PhotoFragment internal constructor() : Fragment() {
-
+    private lateinit var activity: MainActivity
     private lateinit var imageView: ImageView
-    // 이후 전달하는 방식으로 변환할 것.
-    var uri: String? = null
+
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View =
@@ -26,20 +26,34 @@ class PhotoFragment internal constructor() : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        activity = requireActivity() as MainActivity
         imageView = view.findViewById<ImageView>(R.id.image_view)
-        val resource = uri?.let { File(it) } ?: R.drawable.check_mark
+        // val resource = uri.let { File(it) } ?: R.drawable.check_mark
         Glide.with(imageView.context).load(Uri.parse(uri)).into(imageView)
     }
 
-    // navigation 패러다임으로 전환 시 아래 내용 onViewCreated에서 처리하도록 할 것.
     override fun onResume() {
         super.onResume()
 
+        activity.setCurrentFragment(CurrentFragment.PHOTO_FRAGMENT)
+    }
 
+    override fun onStop() {
+        when (fragment) {
+            is EditFragment -> activity.setCurrentFragment(CurrentFragment.EDIT_FRAGMENT)
+            is WriteFragment -> {
+                val message = activity.writeFragment.handler.obtainMessage()
+                activity.writeFragment.handler.sendMessage(message)
+                activity.setCurrentFragment(CurrentFragment.WRITE_FRAGMENT)
+            }
+        }
 
+        super.onStop()
     }
 
     companion object {
+        /*
         private const val FILE_NAME_KEY = "file_name"
 
         fun create(image: File) = PhotoFragment().apply {
@@ -47,5 +61,7 @@ class PhotoFragment internal constructor() : Fragment() {
                 putString(FILE_NAME_KEY, image.absolutePath)
             }
         }
+
+         */
     }
 }

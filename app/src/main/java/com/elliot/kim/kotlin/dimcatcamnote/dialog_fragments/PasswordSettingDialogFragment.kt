@@ -34,11 +34,11 @@ class PasswordSettingDialogFragment(private val adapter: Any) : DialogFragment()
     }
 
     private fun getEnteredPassword(editText: EditText, textView: TextView) {
-        if (editText.text.isBlank()) activity.showToast(PASSWORD_REQUEST_MESSAGE)
+        if (editText.text.isBlank()) activity.showToast(getString(R.string.password_request))
         else {
             firstEnteredPassword = editText.text.toString()
             editText.text = null
-            textView.text = PASSWORD_CONFIRMATION_MESSAGE
+            textView.text = getString(R.string.password_confirmation)
             isPasswordEntered = true
         }
     }
@@ -49,7 +49,7 @@ class PasswordSettingDialogFragment(private val adapter: Any) : DialogFragment()
             isPasswordEntered = false
             setPassword(password)
             dialog.dismiss()
-        } else activity.showToast(PASSWORD_MISMATCH_MESSAGE)
+        } else activity.showToast(getString(R.string.password_mismatch))
     }
 
     private fun setPassword(password: String) {
@@ -59,7 +59,7 @@ class PasswordSettingDialogFragment(private val adapter: Any) : DialogFragment()
             else -> throw RuntimeException()
         }
 
-        activity.showToast(PASSWORD_SETTING_NOTIFICATION_MESSAGE)
+        activity.showToast(getString(R.string.password_set_notification))
     }
 
     private fun setFolderPassword(password: String) {

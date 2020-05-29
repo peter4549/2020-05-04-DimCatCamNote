@@ -18,13 +18,11 @@ import android.util.Log
 import android.view.*
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
 import com.elliot.kim.kotlin.dimcatcamnote.CurrentFragment
 import com.elliot.kim.kotlin.dimcatcamnote.MainActivity
 import com.elliot.kim.kotlin.dimcatcamnote.MainActivity.Companion.CAMERA_PERMISSIONS_REQUEST_CODE
-import com.elliot.kim.kotlin.dimcatcamnote.MainActivity.Companion.LOCATION_PERMISSIONS_REQUEST_CODE
 import com.elliot.kim.kotlin.dimcatcamnote.MainActivity.Companion.RECORD_AUDIO_PERMISSIONS_REQUEST_CODE
 import com.elliot.kim.kotlin.dimcatcamnote.Note
 import com.elliot.kim.kotlin.dimcatcamnote.R
@@ -34,6 +32,7 @@ import kotlinx.android.synthetic.main.fragment_write.view.*
 class WriteFragment : Fragment() {
 
     lateinit var handler: Handler
+    private lateinit var activity: MainActivity
     private lateinit var audioManager: AudioManager
     private lateinit var binding: FragmentWriteBinding
     private lateinit var intent: Intent
@@ -49,8 +48,11 @@ class WriteFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        audioManager = requireActivity().getSystemService(Context.AUDIO_SERVICE) as AudioManager
+
+        activity = requireActivity() as MainActivity
+        audioManager = activity.getSystemService(Context.AUDIO_SERVICE) as AudioManager
         shortAnimationDuration = resources.getInteger(android.R.integer.config_shortAnimTime)
+
         intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
         intent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, requireActivity().packageName)
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, VALUE_LANGUAGE)
@@ -69,7 +71,7 @@ class WriteFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         clearText()
-        (activity as MainActivity).setCurrentFragment(CurrentFragment.WRITE_FRAGMENT)
+        activity.setCurrentFragment(CurrentFragment.WRITE_FRAGMENT)
 
         originalVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
     }
@@ -78,8 +80,8 @@ class WriteFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         binding = FragmentWriteBinding.bind(view)
 
-        (activity as AppCompatActivity).setSupportActionBar(binding.toolBar)
-        (activity as AppCompatActivity).supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        activity.setSupportActionBar(binding.toolBar)
+        activity.supportActionBar?.setDisplayHomeAsUpEnabled(true)
         setHasOptionsMenu(true)
 
         binding.toolBar.title = TITLE_TOOLBAR
@@ -156,8 +158,8 @@ class WriteFragment : Fragment() {
 
         if (this::recognizer.isInitialized) { recognizer.destroy() }
 
-        (activity as MainActivity).setCurrentFragment(null)
-        (activity as MainActivity).showFloatingActionButton()
+        activity.setCurrentFragment(null)
+        activity.showFloatingActionButton()
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -248,31 +250,41 @@ class WriteFragment : Fragment() {
         binding.bottomNavigationView.apply {
             translationY = 0F
 
-            animate()
-                .translationY(bottomNavigationView.height.toFloat())
+            animate().translationY(bottomNavigationView.height.toFloat())
                 .setDuration(128.toLong())
                 .setListener(object : AnimatorListenerAdapter() {
                     override fun onAnimationEnd(animation: Animator) {
                         binding.bottomNavigationView.visibility = View.GONE
 
-                        (activity as MainActivity).fragmentManager.beginTransaction()
+                        activity.fragmentManager.beginTransaction()
                             .addToBackStack(null)
                             .setCustomAnimations(R.anim.anim_camera_fragment_enter,
                                 R.anim.anim_camera_fragment_exit,
                                 R.anim.anim_camera_fragment_pop_enter,
                                 R.anim.anim_camera_fragment_pop_exit)
-                            .replace(R.id.add_container, (activity as MainActivity).cameraFragment).commit()
+                            .replace(R.id.write_fragment_container, activity.cameraFragment).commit()
                     }
                 })
         }
     }
 
     private fun startPhotoFragment() {
-        (activity as MainActivity).photoFragment.uri = uri
-        (activity as MainActivity).fragmentManager.beginTransaction()
-            .addToBackStack(null)
-            .setCustomAnimations(R.anim.slide_up, R.anim.slide_up, R.anim.slide_down, R.anim.slide_down)
-            .replace(R.id.add_container, (activity as MainActivity).photoFragment).commit()
+        binding.bottomNavigationView.apply {
+            translationY = 0F
+
+            animate().translationY(bottomNavigationView.height.toFloat())
+                .setDuration(128.toLong())
+                .setListener(object : AnimatorListenerAdapter() {
+                    override fun onAnimationEnd(animation: Animator) {
+                        binding.bottomNavigationView.visibility = View.GONE
+                        activity.fragmentManager.beginTransaction()
+                            .addToBackStack(null)
+                            .setCustomAnimations(R.anim.slide_up, R.anim.slide_up, R.anim.slide_down, R.anim.slide_down)
+                            .replace(R.id.write_fragment_container, PhotoFragment(this, uri!!)).commit()
+                    }
+                })
+        }
+
     }
 
     private fun startSpeechRecognition() {
@@ -367,9 +379,9 @@ class WriteFragment : Fragment() {
             uri
         )
         note.content = content
-        note.folderId = (activity as MainActivity).currentFolder.id
+        note.folderId = activity.currentFolder.id
 
-        (activity as MainActivity).viewModel.insert(note)
+        activity.viewModel.insert(note)
 
         Toast.makeText(context, "저장되었습니다.", Toast.LENGTH_SHORT).show()
     }
@@ -392,12 +404,12 @@ class WriteFragment : Fragment() {
 
     private fun finishWithSaving() {
         save()
-        (activity as MainActivity).backPressed()
+        activity.backPressed()
     }
 
     private fun finishWithoutSaving() {
         Toast.makeText(context, "저장되지 않았습니다.", Toast.LENGTH_SHORT).show()
-        (activity as MainActivity).backPressed()
+        activity.backPressed()
     }
 
     private fun clearText() {
@@ -442,7 +454,7 @@ class WriteFragment : Fragment() {
 
         }
 
-        // not receiving complete results.
+        // Full speech recognition results are not obtained.
         override fun onPartialResults(partialResults: Bundle?) {
             val results: List<String>? =
                 partialResults!!.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)

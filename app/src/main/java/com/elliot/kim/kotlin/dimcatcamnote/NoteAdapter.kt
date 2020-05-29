@@ -1,13 +1,18 @@
 package com.elliot.kim.kotlin.dimcatcamnote
 
 import android.annotation.SuppressLint
+import android.app.PendingIntent
+import android.appwidget.AppWidgetManager
 import android.content.Context
+import android.content.Intent
 import android.graphics.Paint
 import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Filter
+import android.widget.RemoteViews
+import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CircleCrop
@@ -15,18 +20,28 @@ import com.elliot.kim.kotlin.dimcatcamnote.databinding.CardViewBinding
 import com.elliot.kim.kotlin.dimcatcamnote.databinding.CardViewBinding.bind
 import com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments.PasswordConfirmationDialogFragment
 import com.elliot.kim.kotlin.dimcatcamnote.item_touch_helper.ItemMovedListener
+import java.lang.Exception
 import java.util.*
 
 
-class NoteAdapter(private val context: Context?, private val notes: MutableList<Note>) :
+class NoteAdapter(private val context: Context?, private val notes: MutableList<Note>,
+                  private val isAppWidgetConfigure: Boolean = false,
+                  private val appWidgetId: Int? = null) :
     RecyclerView.Adapter<NoteAdapter.ViewHolder>(),
     ItemMovedListener {
 
     private var notesFiltered: MutableList<Note> = notes
+    private lateinit var recyclerView: RecyclerView
     var selectedNote: Note? = null
 
     class ViewHolder(v: View) : RecyclerView.ViewHolder(v) {
         val binding: CardViewBinding = bind(v)
+    }
+
+    override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
+        super.onAttachedToRecyclerView(recyclerView)
+
+        this.recyclerView = recyclerView
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -116,11 +131,22 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
             false
         }
 
+        // If the NoteAdapter is instantiated in the SingleNoteConfigureActivity,
+        // it handles click events differently than instantiated in the MainActivity.
+
         holder.binding.cardView.setOnClickListener {
-            if (note.isLocked)
-                confirmPassword()
-            else (context as MainActivity).startEditFragment(note)
-            // (context as MainActivity).showDialog(DialogManager.Companion.DialogType.REQUEST_PASSWORD)
+            if (isAppWidgetConfigure) {
+                // Instantiated from the SingleNoteConfigureActivity.
+
+                if (appWidgetId == null) throw Exception("appWidgetId does not exist.")
+                else confirmConfiguration(context as SingleNoteConfigureActivity, appWidgetId)
+            } else {
+                // Instantiated from the MainActivity.
+
+                if (note.isLocked)
+                    confirmPassword()
+                else (context as MainActivity).startEditFragment(note)
+            }
         }
     }
 
@@ -216,17 +242,18 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
         if (removedNote.uri != null) (context as MainActivity).deleteFileFromUri(removedNote.uri!!)
     }
 
-    fun sort(sortBy: Int): Long {
+    fun sort(sortBy: SortBy): Long {
         Collections.sort(notes,
             Comparator { o1: Note, o2: Note ->
                 when (sortBy) {
-                    0 -> return@Comparator (o2.creationTime - o1.creationTime).toInt()
-                    1 -> return@Comparator ((o2.editTime ?: 0L) - (o1.editTime ?: 0L)).toInt()
-                    2 -> return@Comparator o1.title.compareTo(o2.title)
+                    SortBy.CREATION_TIME -> return@Comparator (o2.creationTime - o1.creationTime).toInt()
+                    SortBy.EDIT_TIME -> return@Comparator ((o2.editTime ?: 0L) - (o1.editTime ?: 0L)).toInt()
+                    SortBy.NAME -> return@Comparator o1.title.compareTo(o2.title)
                     else -> return@Comparator 0
                 }
             }
         )
+        recyclerView.scheduleLayoutAnimation()
         notifyDataSetChanged()
 
         return 0L
@@ -238,5 +265,42 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
 
     fun getNoteById(id: Int): Note {
         return notesFiltered.filter{ it.id == id }[0]
+    }
+
+    private fun confirmConfiguration(activity: SingleNoteConfigureActivity, appWidgetId: Int) {
+
+        val appWidgetManager = AppWidgetManager.getInstance(activity)
+
+        //Intent 에딧 프래그먼트 액티비티로 바꾸고 넣을 것.
+        // pending intent 등 사용
+
+        val intent = Intent(activity, MainActivity::class.java)
+        val pendingIntent = PendingIntent.getActivity(activity, 0, intent, 0)
+
+        //val views = RemoteViews(activity.packageName, R.layout.widget)
+        //views.setOnClickPendingIntent()
+        //views.setCharSequence(R.id.text_view_title, "setText", selectedNote!!.title)
+        //views.setCharSequence(R.id.text_view_content, "setText", selectedNote!!.content)
+
+        RemoteViews(activity.packageName, R.layout.app_widget).apply {
+            setOnClickPendingIntent(R.id.text_view_content, pendingIntent)
+            setCharSequence(R.id.text_view_title, "setText", selectedNote!!.title)
+            setCharSequence(R.id.text_view_content, "setText", selectedNote!!.content)
+        }.also {
+            appWidgetManager.updateAppWidget(appWidgetId, it)
+        }
+
+        val preferences = context!!.getSharedPreferences(APP_WIDGET_PREFERENCES, Context.MODE_PRIVATE)
+        val editor = preferences.edit()
+        editor.putString(KEY_NOTE_TITLE + appWidgetId, selectedNote!!.title)
+        editor.apply()
+
+        val resultIntent = Intent().apply {
+            putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
+        }
+
+        activity.setResult(AppCompatActivity.RESULT_OK, resultIntent)
+        activity.finish()
+
     }
 }

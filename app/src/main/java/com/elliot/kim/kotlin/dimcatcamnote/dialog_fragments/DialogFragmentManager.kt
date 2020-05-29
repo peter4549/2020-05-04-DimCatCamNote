@@ -1,19 +1,32 @@
 package com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments
 
-import com.elliot.kim.kotlin.dimcatcamnote.DialogManagers
+import com.elliot.kim.kotlin.dimcatcamnote.FolderAdapter
+import com.elliot.kim.kotlin.dimcatcamnote.MainActivity
+import com.elliot.kim.kotlin.dimcatcamnote.NoteAdapter
 
-class DialogFragmentManager {
+// The password-related dialog fragments require additional parameters to be entered,
+// so it is not managed by the DialogFragmentManager,
+// and is instantiated and used individually.
 
-    fun showDialog(dialog: Dialogs) {
+class DialogFragmentManager(private val activity: MainActivity,
+                            private val folderAdapter: FolderAdapter,
+                            private val noteAdapter: NoteAdapter) {
 
-        when (dialog) {
-            Dialogs.ADD_FOLDER -> ""
-            Dialogs.ADD_TO_CALENDER -> ""
-            Dialogs.FOLDER_OPTIONS -> ""
-            Dialogs.MORE_OPTIONS -> ""
-            Dialogs.PASSWORD_CONFIRMATION -> ""
-            Dialogs.PASSWORD_SETTING -> ""
-            Dialogs.SORT -> ""
+    private val tag = "DialogFragmentManager"
+
+    fun showDialogFragment(dialogFragment: DialogFragments) {
+
+        when (dialogFragment) {
+            DialogFragments.ADD_FOLDER -> AddFolderDialogFragment(folderAdapter)
+                .show(activity.fragmentManager, tag)
+            DialogFragments.ADD_TO_CALENDER -> AddToCalendarDialogFragment(noteAdapter.selectedNote!!)
+                .show(activity.fragmentManager, tag)
+            DialogFragments.FOLDER_OPTIONS -> FolderOptionsDialogFragment(folderAdapter, noteAdapter)
+                .show(activity.fragmentManager, tag)
+            DialogFragments.MORE_OPTIONS -> MoreOptionsDialogFragment(noteAdapter)
+                .show(activity.fragmentManager, tag)
+            DialogFragments.SORT -> SortDialogFragment(noteAdapter)
+                .show(activity.fragmentManager, tag)
         }
     }
 }

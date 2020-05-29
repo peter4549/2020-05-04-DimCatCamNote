@@ -26,7 +26,7 @@ class FolderOptionsDialogFragment(private val folderAdapter: FolderAdapter,
         dialog.findViewById<Button>(R.id.button_move).setOnClickListener {
             val folder = folderAdapter.getFolderByName(spinner.selectedItem as String)
             folderAdapter.moveNoteToFolder(noteAdapter.selectedNote, folder)
-            activity.showToast("폴더로 이동하였습니다.")
+            activity.showToast(getString(R.string.folder_moved_notification))
             dialog.dismiss()
         }
         dialog.findViewById<Button>(R.id.button_cancel).setOnClickListener {

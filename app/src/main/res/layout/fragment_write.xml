@@ -5,7 +5,7 @@
     tools:context="com.elliot.kim.kotlin.dimcatcamnote.MainActivity">
 
     <RelativeLayout
-        android:id="@+id/add_container"
+        android:id="@+id/write_fragment_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"

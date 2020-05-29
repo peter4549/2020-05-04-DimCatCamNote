@@ -29,12 +29,10 @@ class AddToCalendarDialogFragment(private val note: Note) : DialogFragment() {
         val dialog = Dialog(activity)
         dialog.setContentView(R.layout.dialog_add_to_calendar)
 
-        val registerButton = dialog.findViewById<Button>(R.id.button_register)
-
         setDateButton = dialog.findViewById(R.id.button_set_date)
         initializeButtonText(setDateButton)
 
-        registerButton.setOnClickListener {
+        dialog.findViewById<Button>(R.id.button_register).setOnClickListener {
             addToCalendar()
             dialog.dismiss()
         }

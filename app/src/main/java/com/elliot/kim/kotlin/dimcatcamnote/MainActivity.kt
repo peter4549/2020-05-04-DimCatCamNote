@@ -35,6 +35,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.elliot.kim.kotlin.dimcatcamnote.broadcast_receivers.AlarmReceiver
 import com.elliot.kim.kotlin.dimcatcamnote.databinding.ActivityMainBinding
 import com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments.AddFolderDialogFragment
+import com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments.DialogFragmentManager
+import com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments.DialogFragments
 import com.elliot.kim.kotlin.dimcatcamnote.fragments.*
 import com.elliot.kim.kotlin.dimcatcamnote.item_touch_helper.RecyclerViewTouchHelper
 import com.elliot.kim.kotlin.dimcatcamnote.item_touch_helper.UnderlayButton
@@ -65,7 +67,6 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
     val alarmFragment = AlarmFragment()
     val cameraFragment = CameraFragment()
     val editFragment = EditFragment()
-    val photoFragment = PhotoFragment()
     val writeFragment = WriteFragment()
 
     lateinit var animationController: LayoutAnimationController
@@ -73,7 +74,7 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
     private var initialization = true
     private var pressedTime = 0L
 
-    private lateinit var dialogManager: DialogManager
+    private lateinit var dialogFragmentManager: DialogFragmentManager
 
     private val receiver: BroadcastReceiver = object: BroadcastReceiver(){
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -91,9 +92,6 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         }
 
         fragmentManager = supportFragmentManager
-        animationController = android.view.animation.AnimationUtils.loadLayoutAnimation(
-            applicationContext,
-            R.anim.layout_animation)
 
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
         setSupportActionBar(binding.toolBar)
@@ -105,17 +103,11 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         viewModel = ViewModelProvider(this, viewModelFactory)[MainViewModel::class.java]
 
         var notesSize = 0
-        // 데이터를 읽어오고, 그놈을 등록하고, 오브저브 설정도 하는 것으로.
+        // 데이터를 읽어오고, 그놈을 등록하고, 오브저브 설정도 하는 것으로. 이걸 통으로 이니셜라이즈로 이동하는게 맞는 모양새일듯.
         viewModel.getAll().observe(this, androidx.lifecycle.Observer { notes ->
             if (initialization) {// 초기화 로직 정리할 것.
                 noteAdapter = NoteAdapter(this, notes)
                 initialize()
-                binding.recyclerView.apply {
-                    setHasFixedSize(true)
-                    adapter = noteAdapter
-                    layoutManager = LinearLayoutManager(context)
-                }
-
                 createUnderlayButtons()
 
                 initialization = false
@@ -158,10 +150,7 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
                         getColor(R.color.colorJuniperAlpha20),
                         object : UnderlayButtonClickListener {
                             override fun onClick(position: Int) {
-                                dialogManager.showDialog(DialogManager
-                                    .Companion.DialogType.MORE_OPTIONS)
-
-                                // noteAdapter.notifyItemChanged(position)
+                                showDialogFragment(DialogFragments.MORE_OPTIONS)
                             }
                         })
                 )
@@ -248,8 +237,7 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
                         getColor(R.color.colorYellowfff176),
                         object : UnderlayButtonClickListener {
                             override fun onClick(position: Int) {
-                                dialogManager.showDialog(DialogManager
-                                    .Companion.DialogType.FOLDER_OPTIONS)
+                                showDialogFragment(DialogFragments.FOLDER_OPTIONS)
                             }
                         })
                 )
@@ -287,6 +275,7 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
                     CurrentFragment.ALARM_FRAGMENT -> super.onBackPressed()
                     CurrentFragment.CAMERA_FRAGMENT -> super.onBackPressed()
                     CurrentFragment.EDIT_FRAGMENT -> editFragment.finish(EditFragment.BACK_PRESSED)
+                    CurrentFragment.PHOTO_FRAGMENT -> super.onBackPressed()
                     CurrentFragment.WRITE_FRAGMENT -> writeFragment.finish(WriteFragment.BACK_PRESSED)
                 }
             }
@@ -360,9 +349,7 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
                 true
             }
             R.id.menu_sort -> {
-                dialogManager.showDialog(DialogManager.Companion.DialogType.SORT)
-                binding.recyclerView.layoutAnimation = animationController
-                binding.recyclerView.scheduleLayoutAnimation()
+                showDialogFragment(DialogFragments.SORT)
                 true
             }
             else -> super.onOptionsItemSelected(item)
@@ -395,7 +382,10 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
     private fun startFragment(fragment: Fragment) {
         hideFloatingActionButton()
         fragmentManager.beginTransaction()
-            .setCustomAnimations(R.anim.slide_up, R.anim.slide_up, R.anim.slide_down, R.anim.slide_down)
+            .setCustomAnimations(R.anim.anim_slide_up_enter,
+                R.anim.anim_slide_up_exit,
+                R.anim.anim_slide_down_pop_enter,
+                R.anim.anim_slide_down_pop_exit)
             .addToBackStack(null)
             .replace(R.id.main_container, fragment).commit()
         hideFloatingActionButton()
@@ -403,24 +393,6 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
 
     fun setCurrentFragment(fragment: CurrentFragment?) {
         currentFragment = fragment
-    }
-
-    private fun showFolderManagementDialog(folder: Folder) {
-        /*
-        val builder = AlertDialog.Builder(this)
-        builder.setTitle("\"${folder.second}\" 폴더 관리")
-            .setItems(R.array.colors_array,
-                DialogInterface.OnClickListener { _, which ->
-                    when (which) {
-                        0 -> {}
- g
-                    }
-                })
-        builder.create()
-
-         */
-
-
     }
 
     fun getNoteById(id: Int): Note = noteAdapter.getNoteById(id)
@@ -538,16 +510,12 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         }
         loadCurrentFolderName()
         initializeNavigationDrawer()
-        initializeDialogManager()
+        initializeDialogFragmentManager()
+        initializeRecyclerView()
     }
 
-    private fun initializeDialogManager() {
-        /*
-        dialogManager = DialogManager(this)
-        dialogManager.setFolderAdapter(folderAdapter)
-        dialogManager.setNoteAdapter(noteAdapter)
-
-         */
+    private fun initializeDialogFragmentManager() {
+        dialogFragmentManager = DialogFragmentManager(this, folderAdapter, noteAdapter)
     }
 
     private fun initializeNavigationDrawer() {
@@ -558,9 +526,19 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         toggle.syncState()
 
         binding.buttonAddFolder.setOnClickListener {
-            dialogManager.showDialog(AddFolderDialogFragment(folderAdapter)
-                .show(fragmentManager, tag))
+            showDialogFragment(DialogFragments.ADD_FOLDER) }
+    }
+
+    private fun initializeRecyclerView() {
+
+        binding.recyclerView.apply {
+            setHasFixedSize(true)
+            adapter = noteAdapter
+            layoutManager = LinearLayoutManager(context)
         }
+
+        binding.recyclerView.layoutAnimation = android.view.animation.AnimationUtils
+            .loadLayoutAnimation(this, R.anim.layout_animation)
     }
 
     fun showCurrentFolderItems(folder: Folder) { // showCurrentFolderItems 로 바꾸는게 나은듯.
@@ -586,9 +564,11 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         showCurrentFolderItems(folderAdapter.getFolderById(preferences.getInt(KEY_CURRENT_FOLDER, 0)))
     }
 
-    fun showDialog(dialogType: DialogManager.Companion.DialogType) {
-        dialogManager.showDialog(dialogType)
+    fun showDialogFragment(dialogFragment: DialogFragments) {
+        dialogFragmentManager.showDialogFragment(dialogFragment)
     }
+
+    fun getNoteAdapter(): NoteAdapter = noteAdapter
 
     // 로케일에 따라서 시간은 current time을 찾도록 하고, Locale 만 건드리면 될거같음.
     fun addToCalendar() {
