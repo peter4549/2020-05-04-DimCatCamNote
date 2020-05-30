@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.room.Room
+import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity
 import kotlinx.coroutines.*
 
 class MainViewModel(application: Application): AndroidViewModel(application) {

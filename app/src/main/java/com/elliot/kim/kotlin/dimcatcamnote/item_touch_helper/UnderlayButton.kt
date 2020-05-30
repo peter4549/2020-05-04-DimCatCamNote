@@ -6,7 +6,7 @@ import android.graphics.*
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import androidx.core.content.ContextCompat
-import com.elliot.kim.kotlin.dimcatcamnote.MainActivity
+import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity
 
 class UnderlayButton (private val context: Context,
                       val id: MainActivity.Companion.UnderlayButtonIds,

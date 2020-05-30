@@ -6,7 +6,7 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context="com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity"
+        tools:context="com.elliot.kim.kotlin.dimcatcamnote.activities.EditActivity"
         android:orientation="vertical"
         android:background="@color/backgroundColorAddEditText"
         android:focusable="true"

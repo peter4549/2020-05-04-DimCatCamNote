@@ -1,4 +1,4 @@
-package com.elliot.kim.kotlin.dimcatcamnote
+package com.elliot.kim.kotlin.dimcatcamnote.activities
 
 import android.Manifest
 import android.app.AlarmManager
@@ -23,7 +23,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
-import androidx.core.view.MenuItemCompat
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
@@ -32,9 +31,9 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.elliot.kim.kotlin.dimcatcamnote.*
 import com.elliot.kim.kotlin.dimcatcamnote.broadcast_receivers.AlarmReceiver
 import com.elliot.kim.kotlin.dimcatcamnote.databinding.ActivityMainBinding
-import com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments.AddFolderDialogFragment
 import com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments.DialogFragmentManager
 import com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments.DialogFragments
 import com.elliot.kim.kotlin.dimcatcamnote.fragments.*
@@ -60,25 +59,31 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
     private lateinit var folderAdapter: FolderAdapter
     private lateinit var recyclerViewTouchHelper: RecyclerViewTouchHelper
 
-    var currentFolder = Folder(DEFAULT_FOLDER_ID, DEFAULT_FOLDER_NAME)
+    var currentFolder = Folder(
+        DEFAULT_FOLDER_ID,
+        DEFAULT_FOLDER_NAME
+    )
 
     lateinit var fragmentManager: FragmentManager
 
-    val alarmFragment = AlarmFragment()
+    val alarmFragment = AlarmFragment(this)
     val cameraFragment = CameraFragment()
     val editFragment = EditFragment()
     val writeFragment = WriteFragment()
-
-    lateinit var animationController: LayoutAnimationController
 
     private var initialization = true
     private var pressedTime = 0L
 
     private lateinit var dialogFragmentManager: DialogFragmentManager
 
+    // If an alarm is activated while the application is running,
+    // cancel the alarm.
     private val receiver: BroadcastReceiver = object: BroadcastReceiver(){
         override fun onReceive(context: Context?, intent: Intent?) {
-            val id = intent!!.getIntExtra(KEY_NOTE_ID, DEFAULT_VALUE_NOTE_ID)
+            val id = intent!!.getIntExtra(
+                KEY_NOTE_ID,
+                DEFAULT_VALUE_NOTE_ID
+            )
             cancelAlarm(getNoteById(id), false)
         }
     }
@@ -88,11 +93,12 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
 
         val permissionsRequired = getPermissionsRequired(this)
         if (permissionsRequired.isNotEmpty()) {
-            requestPermissions(permissionsRequired, PERMISSIONS_REQUEST_CODE)
+            requestPermissions(permissionsRequired,
+                PERMISSIONS_REQUEST_CODE
+            )
         }
 
         fragmentManager = supportFragmentManager
-
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
         setSupportActionBar(binding.toolBar)
         binding.writeFloatingActionButton.setOnClickListener { startWriteFragment() }
@@ -136,7 +142,7 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
 
     private fun createUnderlayButtons() {
         recyclerViewTouchHelper = object: RecyclerViewTouchHelper(this,
-            binding.recyclerView, 256, 512, noteAdapter) {
+            binding.recyclerView, 240, 640, noteAdapter) {
             override fun instantiateRightUnderlayButton(
                 viewHolder: RecyclerView.ViewHolder,
                 rightButtonBuffer: MutableList<UnderlayButton>
@@ -146,8 +152,8 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
                         UnderlayButtonIds.EDIT,
                         "더보기",
                         30,
-                        0,
-                        getColor(R.color.colorJuniperAlpha20),
+                        R.drawable.ic_more_vert_white_24dp,
+                        getColor(R.color.colorUnderlayButtonMore),
                         object : UnderlayButtonClickListener {
                             override fun onClick(position: Int) {
                                 showDialogFragment(DialogFragments.MORE_OPTIONS)
@@ -160,27 +166,11 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
                         UnderlayButtonIds.EDIT,
                         "편집",
                         30,
-                        0,
+                        R.drawable.ic_edit_white_24dp,
                         getColor(R.color.colorUnderlayButtonEdit),
                         object : UnderlayButtonClickListener {
                             override fun onClick(position: Int) {
-                                startEditFragment(noteAdapter.getNoteByPosition(position))
-
-                                noteAdapter.notifyItemChanged(position)
-                            }
-                        })
-                )
-
-                rightButtonBuffer.add(
-                    UnderlayButton(this@MainActivity,
-                        UnderlayButtonIds.SHARE,
-                        "공유",
-                        30,
-                        0,
-                        getColor(R.color.colorUnderlayButtonShare),
-                        object : UnderlayButtonClickListener {
-                            override fun onClick(position: Int) {
-                                share(noteAdapter.getNoteByPosition(position))
+                                startEditFragment()
 
                                 noteAdapter.notifyItemChanged(position)
                             }
@@ -192,7 +182,7 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
                         UnderlayButtonIds.ALARM,
                         "알림",
                         30,
-                        0,
+                        R.drawable.ic_add_alarm_white_24dp,
                         getColor(R.color.colorUnderlayButtonAlarm),
                         object : UnderlayButtonClickListener {
                             override fun onClick(position: Int) {
@@ -211,8 +201,8 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
                         UnderlayButtonIds.DONE,
                         "완료",
                         30,
-                        0,
-                        getColor(R.color.colorUnderlayButtonEdit),
+                        R.drawable.ic_done_white_24dp,
+                        getColor(R.color.colorUnderlayButtonDone),
                         object : UnderlayButtonClickListener {
                             override fun onClick(position: Int) {
                                 if (noteAdapter.getNoteByPosition(position).isDone) {
@@ -224,20 +214,6 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
                                 }
 
                                 viewModel.update(noteAdapter.getNoteByPosition(position))
-                            }
-                        })
-                )
-
-                rightButtonBuffer.add(
-                    UnderlayButton(this@MainActivity,
-                        UnderlayButtonIds.DONE,
-                        "폴더 이동",
-                        20,
-                        0,
-                        getColor(R.color.colorYellowfff176),
-                        object : UnderlayButtonClickListener {
-                            override fun onClick(position: Int) {
-                                showDialogFragment(DialogFragments.FOLDER_OPTIONS)
                             }
                         })
                 )
@@ -289,14 +265,26 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == PERMISSIONS_REQUEST_CODE) {
             if (PackageManager.PERMISSION_GRANTED == grantResults.firstOrNull()) {
-                if (hasCameraPermissions(this))
+                if (hasCameraPermissions(
+                        this
+                    )
+                )
                     Toast.makeText(this, "CAM permission request granted", Toast.LENGTH_LONG).show()
-                if (hasRecordAudioPermission(this))
+                if (hasRecordAudioPermission(
+                        this
+                    )
+                )
                     Toast.makeText(this, "Audio permission request granted", Toast.LENGTH_LONG).show()
             } else {
-                if (!hasCameraPermissions(this))
+                if (!hasCameraPermissions(
+                        this
+                    )
+                )
                     Toast.makeText(this, "카메라를 승인해야 쓸수잇음 ㅋ", Toast.LENGTH_LONG).show()
-                if (!hasRecordAudioPermission(this))
+                if (!hasRecordAudioPermission(
+                        this
+                    )
+                )
                     Toast.makeText(this, "음성 녹음을 승인해야 쓸수잇다네 소년", Toast.LENGTH_LONG).show()
             }
         }
@@ -306,7 +294,8 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
         return when (keyCode) {
             KeyEvent.KEYCODE_VOLUME_DOWN -> {
-                val intent = Intent(KEY_EVENT_ACTION).apply { putExtra(KEY_EVENT_EXTRA, keyCode) }
+                val intent = Intent(KEY_EVENT_ACTION).apply { putExtra(
+                    KEY_EVENT_EXTRA, keyCode) }
                 LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
                 true
             }
@@ -366,12 +355,11 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
 
     private fun startAlarmFragment(note: Note) {
         alarmFragment.isFromEditFragment = false
-        alarmFragment.note = note
+        alarmFragment.setNote(note)
         startFragment(alarmFragment)
     }
 
-    fun startEditFragment(note: Note) {
-        editFragment.setNote(note)
+    fun startEditFragment() {
         startFragment(editFragment)
     }
 
@@ -382,10 +370,12 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
     private fun startFragment(fragment: Fragment) {
         hideFloatingActionButton()
         fragmentManager.beginTransaction()
-            .setCustomAnimations(R.anim.anim_slide_up_enter,
+            .setCustomAnimations(
+                R.anim.anim_slide_up_enter,
                 R.anim.anim_slide_up_exit,
                 R.anim.anim_slide_down_pop_enter,
-                R.anim.anim_slide_down_pop_exit)
+                R.anim.anim_slide_down_pop_exit
+            )
             .addToBackStack(null)
             .replace(R.id.main_container, fragment).commit()
         hideFloatingActionButton()
@@ -432,18 +422,6 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         editor.remove(number.toString() + "2")
         editor.remove(number.toString() + "3")
         editor.apply()
-    }
-
-    fun share(note: Note) {
-        val intent = Intent(Intent.ACTION_SEND)
-        val text: String = note.toSharedString()
-
-        intent.type = "text/plain"
-        intent.putExtra(Intent.EXTRA_SUBJECT, "Cat Note\n")
-        intent.putExtra(Intent.EXTRA_TEXT, text)
-
-        val chooser = Intent.createChooser(intent, "공유하기")
-        this.startActivity(chooser)
     }
 
     private fun finishApplication() {
@@ -520,7 +498,9 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
 
     private fun initializeNavigationDrawer() {
         val toggle = ActionBarDrawerToggle(
-            this, binding.drawerLayout, binding.toolBar, R.string.navigation_drawer_open, R.string.navigation_drawer_close
+            this, binding.drawerLayout, binding.toolBar,
+            R.string.navigation_drawer_open,
+            R.string.navigation_drawer_close
         )
         binding.drawerLayout.addDrawerListener(toggle)
         toggle.syncState()
@@ -537,8 +517,11 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
             layoutManager = LinearLayoutManager(context)
         }
 
+        // Set the animation of the recyclerView.
         binding.recyclerView.layoutAnimation = android.view.animation.AnimationUtils
-            .loadLayoutAnimation(this, R.anim.layout_animation)
+            .loadLayoutAnimation(this,
+                R.anim.layout_animation
+            )
     }
 
     fun showCurrentFolderItems(folder: Folder) { // showCurrentFolderItems 로 바꾸는게 나은듯.
@@ -636,9 +619,18 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         // 권한 관련해서 클래스 하나 만들어야될듯.
         fun getPermissionsRequired(context: Context): Array<String> {
             var permissionsRequired = arrayOf<String>()
-            if (!hasCameraPermissions(context)) permissionsRequired += CAMERA_PERMISSIONS_REQUIRED
-            if (!hasRecordAudioPermission(context)) permissionsRequired += RECORD_AUDIO_PERMISSIONS_REQUESTED
-            if (!hasLocationPermissions(context)) permissionsRequired += LOCATION_PERMISSIONS_REQUESTED
+            if (!hasCameraPermissions(
+                    context
+                )
+            ) permissionsRequired += CAMERA_PERMISSIONS_REQUIRED
+            if (!hasRecordAudioPermission(
+                    context
+                )
+            ) permissionsRequired += RECORD_AUDIO_PERMISSIONS_REQUESTED
+            if (!hasLocationPermissions(
+                    context
+                )
+            ) permissionsRequired += LOCATION_PERMISSIONS_REQUESTED
             return permissionsRequired
         }
 
@@ -680,6 +672,18 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
             val manager =
                 context?.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
             if (view != null) manager.hideSoftInputFromWindow(view.windowToken, 0)
+        }
+
+        fun share(context: Context, note: Note) {
+            val intent = Intent(Intent.ACTION_SEND)
+            val text: String = note.toSharedString()
+
+            intent.type = "text/plain"
+            intent.putExtra(Intent.EXTRA_SUBJECT, "Cat Note\n")
+            intent.putExtra(Intent.EXTRA_TEXT, text)
+
+            val chooser = Intent.createChooser(intent, "공유하기")
+            context.startActivity(chooser)
         }
     }
 }

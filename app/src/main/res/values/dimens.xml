@@ -34,4 +34,7 @@
     <dimen name="nav_drawer_menu_item_height">40dp</dimen>
 
     <dimen name="widget_margin">8dp</dimen>
+
+    <!-- about layout size.. -->
+    <dimen name="more_options_menu_item_height">60dp</dimen>
 </resources>

@@ -1,5 +1,6 @@
 package com.elliot.kim.kotlin.dimcatcamnote.fragments
 
+import android.app.Activity
 import android.app.AlarmManager
 import android.app.DatePickerDialog
 import android.app.DatePickerDialog.OnDateSetListener
@@ -16,9 +17,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.elliot.kim.kotlin.dimcatcamnote.*
+import com.elliot.kim.kotlin.dimcatcamnote.activities.EditActivity
+import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity
 import com.elliot.kim.kotlin.dimcatcamnote.broadcast_receivers.AlarmReceiver
 import com.elliot.kim.kotlin.dimcatcamnote.broadcast_receivers.DeviceBootReceiver
 import com.elliot.kim.kotlin.dimcatcamnote.databinding.FragmentAlarmBinding
@@ -26,11 +30,13 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 @Suppress("DEPRECATION")
-class AlarmFragment : Fragment() {
+class AlarmFragment(private val activity: AppCompatActivity) : Fragment() {
 
-    lateinit var note: Note
     private lateinit var binding: FragmentAlarmBinding
+    private lateinit var note: Note
     var isFromEditFragment = false
+
+    fun setNote(note: Note) { this.note = note }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -94,28 +100,35 @@ class AlarmFragment : Fragment() {
 
                     if (System.currentTimeMillis() < calendar.timeInMillis) {
                         setAlarm(calendar)
-                        if (isFromEditFragment) EditFragment.setTimeText(note)
-                        (activity as MainActivity).backPressed()
+                        when(activity) {
+                            is EditActivity -> activity.onBackPressed()
+                            is MainActivity -> {
+                                if (isFromEditFragment) EditFragment.setTimeText(note)
+                                activity.backPressed()
+                            }
+                        }
 
                     } else
                         Toast.makeText(activity, "이미 지니간 시간입니다.", Toast.LENGTH_SHORT).show()
                 }
-                R.id.image_view_close -> activity?.supportFragmentManager?.popBackStack()
+                R.id.image_view_close -> activity.supportFragmentManager.popBackStack()
             }
         }
 
     override fun onResume() {
         super.onResume()
-        (activity as MainActivity).setCurrentFragment(CurrentFragment.ALARM_FRAGMENT)
+        if (activity is MainActivity)
+            activity.setCurrentFragment(CurrentFragment.ALARM_FRAGMENT)
     }
 
     override fun onStop() {
         super.onStop()
-        if (isFromEditFragment) {
-            isFromEditFragment = false
-            (activity as MainActivity).editFragment.setContent(note)
-            (activity as MainActivity).setCurrentFragment(CurrentFragment.EDIT_FRAGMENT)
-        } else (activity as MainActivity).setCurrentFragment(null)
+        if (activity is MainActivity) {
+            if (isFromEditFragment) {
+                activity.editFragment.setContent(note)
+                activity.setCurrentFragment(CurrentFragment.EDIT_FRAGMENT)
+            } else activity.setCurrentFragment(null)
+        }
     }
 
     private fun setAlarm(calendar: Calendar): Boolean {
@@ -157,7 +170,10 @@ class AlarmFragment : Fragment() {
 
         note.alarmTime = calendar.timeInMillis
 
-        (activity as MainActivity).viewModel.update(note)
+        when(activity) {
+            is EditActivity -> activity.viewModel.update(note)
+            is MainActivity -> activity.viewModel.update(note)
+        }
 
         manager.setComponentEnabledSetting(
             receiver,
@@ -179,7 +195,7 @@ class AlarmFragment : Fragment() {
         title: String,
         content: String
     ) {
-        val sharedPreferences = (activity as MainActivity).getSharedPreferences(
+        val sharedPreferences = activity.getSharedPreferences(
             PREFERENCES_NAME_ALARM,
             Context.MODE_PRIVATE
         )
@@ -194,7 +210,7 @@ class AlarmFragment : Fragment() {
     private fun showDatePicker() {
         val calendar = Calendar.getInstance()
         val dialog = DatePickerDialog(
-            (activity as MainActivity),
+            activity,
             OnDateSetListener { _: DatePicker?, year: Int, month: Int, dayOfMonth: Int ->
                 binding.buttonSetDate.text =
                     String.format("%d년 %d월 %d일", year, month + 1, dayOfMonth)

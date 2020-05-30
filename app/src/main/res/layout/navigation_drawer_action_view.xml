@@ -2,7 +2,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    tools:context="com.elliot.kim.kotlin.dimcatcamnote.MainActivity"
+    tools:context="com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity"
     android:id="@+id/navigation_action_view"
     android:layout_width="256dp"
     android:layout_height="@dimen/nav_drawer_menu_item_height"

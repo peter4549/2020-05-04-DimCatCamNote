@@ -1,7 +1,5 @@
 package com.elliot.kim.kotlin.dimcatcamnote.fragments
 
-import android.animation.Animator
-import android.animation.AnimatorListenerAdapter
 import android.annotation.SuppressLint
 import android.content.DialogInterface
 import android.net.Uri
@@ -15,9 +13,9 @@ import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
 import com.elliot.kim.kotlin.dimcatcamnote.*
+import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity
 import com.elliot.kim.kotlin.dimcatcamnote.databinding.FragmentEditBinding
 import com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments.PasswordSettingDialogFragment
-import kotlinx.android.synthetic.main.fragment_write.view.*
 
 class EditFragment : Fragment() {
 
@@ -30,20 +28,21 @@ class EditFragment : Fragment() {
     private var isEditMode = false
     private var originAlarmTime: Long? = null
 
-    fun setNote(note: Note) {
-        this.note = note
-        originAlarmTime = note.alarmTime
-        originContent = note.content
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        activity = requireActivity() as MainActivity
-        viewModel = activity.viewModel
+        initialize()
 
         return inflater.inflate(R.layout.fragment_edit, container, false)
+    }
+
+    private fun initialize() {
+        activity = requireActivity() as MainActivity
+        viewModel = activity.viewModel
+        note = activity.getNoteAdapter().selectedNote!!
+        originAlarmTime = note.alarmTime
+        originContent = note.content
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -62,12 +61,12 @@ class EditFragment : Fragment() {
             private val gestureDetector = GestureDetector(activity,
                 object : SimpleOnGestureListener() {
                     override fun onSingleTapUp(e: MotionEvent): Boolean {
-                        Toast.makeText(activity, "더블 탭하여 노트를 편집하세요.", Toast.LENGTH_SHORT).show()
+                        activity.showToast("더블 탭하여 노트를 편집하세요.")
                         return super.onSingleTapUp(e)
                     }
 
                     override fun onDoubleTap(e: MotionEvent): Boolean {
-                        Toast.makeText(activity, "노트를 편집하세요.", Toast.LENGTH_SHORT).show()
+                        activity.showToast("노트를 편집하세요.")
                         getFocus()
                         return super.onDoubleTap(e)
                     }
@@ -146,7 +145,7 @@ class EditFragment : Fragment() {
                 }
             }
             R.id.menu_change_alarm -> startAlarmFragment(note)
-            R.id.menu_share -> activity.share(note)
+            R.id.menu_share -> MainActivity.share(activity, note)
             R.id.menu_done -> {
                 note.isDone = !note.isDone
                 viewModel.update(note)
@@ -196,7 +195,7 @@ class EditFragment : Fragment() {
 
     private fun startAlarmFragment(note: Note) {
         activity.alarmFragment.isFromEditFragment = true
-        activity.alarmFragment.note = note
+        activity.alarmFragment.setNote(note)
         activity.fragmentManager.beginTransaction()
             .addToBackStack(null)
             .setCustomAnimations(R.anim.slide_up, R.anim.slide_up, R.anim.slide_down, R.anim.slide_down)
@@ -250,7 +249,7 @@ class EditFragment : Fragment() {
     }
 
     private fun finishWithoutSaving() {
-        Toast.makeText(context, "변경사항이 없습니다.", Toast.LENGTH_SHORT).show()
+        Toast.makeText(context, "변경된 내용이 없습니다.", Toast.LENGTH_SHORT).show()
         activity.backPressed()
     }
 

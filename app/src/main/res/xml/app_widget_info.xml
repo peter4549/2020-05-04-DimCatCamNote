@@ -5,7 +5,7 @@
     android:minResizeWidth="40dp"
     android:minResizeHeight="40dp"
     android:initialLayout="@layout/app_widget"
-    android:configure="com.elliot.kim.kotlin.dimcatcamnote.SingleNoteConfigureActivity"
+    android:configure="com.elliot.kim.kotlin.dimcatcamnote.activities.SingleNoteConfigureActivity"
     android:resizeMode="horizontal|vertical"
     android:updatePeriodMillis="18000000"
     android:widgetCategory="home_screen">

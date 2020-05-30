@@ -5,7 +5,6 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
@@ -20,12 +19,9 @@ import android.view.*
 import android.webkit.MimeTypeMap
 import android.widget.ImageButton
 import android.widget.SeekBar
-import android.widget.Toast
-import androidx.annotation.RequiresPermission
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
-import androidx.camera.view.TextureViewMeteringPointFactory
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.core.net.toFile
@@ -33,6 +29,9 @@ import androidx.fragment.app.Fragment
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.elliot.kim.kotlin.dimcatcamnote.*
 import com.elliot.kim.kotlin.dimcatcamnote.R
+import com.elliot.kim.kotlin.dimcatcamnote.activities.KEY_EVENT_ACTION
+import com.elliot.kim.kotlin.dimcatcamnote.activities.KEY_EVENT_EXTRA
+import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity
 import java.io.File
 import java.nio.ByteBuffer
 import java.text.SimpleDateFormat

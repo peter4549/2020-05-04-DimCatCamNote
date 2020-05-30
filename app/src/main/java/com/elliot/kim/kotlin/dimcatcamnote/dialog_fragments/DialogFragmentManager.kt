@@ -1,7 +1,7 @@
 package com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments
 
 import com.elliot.kim.kotlin.dimcatcamnote.FolderAdapter
-import com.elliot.kim.kotlin.dimcatcamnote.MainActivity
+import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity
 import com.elliot.kim.kotlin.dimcatcamnote.NoteAdapter
 
 // The password-related dialog fragments require additional parameters to be entered,

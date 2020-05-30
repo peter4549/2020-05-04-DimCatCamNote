@@ -16,6 +16,10 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CircleCrop
+import com.elliot.kim.kotlin.dimcatcamnote.activities.APP_WIDGET_PREFERENCES
+import com.elliot.kim.kotlin.dimcatcamnote.activities.EditActivity
+import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity
+import com.elliot.kim.kotlin.dimcatcamnote.activities.SingleNoteConfigureActivity
 import com.elliot.kim.kotlin.dimcatcamnote.databinding.CardViewBinding
 import com.elliot.kim.kotlin.dimcatcamnote.databinding.CardViewBinding.bind
 import com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments.PasswordConfirmationDialogFragment
@@ -145,7 +149,7 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
 
                 if (note.isLocked)
                     confirmPassword()
-                else (context as MainActivity).startEditFragment(note)
+                else (context as MainActivity).startEditFragment()
             }
         }
     }
@@ -264,35 +268,31 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
     fun getNoteByPosition(position: Int): Note = notesFiltered[position]
 
     fun getNoteById(id: Int): Note {
-        return notesFiltered.filter{ it.id == id }[0]
+        return notes.filter{ it.id == id }[0]
     }
 
     private fun confirmConfiguration(activity: SingleNoteConfigureActivity, appWidgetId: Int) {
 
+        val note = selectedNote!!
         val appWidgetManager = AppWidgetManager.getInstance(activity)
 
-        //Intent 에딧 프래그먼트 액티비티로 바꾸고 넣을 것.
-        // pending intent 등 사용
-
-        val intent = Intent(activity, MainActivity::class.java)
+        val intent = Intent(activity, EditActivity::class.java)
+        intent.action = ACTION_APP_WIDGET_ATTACHED + note.id
         val pendingIntent = PendingIntent.getActivity(activity, 0, intent, 0)
-
-        //val views = RemoteViews(activity.packageName, R.layout.widget)
-        //views.setOnClickPendingIntent()
-        //views.setCharSequence(R.id.text_view_title, "setText", selectedNote!!.title)
-        //views.setCharSequence(R.id.text_view_content, "setText", selectedNote!!.content)
 
         RemoteViews(activity.packageName, R.layout.app_widget).apply {
             setOnClickPendingIntent(R.id.text_view_content, pendingIntent)
-            setCharSequence(R.id.text_view_title, "setText", selectedNote!!.title)
-            setCharSequence(R.id.text_view_content, "setText", selectedNote!!.content)
+            setCharSequence(R.id.text_view_title, "setText", note.title)
+            setCharSequence(R.id.text_view_content, "setText", note.content)
         }.also {
             appWidgetManager.updateAppWidget(appWidgetId, it)
         }
 
         val preferences = context!!.getSharedPreferences(APP_WIDGET_PREFERENCES, Context.MODE_PRIVATE)
         val editor = preferences.edit()
-        editor.putString(KEY_NOTE_TITLE + appWidgetId, selectedNote!!.title)
+        editor.putInt(KEY_APP_WIDGET_NOTE_ID + appWidgetId, selectedNote!!.id)
+        editor.putString(KEY_APP_WIDGET_NOTE_TITLE + appWidgetId, selectedNote!!.title)
+        editor.putString(KEY_APP_WIDGET_NOTE_CONTENT + appWidgetId, selectedNote!!.content)
         editor.apply()
 
         val resultIntent = Intent().apply {
@@ -301,6 +301,5 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
 
         activity.setResult(AppCompatActivity.RESULT_OK, resultIntent)
         activity.finish()
-
     }
 }

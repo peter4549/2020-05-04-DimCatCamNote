@@ -7,6 +7,7 @@ import android.widget.Button
 import android.widget.Spinner
 import androidx.fragment.app.DialogFragment
 import com.elliot.kim.kotlin.dimcatcamnote.*
+import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity
 
 class FolderOptionsDialogFragment(private val folderAdapter: FolderAdapter,
                                   private val noteAdapter: NoteAdapter) : DialogFragment() {

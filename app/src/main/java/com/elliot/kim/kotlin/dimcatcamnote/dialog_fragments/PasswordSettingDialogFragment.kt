@@ -1,23 +1,33 @@
 package com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments
 
+import android.app.Activity
 import android.app.Dialog
+import android.content.Context
 import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
+import android.widget.Toast
 import androidx.fragment.app.DialogFragment
 import com.elliot.kim.kotlin.dimcatcamnote.*
+import com.elliot.kim.kotlin.dimcatcamnote.activities.EditActivity
+import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity
+import java.lang.Exception
 import kotlin.RuntimeException
 
 class PasswordSettingDialogFragment(private val adapter: Any) : DialogFragment() {
 
     private var firstEnteredPassword: String? = null
     private var isPasswordEntered = false
-    private lateinit var activity: MainActivity
+    private lateinit var activity: Activity
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
 
-        activity = requireActivity() as MainActivity
+        activity = when(requireActivity()) {
+            is MainActivity -> requireActivity() as MainActivity
+            is EditActivity -> requireActivity() as EditActivity
+            else -> throw Exception()
+        }
 
         val dialog = Dialog(activity)
         dialog.setContentView(R.layout.dialog_set_password)
@@ -34,7 +44,7 @@ class PasswordSettingDialogFragment(private val adapter: Any) : DialogFragment()
     }
 
     private fun getEnteredPassword(editText: EditText, textView: TextView) {
-        if (editText.text.isBlank()) activity.showToast(getString(R.string.password_request))
+        if (editText.text.isBlank()) showToast(activity, getString(R.string.password_request))
         else {
             firstEnteredPassword = editText.text.toString()
             editText.text = null
@@ -49,7 +59,7 @@ class PasswordSettingDialogFragment(private val adapter: Any) : DialogFragment()
             isPasswordEntered = false
             setPassword(password)
             dialog.dismiss()
-        } else activity.showToast(getString(R.string.password_mismatch))
+        } else showToast(activity, getString(R.string.password_mismatch))
     }
 
     private fun setPassword(password: String) {
@@ -59,7 +69,7 @@ class PasswordSettingDialogFragment(private val adapter: Any) : DialogFragment()
             else -> throw RuntimeException()
         }
 
-        activity.showToast(getString(R.string.password_set_notification))
+        showToast(activity, getString(R.string.password_set_notification))
     }
 
     private fun setFolderPassword(password: String) {
@@ -71,6 +81,18 @@ class PasswordSettingDialogFragment(private val adapter: Any) : DialogFragment()
     private fun setNotePassword(password: String) {
         (adapter as NoteAdapter).selectedNote?.isLocked = true
         adapter.selectedNote?.password = password
-        activity.viewModel.update(adapter.selectedNote!!)
+        update(activity, adapter.selectedNote!!)
+    }
+
+    private fun update(activity: Activity, note: Note) {
+        when(activity) {
+            is EditActivity -> activity.viewModel.update(note)
+            is MainActivity -> activity.viewModel.update(note)
+            else -> throw Exception("Invalid function call.")
+        }
+    }
+
+    private fun showToast(context: Context, text: String, duration: Int = Toast.LENGTH_SHORT) {
+        Toast.makeText(context, text, duration).show()
     }
 }

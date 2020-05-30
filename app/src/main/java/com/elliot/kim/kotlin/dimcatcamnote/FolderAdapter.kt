@@ -5,6 +5,7 @@ import android.content.Context
 import android.util.Log
 import android.view.*
 import androidx.recyclerview.widget.RecyclerView
+import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity
 import com.elliot.kim.kotlin.dimcatcamnote.databinding.CardViewNavigationDrawerBinding
 import com.elliot.kim.kotlin.dimcatcamnote.databinding.CardViewNavigationDrawerBinding.bind
 import com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments.PasswordConfirmationDialogFragment

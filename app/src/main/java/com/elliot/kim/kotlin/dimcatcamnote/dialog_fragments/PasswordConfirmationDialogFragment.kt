@@ -6,6 +6,7 @@ import android.widget.Button
 import android.widget.EditText
 import androidx.fragment.app.DialogFragment
 import com.elliot.kim.kotlin.dimcatcamnote.*
+import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity
 
 class PasswordConfirmationDialogFragment(private val adapter: Any,
                                          private val forUnlocking: Boolean = false)
@@ -47,7 +48,7 @@ class PasswordConfirmationDialogFragment(private val adapter: Any,
             }
             is NoteAdapter -> {
                 if (adapter.selectedNote!!.password == password)
-                    activity.startEditFragment(adapter.selectedNote!!)
+                    activity.startEditFragment()
                 else
                     activity.showToast(getString(R.string.password_mismatch))
             }

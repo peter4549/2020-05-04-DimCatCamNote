@@ -2,7 +2,6 @@ package com.elliot.kim.kotlin.dimcatcamnote.fragments
 
 import android.net.Uri
 import android.os.Bundle
-import android.provider.ContactsContract
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,9 +9,8 @@ import android.widget.ImageView
 import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
 import com.elliot.kim.kotlin.dimcatcamnote.CurrentFragment
-import com.elliot.kim.kotlin.dimcatcamnote.MainActivity
+import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity
 import com.elliot.kim.kotlin.dimcatcamnote.R
-import java.io.File
 
 class PhotoFragment(private val fragment: Any, private val uri: String) : Fragment() {
 

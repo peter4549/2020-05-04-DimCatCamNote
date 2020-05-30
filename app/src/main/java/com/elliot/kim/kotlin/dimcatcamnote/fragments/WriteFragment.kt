@@ -21,9 +21,9 @@ import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
 import com.elliot.kim.kotlin.dimcatcamnote.CurrentFragment
-import com.elliot.kim.kotlin.dimcatcamnote.MainActivity
-import com.elliot.kim.kotlin.dimcatcamnote.MainActivity.Companion.CAMERA_PERMISSIONS_REQUEST_CODE
-import com.elliot.kim.kotlin.dimcatcamnote.MainActivity.Companion.RECORD_AUDIO_PERMISSIONS_REQUEST_CODE
+import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity
+import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity.Companion.CAMERA_PERMISSIONS_REQUEST_CODE
+import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity.Companion.RECORD_AUDIO_PERMISSIONS_REQUEST_CODE
 import com.elliot.kim.kotlin.dimcatcamnote.Note
 import com.elliot.kim.kotlin.dimcatcamnote.R
 import com.elliot.kim.kotlin.dimcatcamnote.databinding.FragmentWriteBinding
@@ -108,7 +108,8 @@ class WriteFragment : Fragment() {
                     if (MainActivity.hasCameraPermissions(requireContext()))
                         startSpeechRecognition()
                     else
-                        requestPermissions(MainActivity.RECORD_AUDIO_PERMISSIONS_REQUESTED,
+                        requestPermissions(
+                            MainActivity.RECORD_AUDIO_PERMISSIONS_REQUESTED,
                             RECORD_AUDIO_PERMISSIONS_REQUEST_CODE)
 
                     // it.isChecked = false ?? 아마 마이크 버튼 포커스 해제하려고 시도한듯? 일단 주석.
