@@ -5,5 +5,6 @@ enum class DialogFragments {
     ADD_TO_CALENDER,
     FOLDER_OPTIONS,
     MORE_OPTIONS,
-    SORT
+    SORT,
+    THEME_OPTIONS
 }

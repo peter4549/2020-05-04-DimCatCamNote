@@ -17,7 +17,7 @@ class DialogFragmentManager(private val activity: MainActivity,
     fun showDialogFragment(dialogFragment: DialogFragments) {
 
         when (dialogFragment) {
-            DialogFragments.ADD_FOLDER -> AddFolderDialogFragment(folderAdapter)
+            DialogFragments.ADD_FOLDER -> AddFolderDialogFragment(folderAdapter, themeColor)
                 .show(activity.fragmentManager, tag)
             DialogFragments.ADD_TO_CALENDER -> AddToCalendarDialogFragment(noteAdapter.selectedNote!!)
                 .show(activity.fragmentManager, tag)
@@ -27,6 +27,14 @@ class DialogFragmentManager(private val activity: MainActivity,
                 .show(activity.fragmentManager, tag)
             DialogFragments.SORT -> SortDialogFragment(noteAdapter)
                 .show(activity.fragmentManager, tag)
+            DialogFragments.THEME_OPTIONS -> ThemeOptionsDialogFragment()
+                .show(activity.fragmentManager, tag)
         }
+    }
+
+    // theme color load func 추가할것.
+
+    companion object {
+        var themeColor = 0
     }
 }

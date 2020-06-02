@@ -8,7 +8,7 @@ import androidx.fragment.app.DialogFragment
 import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity
 import com.elliot.kim.kotlin.dimcatcamnote.NoteAdapter
 import com.elliot.kim.kotlin.dimcatcamnote.R
-import com.elliot.kim.kotlin.dimcatcamnote.SortBy
+import com.elliot.kim.kotlin.dimcatcamnote.SortingCriteria
 
 class SortDialogFragment(noteAdapter: NoteAdapter) : DialogFragment() {
 
@@ -29,9 +29,9 @@ class SortDialogFragment(noteAdapter: NoteAdapter) : DialogFragment() {
 
     private val onClickListener = View.OnClickListener { v ->
         when(v!!.id) {
-            R.id.by_edit_time -> noteAdapter.sort(SortBy.EDIT_TIME)
-            R.id.by_creation_time -> noteAdapter.sort(SortBy.CREATION_TIME)
-            R.id.by_name -> noteAdapter.sort(SortBy.NAME)
+            R.id.by_edit_time -> noteAdapter.sort(SortingCriteria.EDIT_TIME.index)
+            R.id.by_creation_time -> noteAdapter.sort(SortingCriteria.CREATION_TIME.index)
+            R.id.by_name -> noteAdapter.sort(SortingCriteria.NAME.index)
         }
 
         dialog!!.dismiss()

@@ -14,6 +14,7 @@ data class Note(var title: String = "", var creationTime: Long, var uri: String?
     var folderId: Int = 0
     var isLocked = false
     var password: String? = null
+    var appWidgetIds: Array<Int> = arrayOf(-1) //dummy
 
     fun toSharedString(): String =
         """

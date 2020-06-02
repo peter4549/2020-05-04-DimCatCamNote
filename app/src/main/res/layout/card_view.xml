@@ -70,7 +70,7 @@
                             android:layout_marginTop="6dp"
                             android:layout_marginBottom="6dp"
                             android:layout_toStartOf="@id/image_view_alarm"
-                            android:visibility="invisible" />
+                            android:visibility="gone" />
 
                         <ImageView
                             android:id="@+id/image_view_alarm"

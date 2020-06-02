@@ -25,7 +25,10 @@ import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity
 import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity.Companion.CAMERA_PERMISSIONS_REQUEST_CODE
 import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity.Companion.RECORD_AUDIO_PERMISSIONS_REQUEST_CODE
 import com.elliot.kim.kotlin.dimcatcamnote.Note
+import com.elliot.kim.kotlin.dimcatcamnote.PATTERN_YYYY_MM_dd
 import com.elliot.kim.kotlin.dimcatcamnote.R
+import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity.Companion.getCurrentTime
+import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity.Companion.longTimeToString
 import com.elliot.kim.kotlin.dimcatcamnote.databinding.FragmentWriteBinding
 import kotlinx.android.synthetic.main.fragment_write.view.*
 
@@ -368,7 +371,7 @@ class WriteFragment : Fragment() {
 
     private fun save() {
         if (title.isBlank() && content.isBlank())
-            title = MainActivity.getCurrentTime().toString()
+            title = longTimeToString(getCurrentTime(), PATTERN_YYYY_MM_dd)
         else {
             if (title.isBlank()) title = if (content.length > 12) content.substring(0, 12)
             else content

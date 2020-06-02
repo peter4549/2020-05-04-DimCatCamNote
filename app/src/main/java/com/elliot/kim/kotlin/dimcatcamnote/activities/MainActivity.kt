@@ -49,7 +49,7 @@ const val KEY_EVENT_ACTION = "key_event_action"
 const val KEY_EVENT_EXTRA = "key_event_extra"
 
 class MainActivity : AppCompatActivity(), LifecycleOwner {
-    private var tag = "MainActivity"
+    private val tag = "MainActivity"
 
     private lateinit var binding: ActivityMainBinding
 
@@ -107,6 +107,7 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
 
         val viewModelFactory = ViewModelProvider.AndroidViewModelFactory.getInstance(application)
         viewModel = ViewModelProvider(this, viewModelFactory)[MainViewModel::class.java]
+        viewModel.setContext(this)
 
         var notesSize = 0
         // 데이터를 읽어오고, 그놈을 등록하고, 오브저브 설정도 하는 것으로. 이걸 통으로 이니셜라이즈로 이동하는게 맞는 모양새일듯.
@@ -490,6 +491,7 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         initializeNavigationDrawer()
         initializeDialogFragmentManager()
         initializeRecyclerView()
+        initializeSortingCriteria()
     }
 
     private fun initializeDialogFragmentManager() {
@@ -505,23 +507,36 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         binding.drawerLayout.addDrawerListener(toggle)
         toggle.syncState()
 
+        binding.navigationDrawerChangeTheme.setOnClickListener {
+            dialogFragmentManager.showDialogFragment(DialogFragments.THEME_OPTIONS)
+        }
+
         binding.buttonAddFolder.setOnClickListener {
             showDialogFragment(DialogFragments.ADD_FOLDER) }
     }
 
     private fun initializeRecyclerView() {
 
+        // Set the animation of the recyclerView.
+        // 불필ㅇ쇼 할지도, 정의할것. ,xml에
+        val layoutAnimationController = android.view.animation.AnimationUtils
+            .loadLayoutAnimation(this,
+                R.anim.layout_animation
+            )
+
         binding.recyclerView.apply {
             setHasFixedSize(true)
             adapter = noteAdapter
             layoutManager = LinearLayoutManager(context)
+            layoutAnimation = layoutAnimationController
         }
 
-        // Set the animation of the recyclerView.
-        binding.recyclerView.layoutAnimation = android.view.animation.AnimationUtils
-            .loadLayoutAnimation(this,
-                R.anim.layout_animation
-            )
+        binding.recyclerView.scheduleLayoutAnimation()
+    }
+
+    private fun initializeSortingCriteria() {
+        val preferences = getSharedPreferences(PREFERENCES_SORTING_CRITERIA, Context.MODE_PRIVATE)
+        noteAdapter.sort(preferences.getInt(KEY_SORTING_CRITERIA, SortingCriteria.EDIT_TIME.index))
     }
 
     fun showCurrentFolderItems(folder: Folder) { // showCurrentFolderItems 로 바꾸는게 나은듯.
@@ -585,7 +600,8 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
     }
 
     companion object {
-        const val DATABASE_NAME = "dim_cat_cam_notes_5"
+
+        const val DATABASE_NAME = "dim_cat_cam_notes_9"
 
         const val PREFERENCES_CURRENT_FOLDER = "current_folder"
 
@@ -659,7 +675,7 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
             return System.currentTimeMillis()
         }
 
-        fun timeToString(time: Long?): String = SimpleDateFormat(pattern, Locale.getDefault()).
+        fun longTimeToString(time: Long?, pattern: String): String = SimpleDateFormat(pattern, Locale.getDefault()).
             format(time ?: 0L)
 
         fun showKeyboard(context: Context?, view: View?) {

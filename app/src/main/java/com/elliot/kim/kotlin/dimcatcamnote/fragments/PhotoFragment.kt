@@ -11,11 +11,12 @@ import com.bumptech.glide.Glide
 import com.elliot.kim.kotlin.dimcatcamnote.CurrentFragment
 import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity
 import com.elliot.kim.kotlin.dimcatcamnote.R
+import com.github.chrisbanes.photoview.PhotoView
 
 class PhotoFragment(private val fragment: Any, private val uri: String) : Fragment() {
 
     private lateinit var activity: MainActivity
-    private lateinit var imageView: ImageView
+    private lateinit var photoView: PhotoView
 
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
@@ -26,9 +27,9 @@ class PhotoFragment(private val fragment: Any, private val uri: String) : Fragme
         super.onViewCreated(view, savedInstanceState)
 
         activity = requireActivity() as MainActivity
-        imageView = view.findViewById<ImageView>(R.id.image_view)
+        photoView = view.findViewById(R.id.photo_view)
         // val resource = uri.let { File(it) } ?: R.drawable.check_mark
-        Glide.with(imageView.context).load(Uri.parse(uri)).into(imageView)
+        Glide.with(photoView.context).load(Uri.parse(uri)).into(photoView)
     }
 
     override fun onResume() {

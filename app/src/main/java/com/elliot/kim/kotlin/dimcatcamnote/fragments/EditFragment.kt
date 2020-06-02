@@ -273,16 +273,16 @@ class EditFragment : Fragment() {
         lateinit var textViewTime: TextView
 
         fun setTimeText(note: Note) {
-            var timeText = "최초 작성일: " + MainActivity.timeToString(
-                note.creationTime
+            var timeText = "최초 작성일: " + MainActivity.longTimeToString(
+                note.creationTime, PATTERN_UP_TO_SECONDS
             )
 
-            if (note.editTime != null) timeText += "\n최근 수정일: ${MainActivity.timeToString(
-                note.editTime
+            if (note.editTime != null) timeText += "\n최근 수정일: ${MainActivity.longTimeToString(
+                note.editTime, PATTERN_UP_TO_SECONDS
             )}"
 
-            if (note.alarmTime != null) timeText += "\n알림 시간: ${MainActivity.timeToString(
-                note.alarmTime
+            if (note.alarmTime != null) timeText += "\n알림 시간: ${MainActivity.longTimeToString(
+                note.alarmTime, PATTERN_UP_TO_SECONDS
             )}"
 
             textViewTime.text = timeText

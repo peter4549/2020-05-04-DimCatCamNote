@@ -24,8 +24,8 @@ import com.elliot.kim.kotlin.dimcatcamnote.databinding.CardViewBinding
 import com.elliot.kim.kotlin.dimcatcamnote.databinding.CardViewBinding.bind
 import com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments.PasswordConfirmationDialogFragment
 import com.elliot.kim.kotlin.dimcatcamnote.item_touch_helper.ItemMovedListener
-import java.lang.Exception
 import java.util.*
+import kotlin.collections.ArrayList
 
 
 class NoteAdapter(private val context: Context?, private val notes: MutableList<Note>,
@@ -76,9 +76,9 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
         val alarmTime: Long? = note.alarmTime
 
         val time: String = if (editTime != null)
-            "${context?.getString(R.string.creation_time)}: ${MainActivity.timeToString(creationTime)}"
+            "${context?.getString(R.string.creation_time)}: ${MainActivity.longTimeToString(creationTime, PATTERN_UP_TO_SECONDS)}"
         else
-            "${context?.getString(R.string.edit_time)}: ${MainActivity.timeToString(editTime)}"
+            "${context?.getString(R.string.edit_time)}: ${MainActivity.longTimeToString(editTime, PATTERN_UP_TO_SECONDS)}"
 
         holder.binding.textViewTitle.text = title
         holder.binding.textViewTime.text = time
@@ -115,7 +115,7 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
             holder.binding.imageViewAlarm.visibility = View.GONE
         } else {
             val alarmTimeText =
-                "${context?.getString(R.string.alarm_time)}: ${MainActivity.timeToString(alarmTime)}"
+                "${context?.getString(R.string.alarm_time)}: ${MainActivity.longTimeToString(alarmTime, PATTERN_UP_TO_SECONDS)}"
             holder.binding.textViewAlarmTime.visibility = View.VISIBLE
             holder.binding.textViewAlarmTime.text = alarmTimeText
             holder.binding.imageViewAlarm.visibility = View.VISIBLE
@@ -204,6 +204,7 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
                     }
                     notesFiltered = noteListFiltering
                 }
+
                 val filterResults = FilterResults()
                 filterResults.values = notesFiltered
                 return filterResults
@@ -246,19 +247,25 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
         if (removedNote.uri != null) (context as MainActivity).deleteFileFromUri(removedNote.uri!!)
     }
 
-    fun sort(sortBy: SortBy): Long {
+    fun sort(sortingCriteria: Int): Long {
         Collections.sort(notes,
             Comparator { o1: Note, o2: Note ->
-                when (sortBy) {
-                    SortBy.CREATION_TIME -> return@Comparator (o2.creationTime - o1.creationTime).toInt()
-                    SortBy.EDIT_TIME -> return@Comparator ((o2.editTime ?: 0L) - (o1.editTime ?: 0L)).toInt()
-                    SortBy.NAME -> return@Comparator o1.title.compareTo(o2.title)
+                when (sortingCriteria) {
+                    SortingCriteria.CREATION_TIME.index-> return@Comparator (o2.creationTime - o1.creationTime).toInt()
+                    SortingCriteria.EDIT_TIME.index -> return@Comparator ((o2.editTime ?: 0L) - (o1.editTime ?: 0L)).toInt()
+                    SortingCriteria.NAME.index -> return@Comparator o1.title.compareTo(o2.title)
                     else -> return@Comparator 0
                 }
             }
         )
         recyclerView.scheduleLayoutAnimation()
         notifyDataSetChanged()
+
+        val preferences =
+            context!!.getSharedPreferences(PREFERENCES_SORTING_CRITERIA, Context.MODE_PRIVATE)
+        val editor = preferences.edit()
+        editor.putInt(KEY_SORTING_CRITERIA, sortingCriteria)
+        editor.apply()
 
         return 0L
     }
@@ -284,21 +291,41 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
             setOnClickPendingIntent(R.id.text_view_content, pendingIntent)
             setCharSequence(R.id.text_view_title, "setText", note.title)
             setCharSequence(R.id.text_view_content, "setText", note.content)
+
+            if (note.isDone) setViewVisibility(R.id.image_view_done, View.VISIBLE)
+            else setViewVisibility(R.id.image_view_done, View.GONE)
+
+            if (note.isLocked) setViewVisibility(R.id.image_view_lock, View.VISIBLE)
+            else setViewVisibility(R.id.image_view_lock, View.GONE)
+
+            if (note.alarmTime != null) setViewVisibility(R.id.image_view_alarm, View.VISIBLE)
+            else setViewVisibility(R.id.image_view_alarm, View.GONE)
+
         }.also {
             appWidgetManager.updateAppWidget(appWidgetId, it)
         }
 
         val preferences = context!!.getSharedPreferences(APP_WIDGET_PREFERENCES, Context.MODE_PRIVATE)
         val editor = preferences.edit()
-        editor.putInt(KEY_APP_WIDGET_NOTE_ID + appWidgetId, selectedNote!!.id)
-        editor.putString(KEY_APP_WIDGET_NOTE_TITLE + appWidgetId, selectedNote!!.title)
-        editor.putString(KEY_APP_WIDGET_NOTE_CONTENT + appWidgetId, selectedNote!!.content)
+        editor.putInt(KEY_APP_WIDGET_NOTE_ID + appWidgetId, note.id)
+        editor.putString(KEY_APP_WIDGET_NOTE_TITLE + appWidgetId, note.title)
+        editor.putString(KEY_APP_WIDGET_NOTE_CONTENT + appWidgetId, note.content)
+        editor.putString(KEY_APP_WIDGET_NOTE_URI + appWidgetId, note.uri ?: "")
+        editor.putLong(KEY_APP_WIDGET_NOTE_CREATION_TIME + appWidgetId, note.creationTime)
+        editor.putLong(KEY_APP_WIDGET_NOTE_EDIT_TIME + appWidgetId, note.editTime ?: 0L)
+        editor.putLong(KEY_APP_WIDGET_NOTE_ALARM_TIME + appWidgetId, note.alarmTime ?: 0L)
+        editor.putBoolean(KEY_APP_WIDGET_NOTE_IS_DONE + appWidgetId, note.isDone)
+        editor.putBoolean(KEY_APP_WIDGET_NOTE_IS_LOCKED + appWidgetId, note.isLocked)
+        editor.putString(KEY_APP_WIDGET_NOTE_PASSWORD + appWidgetId, note.password ?: "")
         editor.apply()
 
         val resultIntent = Intent().apply {
             putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
         }
 
+        note.appWidgetIds += appWidgetId
+        //(note.appWidgetIds as MutableList<Int>).add(appWidgetId)
+        activity.viewModel.update(note, false)
         activity.setResult(AppCompatActivity.RESULT_OK, resultIntent)
         activity.finish()
     }
