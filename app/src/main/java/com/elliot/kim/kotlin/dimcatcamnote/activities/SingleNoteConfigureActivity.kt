@@ -1,7 +1,6 @@
 package com.elliot.kim.kotlin.dimcatcamnote.activities
 
 import android.appwidget.AppWidgetManager
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
@@ -10,6 +9,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.elliot.kim.kotlin.dimcatcamnote.*
 import com.elliot.kim.kotlin.dimcatcamnote.databinding.ActivitySingleNoteConfigureBinding
+import com.elliot.kim.kotlin.dimcatcamnote.view_model.MainViewModel
 
 const val APP_WIDGET_PREFERENCES = "app_widget_preferences"
 

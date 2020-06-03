@@ -1,4 +1,4 @@
-package com.elliot.kim.kotlin.dimcatcamnote
+package com.elliot.kim.kotlin.dimcatcamnote.view_model
 
 import android.app.Application
 import android.appwidget.AppWidgetManager
@@ -8,6 +8,7 @@ import android.content.Intent
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.room.Room
+import com.elliot.kim.kotlin.dimcatcamnote.*
 import com.elliot.kim.kotlin.dimcatcamnote.activities.APP_WIDGET_PREFERENCES
 import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity
 import kotlinx.coroutines.CoroutineScope
@@ -59,24 +60,6 @@ class MainViewModel(application: Application): AndroidViewModel(application) {
                     editor.putString(KEY_APP_WIDGET_NOTE_PASSWORD + it, note.password ?: "")
                     editor.apply()
                 }
-                /*
-                val appWidgetId = note.appWidgetId
-                val preferences =
-                    context!!.getSharedPreferences(APP_WIDGET_PREFERENCES, Context.MODE_PRIVATE)
-                val editor = preferences.edit()
-                editor.putInt(KEY_APP_WIDGET_NOTE_ID + appWidgetId, note.id)
-                editor.putString(KEY_APP_WIDGET_NOTE_TITLE + appWidgetId, note.title)
-                editor.putString(KEY_APP_WIDGET_NOTE_CONTENT + appWidgetId, note.content)
-                editor.putString(KEY_APP_WIDGET_NOTE_URI + appWidgetId, note.uri ?: "")
-                editor.putLong(KEY_APP_WIDGET_NOTE_CREATION_TIME + appWidgetId, note.creationTime)
-                editor.putLong(KEY_APP_WIDGET_NOTE_EDIT_TIME + appWidgetId, note.editTime ?: 0L)
-                editor.putLong(KEY_APP_WIDGET_NOTE_ALARM_TIME + appWidgetId, note.alarmTime ?: 0L)
-                editor.putBoolean(KEY_APP_WIDGET_NOTE_IS_DONE + appWidgetId, note.isDone)
-                editor.putBoolean(KEY_APP_WIDGET_NOTE_IS_LOCKED + appWidgetId, note.isLocked)
-                editor.putString(KEY_APP_WIDGET_NOTE_PASSWORD + appWidgetId, note.password ?: "")
-                editor.apply()
-
-                 */
 
                 val intent = Intent(context, NoteAppWidgetProvider::class.java)
                 intent.action = AppWidgetManager.ACTION_APPWIDGET_UPDATE

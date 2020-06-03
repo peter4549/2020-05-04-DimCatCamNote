@@ -15,7 +15,6 @@ import android.os.Process
 import android.provider.CalendarContract
 import android.util.Log
 import android.view.*
-import android.view.animation.LayoutAnimationController
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.appcompat.app.ActionBarDrawerToggle
@@ -40,6 +39,7 @@ import com.elliot.kim.kotlin.dimcatcamnote.fragments.*
 import com.elliot.kim.kotlin.dimcatcamnote.item_touch_helper.RecyclerViewTouchHelper
 import com.elliot.kim.kotlin.dimcatcamnote.item_touch_helper.UnderlayButton
 import com.elliot.kim.kotlin.dimcatcamnote.item_touch_helper.UnderlayButtonClickListener
+import com.elliot.kim.kotlin.dimcatcamnote.view_model.MainViewModel
 import com.google.android.material.snackbar.Snackbar
 import java.io.File
 import java.text.SimpleDateFormat
@@ -67,6 +67,8 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
     lateinit var fragmentManager: FragmentManager
 
     val alarmFragment = AlarmFragment(this)
+    val calendarFragment =
+        CalendarFragment()
     val cameraFragment = CameraFragment()
     val editFragment = EditFragment()
     val writeFragment = WriteFragment()
@@ -103,7 +105,7 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         setSupportActionBar(binding.toolBar)
         binding.writeFloatingActionButton.setOnClickListener { startWriteFragment() }
 
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        //supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         val viewModelFactory = ViewModelProvider.AndroidViewModelFactory.getInstance(application)
         viewModel = ViewModelProvider(this, viewModelFactory)[MainViewModel::class.java]
@@ -360,6 +362,10 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         startFragment(alarmFragment)
     }
 
+    fun startCalendarFragment() {
+        startFragment(calendarFragment)
+    }
+
     fun startEditFragment() {
         startFragment(editFragment)
     }
@@ -506,6 +512,12 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         )
         binding.drawerLayout.addDrawerListener(toggle)
         toggle.syncState()
+
+        ////
+
+        binding.navigationDrawerButtonCalender.setOnClickListener {
+            startCalendarFragment()
+        }
 
         binding.navigationDrawerChangeTheme.setOnClickListener {
             dialogFragmentManager.showDialogFragment(DialogFragments.THEME_OPTIONS)

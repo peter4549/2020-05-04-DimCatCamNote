@@ -236,8 +236,13 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
         notes.remove(note)
         notifyItemRemoved(position)
 
+        note.isDeleted = true
         (context as MainActivity).cancelAlarm(note, true)
-        if (note.uri != null) context.deleteFileFromUri(note.uri!!)
+        if (note.uri != null) (context as MainActivity).deleteFileFromUri(note.uri!!)
+    }
+
+    fun removePhoto(note: Note) {
+        if (note.uri != null) (context as MainActivity).deleteFileFromUri(note.uri!!)
     }
 
     fun delete(position: Int) {

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="200dp"
+    android:background="@color/colorAmberfff8e1"
+    android:layout_margin="64dp">
+
+    <TextView
+        android:id="@+id/text_view_message"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:background="@color/colorPurplef3e5f5"
+        android:text="정말로 삭제하시겠습니까?"/>
+
+    <TextView
+        android:id="@+id/text_view_target_title"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:background="@color/colorLime50"
+        android:layout_below="@+id/text_view_message"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:ori
+
+
+</RelativeLayout>

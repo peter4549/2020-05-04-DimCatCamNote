@@ -26,6 +26,7 @@ import com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments.PasswordSettingDialo
 import com.elliot.kim.kotlin.dimcatcamnote.fragments.AlarmFragment
 import com.elliot.kim.kotlin.dimcatcamnote.fragments.EditFragment
 import com.elliot.kim.kotlin.dimcatcamnote.fragments.PhotoFragment
+import com.elliot.kim.kotlin.dimcatcamnote.view_model.MainViewModel
 
 class EditActivity: AppCompatActivity() {
 

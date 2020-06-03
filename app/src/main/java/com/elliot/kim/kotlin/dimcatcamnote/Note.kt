@@ -12,6 +12,7 @@ data class Note(var title: String = "", var creationTime: Long, var uri: String?
     var alarmTime: Long? = null
     var isDone: Boolean = false
     var folderId: Int = 0
+    var isDeleted = false
     var isLocked = false
     var password: String? = null
     var appWidgetIds: Array<Int> = arrayOf(-1) //dummy

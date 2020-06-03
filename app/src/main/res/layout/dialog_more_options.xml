@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="240dp"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@android:color/white">
+
+    <TextView
+        android:id="@+id/text_view_note_name"
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:background="@color/colorBlueGrey37464f"
+        android:textColor="@android:color/white"/>
+
+    <LinearLayout
+        android:id="@+id/linear_layout_add_to_calendar"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/more_options_menu_item_height"
+        android:orientation="horizontal"
+        android:background="@color/colorAmberfff8e1"
+        android:clickable="true"
+        android:focusable="true">
+
+        <ImageView
+            style="@style/ImageViewStyleMiddleSize"
+            android:src="@drawable/ic_calendar_purple_32px"
+            android:tint="@color/colorMoreOptionsMenuItemIcon"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:text="캘린더에 등록하기" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/linear_layout_move_to_folder"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/more_options_menu_item_height"
+        android:orientation="horizontal"
+        android:background="@color/colorAmberfff8e1"
+        android:clickable="true"
+        android:focusable="true">
+
+        <ImageView
+            style="@style/ImageViewStyleMiddleSize"
+            android:src="@drawable/ic_folder"
+            android:tint="@color/colorMoreOptionsMenuItemIcon"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:text="폴더로 이동" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/linear_layout_lock"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/more_options_menu_item_height"
+        android:orientation="horizontal"
+        android:background="@color/colorAmberfff8e1"
+        android:clickable="true"
+        android:focusable="true">
+
+        <ImageView
+            style="@style/ImageViewStyleMiddleSize"
+            android:src="@drawable/ic_lock_outline_black_24dp"
+            android:tint="@color/colorMoreOptionsMenuItemIcon"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:text="노트 잠금" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/linear_layout_share"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/more_options_menu_item_height"
+        android:orientation="horizontal"
+        android:background="@color/colorAmberfff8e1"
+        android:clickable="true"
+        android:focusable="true">
+
+        <ImageView
+            style="@style/ImageViewStyleMiddleSize"
+            android:src="@drawable/ic_share_24dp"
+            android:tint="@color/colorMoreOptionsMenuItemIcon"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:text="공유하기" />
+
+    </LinearLayout>
+
+</LinearLayout>
