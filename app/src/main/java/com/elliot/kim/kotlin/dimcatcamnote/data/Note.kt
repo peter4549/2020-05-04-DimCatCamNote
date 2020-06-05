@@ -1,4 +1,4 @@
-package com.elliot.kim.kotlin.dimcatcamnote
+package com.elliot.kim.kotlin.dimcatcamnote.data
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

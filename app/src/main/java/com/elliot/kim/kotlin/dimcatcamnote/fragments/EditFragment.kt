@@ -1,26 +1,35 @@
 package com.elliot.kim.kotlin.dimcatcamnote.fragments
 
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
 import android.annotation.SuppressLint
 import android.content.DialogInterface
+import android.graphics.Rect
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.*
 import android.view.GestureDetector.SimpleOnGestureListener
 import android.view.View.OnTouchListener
+import android.view.animation.Animation
+import android.view.animation.AnimationUtils
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
-import com.elliot.kim.kotlin.dimcatcamnote.*
+import com.elliot.kim.kotlin.dimcatcamnote.CurrentFragment
+import com.elliot.kim.kotlin.dimcatcamnote.PATTERN_UP_TO_SECONDS
+import com.elliot.kim.kotlin.dimcatcamnote.R
 import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity
+import com.elliot.kim.kotlin.dimcatcamnote.data.Note
 import com.elliot.kim.kotlin.dimcatcamnote.databinding.FragmentEditBinding
+import com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments.DialogFragments
 import com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments.PasswordSettingDialogFragment
 import com.elliot.kim.kotlin.dimcatcamnote.view_model.MainViewModel
 
-class EditFragment : Fragment() {
+class EditFragment(private val activity: MainActivity) : Fragment() {
 
-    private lateinit var activity: MainActivity
     private lateinit var binding: FragmentEditBinding
     private lateinit var modeIcon: MenuItem
     private lateinit var note: Note
@@ -28,22 +37,30 @@ class EditFragment : Fragment() {
     private lateinit var viewModel: MainViewModel
     private var isEditMode = false
     private var originAlarmTime: Long? = null
+    private var shortAnimationDuration = 0
+    private var uri: String? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        initialize()
-
+        viewModel = activity.viewModel
+        init()
         return inflater.inflate(R.layout.fragment_edit, container, false)
     }
 
-    private fun initialize() {
-        activity = requireActivity() as MainActivity
-        viewModel = activity.viewModel
-        note = activity.getNoteAdapter().selectedNote!!
+    private fun init() {
+
         originAlarmTime = note.alarmTime
         originContent = note.content
+        shortAnimationDuration = resources.getInteger(android.R.integer.config_shortAnimTime)
+    }
+
+    fun setNote(note: Note) {
+        this.note = note
+        originAlarmTime = note.alarmTime
+        originContent = note.content
+        uri = note.uri
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -56,6 +73,8 @@ class EditFragment : Fragment() {
         activity.supportActionBar?.setDisplayHomeAsUpEnabled(true)
         setHasOptionsMenu(true)
 
+        showImage()
+
         binding.imageView.setOnClickListener { startPhotoFragment() }
 
         binding.focusBlock.setOnTouchListener(object : OnTouchListener {
@@ -67,6 +86,7 @@ class EditFragment : Fragment() {
                     }
 
                     override fun onDoubleTap(e: MotionEvent): Boolean {
+                        isEditMode = true
                         activity.showToast("노트를 편집하세요.")
                         getFocus()
                         return super.onDoubleTap(e)
@@ -78,16 +98,44 @@ class EditFragment : Fragment() {
                 return true
             }
         })
+
+        binding.editTextContent.viewTreeObserver.addOnGlobalLayoutListener {
+            if (keyboardShown(binding.editTextContent.rootView) && isEditMode) crossFadeImageView(false)
+            else showImage()
+        }
+    }
+
+    override fun onCreateAnimation(transit: Int, enter: Boolean, nextAnim: Int): Animation? {
+
+        val animation = AnimationUtils.loadAnimation(activity, nextAnim)
+
+        animation!!.setAnimationListener( object: Animation.AnimationListener {
+            override fun onAnimationRepeat(animation: Animation?) {
+
+            }
+
+            override fun onAnimationEnd(animation: Animation?) {
+                MainActivity.hideKeyboard(context, view)
+            }
+
+            override fun onAnimationStart(animation: Animation?) {
+
+            }
+        })
+
+        return animation
     }
 
     override fun onResume() {
         super.onResume()
+        uri = note.uri
         setContent(note)
         activity.setCurrentFragment(CurrentFragment.EDIT_FRAGMENT)
     }
 
     override fun onStop() {
         super.onStop()
+        isEditMode = false
         activity.setCurrentFragment(null)
         activity.showFloatingActionButton()
     }
@@ -121,12 +169,12 @@ class EditFragment : Fragment() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             android.R.id.home -> {
-                MainActivity.hideKeyboard(context, view)
+
                 finish(BACK_PRESSED)
             }
             R.id.menu_mode_icon -> {
                 if (isEditMode) {
-                    item.setIcon(R.drawable.pencil)
+                    item.setIcon(R.drawable.ic_edit_white_24dp)
 
                     binding.focusBlock.visibility = View.VISIBLE
                     binding.editTextContent.isFocusable = false
@@ -157,10 +205,7 @@ class EditFragment : Fragment() {
             }
             R.id.menu_delete -> {
                 activity.closeOptionsMenu()
-                activity.viewModel.delete(note)
-
-                Toast.makeText(context, "노트가 삭제되었습니다.", Toast.LENGTH_SHORT).show()
-                activity.backPressed()
+                activity.showDialogFragment(DialogFragments.CONFIRM_DELETE)
             }
         }
         return super.onOptionsItemSelected(item)
@@ -179,12 +224,7 @@ class EditFragment : Fragment() {
 
     fun setContent(note: Note) {
         setText(note)
-        if (note.uri != null) {
-            binding.imageView.visibility = View.VISIBLE
-            Glide.with(this)
-                .load(Uri.parse(note.uri))
-                .into(binding.imageView)
-        } else binding.imageView.visibility = View.GONE
+        // showImage()
     }
 
     private fun setText(note: Note) {
@@ -207,8 +247,8 @@ class EditFragment : Fragment() {
     private fun startPhotoFragment() {
         activity.fragmentManager.beginTransaction()
             .addToBackStack(null)
-            .setCustomAnimations(R.anim.anim_slide_up_enter,
-                R.anim.anim_slide_up_exit,
+            .setCustomAnimations(R.anim.anim_slide_in_left_enter,
+                R.anim.anim_slide_in_left_exit,
                 R.anim.anim_slide_down_pop_enter,
                 R.anim.anim_slide_down_pop_exit)
             .replace(R.id.edit_note_container, PhotoFragment(this, note.uri!!)).commit()
@@ -255,7 +295,7 @@ class EditFragment : Fragment() {
     }
 
     private fun getFocus() {
-        modeIcon.setIcon(R.drawable.check_mark)
+        modeIcon.setIcon(R.drawable.ic_done_white_24dp)
 
         binding.focusBlock.visibility = View.GONE
         binding.editTextContent.isEnabled = true
@@ -266,6 +306,50 @@ class EditFragment : Fragment() {
     }
 
     private fun isContentChanged() = originContent != binding.editTextContent.text.toString()
+
+    private fun crossFadeImageView(fadeIn: Boolean) {
+        if (fadeIn) {
+            binding.imageView.apply {
+                alpha = 0F
+                visibility = View.VISIBLE
+
+                animate()
+                    .alpha(1F)
+                    .setDuration(shortAnimationDuration.toLong())
+                    .setListener(null)
+            }
+        } else {
+            binding.imageView.animate()
+                .alpha(0F)
+                .setDuration(shortAnimationDuration.toLong())
+                .setListener(object : AnimatorListenerAdapter() {
+                    override fun onAnimationEnd(animation: Animator) {
+                        binding.imageView.visibility = View.GONE
+                    }
+                })
+        }
+    }
+
+    private fun keyboardShown(rootView: View): Boolean {
+        val softKeyboardHeight = 100
+        val rect = Rect()
+        rootView.getWindowVisibleDisplayFrame(rect)
+
+        val metrics = rootView.resources.displayMetrics
+        val heightDiff: Int = rootView.bottom - rect.bottom
+
+        return heightDiff > softKeyboardHeight * metrics.density
+    }
+
+    private fun showImage() {
+        if(uri == null) return
+        else {
+            crossFadeImageView(true)
+            Glide.with(binding.imageView.context)
+                .load(Uri.parse(uri))
+                .into(binding.imageView)
+        }
+    }
 
     companion object {
         const val SAVE = 0

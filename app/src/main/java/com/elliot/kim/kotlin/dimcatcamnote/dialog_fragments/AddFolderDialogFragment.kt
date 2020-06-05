@@ -8,7 +8,7 @@ import android.widget.EditText
 import android.widget.TextView
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.DialogFragment
-import com.elliot.kim.kotlin.dimcatcamnote.FolderAdapter
+import com.elliot.kim.kotlin.dimcatcamnote.adapters.FolderAdapter
 import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity
 import com.elliot.kim.kotlin.dimcatcamnote.R
 

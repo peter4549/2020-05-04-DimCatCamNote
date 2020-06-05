@@ -9,7 +9,7 @@ import android.view.View
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity
-import com.elliot.kim.kotlin.dimcatcamnote.NoteAdapter
+import com.elliot.kim.kotlin.dimcatcamnote.adapters.NoteAdapter
 import com.elliot.kim.kotlin.dimcatcamnote.R
 import java.util.*
 import kotlin.collections.ArrayList
@@ -201,6 +201,7 @@ abstract class RecyclerViewTouchHelper(val context: Context, private val recycle
         }
 
         if (actionState == ItemTouchHelper.ACTION_STATE_SWIPE) {
+
             if (dX < 0) {
                 var buffer: MutableList<UnderlayButton> = ArrayList()
                 if (!rightButtonBuffer.containsKey(position)) {

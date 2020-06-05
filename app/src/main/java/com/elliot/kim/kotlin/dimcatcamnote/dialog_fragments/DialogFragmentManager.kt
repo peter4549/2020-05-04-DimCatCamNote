@@ -1,8 +1,8 @@
 package com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments
 
-import com.elliot.kim.kotlin.dimcatcamnote.FolderAdapter
+import com.elliot.kim.kotlin.dimcatcamnote.adapters.FolderAdapter
 import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity
-import com.elliot.kim.kotlin.dimcatcamnote.NoteAdapter
+import com.elliot.kim.kotlin.dimcatcamnote.adapters.NoteAdapter
 
 // The password-related dialog fragments require additional parameters to be entered,
 // so it is not managed by the DialogFragmentManager,
@@ -10,7 +10,8 @@ import com.elliot.kim.kotlin.dimcatcamnote.NoteAdapter
 
 class DialogFragmentManager(private val activity: MainActivity,
                             private val folderAdapter: FolderAdapter,
-                            private val noteAdapter: NoteAdapter) {
+                            private val noteAdapter: NoteAdapter
+) {
 
     private val tag = "DialogFragmentManager"
 
@@ -20,6 +21,8 @@ class DialogFragmentManager(private val activity: MainActivity,
             DialogFragments.ADD_FOLDER -> AddFolderDialogFragment(folderAdapter, themeColor)
                 .show(activity.fragmentManager, tag)
             DialogFragments.ADD_TO_CALENDER -> AddToCalendarDialogFragment(noteAdapter.selectedNote!!)
+                .show(activity.fragmentManager, tag)
+            DialogFragments.CONFIRM_DELETE -> ConfirmDeleteDialogFragment(noteAdapter.selectedNote!!)
                 .show(activity.fragmentManager, tag)
             DialogFragments.FOLDER_OPTIONS -> FolderOptionsDialogFragment(folderAdapter, noteAdapter)
                 .show(activity.fragmentManager, tag)

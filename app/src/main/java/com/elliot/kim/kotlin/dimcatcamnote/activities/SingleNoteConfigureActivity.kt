@@ -8,6 +8,7 @@ import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.elliot.kim.kotlin.dimcatcamnote.*
+import com.elliot.kim.kotlin.dimcatcamnote.adapters.NoteAdapter
 import com.elliot.kim.kotlin.dimcatcamnote.databinding.ActivitySingleNoteConfigureBinding
 import com.elliot.kim.kotlin.dimcatcamnote.view_model.MainViewModel
 
@@ -40,10 +41,11 @@ class SingleNoteConfigureActivity : AppCompatActivity() {
         viewModel.getAll().observe(this, androidx.lifecycle.Observer { notes ->
             binding.recyclerView.apply {
                 setHasFixedSize(true)
-                adapter = NoteAdapter(
-                    this@SingleNoteConfigureActivity, notes,
-                    true, appWidgetId
-                )
+                adapter =
+                    NoteAdapter(
+                        this@SingleNoteConfigureActivity, notes,
+                        true, appWidgetId
+                    )
                 layoutManager = LinearLayoutManager(context)
             }
         })

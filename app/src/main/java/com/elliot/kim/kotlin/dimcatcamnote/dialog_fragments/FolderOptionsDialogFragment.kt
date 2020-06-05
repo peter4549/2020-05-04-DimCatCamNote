@@ -8,9 +8,13 @@ import android.widget.Spinner
 import androidx.fragment.app.DialogFragment
 import com.elliot.kim.kotlin.dimcatcamnote.*
 import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity
+import com.elliot.kim.kotlin.dimcatcamnote.adapters.FolderAdapter
+import com.elliot.kim.kotlin.dimcatcamnote.adapters.NoteAdapter
+import com.elliot.kim.kotlin.dimcatcamnote.data.Folder
 
 class FolderOptionsDialogFragment(private val folderAdapter: FolderAdapter,
-                                  private val noteAdapter: NoteAdapter) : DialogFragment() {
+                                  private val noteAdapter: NoteAdapter
+) : DialogFragment() {
 
     private lateinit var activity: MainActivity
 
@@ -19,7 +23,7 @@ class FolderOptionsDialogFragment(private val folderAdapter: FolderAdapter,
         activity = requireActivity() as MainActivity
 
         val dialog = Dialog(activity)
-        dialog.setContentView(R.layout.dialog_folder_options)
+        dialog.setContentView(R.layout.dialog_fragment_folder_options)
 
         val spinner = dialog.findViewById<Spinner>(R.id.spinner)
         setSpinner(spinner, folderAdapter.folders)

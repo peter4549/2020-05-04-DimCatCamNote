@@ -41,7 +41,7 @@
 
     <string name="home_second">Home Second</string>
     <string name="title_add_folder_dialog_fragment">폴더 생성</string>
-    <string name="hint_add_folder_dialog_fragment">여기에 폴더 이름을 입력해주세요.</string>
+    <string name="hint_add_folder_dialog_fragment">폴더 이름을 입력해주세요.</string>
 
     <string name="folder_unlock_notification">폴더 잠금이 해제되었습니다.</string>
     <string name="folder_moved_notification">폴더로 이동하였습니다.</string>
@@ -50,5 +50,8 @@
     <string name="password_mismatch">비밀번호가 일치하지 않습니다.</string>
     <string name="password_request">비밀번호를 입력해주세요.</string>
     <string name="password_set_notification">비밀번호가 설정되었습니다.</string>
+
+    <string name="ok">확인</string>
+    <string name="request_select_date">날짜를 선택해주세요.</string>
 
 </resources>

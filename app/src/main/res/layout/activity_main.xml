@@ -15,7 +15,6 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:keepScreenOn="true"
-            app:defaultNavHost="true"
             tools:context=".activities.MainActivity">
 
             <androidx.appcompat.widget.Toolbar
@@ -23,7 +22,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
                 android:background="@color/colorPurplece93d8"
-                android:theme="@style/AppTheme.AppBarOverly"
+                android:theme="@style/ToolbarTheme"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
@@ -48,6 +47,10 @@
                 android:id="@+id/text_view_current_folder_name"
                 android:layout_width="match_parent"
                 android:layout_height="32dp"
+                android:gravity="center_vertical"
+                android:padding="2dp"
+                android:textSize="12sp"
+                android:textStyle="bold"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.0"
@@ -59,7 +62,10 @@
                 android:id="@+id/recycler_view"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
+                android:layoutAnimation="@anim/layout_animation"
+                android:visibility="invisible"
                 android:scrollbars="vertical"
+
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -127,62 +133,12 @@
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/nav_drawer_recyclerview"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     android:scrollbars="vertical" />
 
             </LinearLayout>
 
         </com.google.android.material.navigation.NavigationView>
-        <!-- code about password.
-                <RelativeLayout
-                    android:id="@+id/lock_view"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:clickable="true"
-                    android:focusable="true">
-
-                    <TextureView
-                        android:id="@+id/text_view_lock"
-                        android:layout_width="128dp"
-                        android:layout_height="64dp"
-                        android:layout_centerHorizontal="true"
-                        android:layout_centerVertical="true" />
-
-
-                    <LinearLayout
-                        android:id="@+id/ll_passcodes"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_below="@id/text_view_lock"
-                        android:orientation="horizontal">
-
-                        <EditText
-                            android:id="@+id/passcode_1"
-                            style="@style/PasscodeInputIStyle" >
-
-                            <requestFocus />
-                        </EditText>
-
-                        <EditText
-                            android:id="@+id/passcode_2"
-                            style="@style/PasscodeInputIStyle" >
-                        </EditText>
-
-                        <EditText
-                            android:id="@+id/passcode_3"
-                            style="@style/PasscodeInputIStyle" >
-                        </EditText>
-
-                        <EditText
-                            android:id="@+id/passcode_4"
-                            style="@style/PasscodeInputIStyle" >
-                        </EditText>
-                    </LinearLayout>
-
-
-
-
-        </RelativeLayout> -->
 
     </androidx.drawerlayout.widget.DrawerLayout>
 

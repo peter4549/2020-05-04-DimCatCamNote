@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="240dp"
+    android:layout_width="220dp"
     android:layout_height="wrap_content">
 
     <TextView
@@ -10,7 +10,9 @@
         android:layout_height="40dp"
         android:background="@color/colorLime50"
         android:text="색상 선택"
-        android:gravity="center"/>
+        android:textSize="16sp"
+        android:gravity="center"
+        android:textStyle="bold"/>
 
     <RadioGroup
         android:id="@+id/radio_group"
@@ -24,20 +26,24 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
+            android:layout_margin="4dp"
             android:layoutDirection="rtl"
             android:drawableEnd="@drawable/ic_squre_red_100_32px"
             android:gravity="center"
-            android:text="빨강"/>
+            android:text="빨강"
+            android:textStyle="bold"/>
 
         <RadioButton
             android:id="@+id/radio_button_set_in_blue"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
+            android:layout_margin="4dp"
             android:layoutDirection="rtl"
             android:drawableEnd="@drawable/ic_square_blue_100_32px"
             android:gravity="center"
-            android:text="파랑"/>
+            android:text="파랑"
+            android:textStyle="bold"/>
 
     </RadioGroup>
 

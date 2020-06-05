@@ -1,31 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="150dp"
-    android:background="@color/colorAmberfff8e1"
-    android:layout_margin="64dp">
+    android:layout_width="240dp"
+    android:layout_height="120dp"
+    android:background="@color/colorAmberfff8e1">
+
+    <TextView
+        android:id="@+id/text_view_title"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:background="@color/colorLime50" />
+
 
     <TextView
         android:id="@+id/text_view_message"
         android:layout_width="match_parent"
-        android:layout_height="40dp"
+        android:layout_height="32dp"
+        android:layout_below="@+id/text_view_title"
         android:background="@color/colorPurplef3e5f5"
-        android:text="정말로 삭제하시겠습니까?"/>
-
-    <TextView
-        android:id="@+id/text_view_target_title"
-        android:layout_width="match_parent"
-        android:layout_height="40dp"
-        android:background="@color/colorLime50"
-        android:layout_below="@+id/text_view_message"/>
+        android:text="정말로 삭제하시겠습니까?" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@+id/text_view_target_title"
-        android:orientation="horizontal"
-        android:background="@color/colorIndigo1a237e">
+        android:layout_below="@+id/text_view_message"
+        android:orientation="horizontal">
 
         <Button
             android:id="@+id/button_cancel"
@@ -33,7 +32,6 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:layout_margin="8dp"
-            android:drawableStart="@drawable/ic_cat_footprint"
             android:text="취소"/>
 
         <Button
@@ -42,7 +40,6 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:layout_margin="8dp"
-            android:drawableStart="@drawable/ic_cat_footprint"
             android:text="확인"/>
 
     </LinearLayout>

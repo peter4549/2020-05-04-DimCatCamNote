@@ -1,8 +1,7 @@
-package com.elliot.kim.kotlin.dimcatcamnote
+package com.elliot.kim.kotlin.dimcatcamnote.database
 
 import androidx.room.TypeConverter
 import com.google.gson.Gson
-import java.lang.reflect.Type
 
 class Converters {
     @TypeConverter

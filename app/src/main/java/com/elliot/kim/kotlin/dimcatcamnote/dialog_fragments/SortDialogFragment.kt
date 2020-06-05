@@ -6,7 +6,7 @@ import android.view.View
 import android.widget.LinearLayout
 import androidx.fragment.app.DialogFragment
 import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity
-import com.elliot.kim.kotlin.dimcatcamnote.NoteAdapter
+import com.elliot.kim.kotlin.dimcatcamnote.adapters.NoteAdapter
 import com.elliot.kim.kotlin.dimcatcamnote.R
 import com.elliot.kim.kotlin.dimcatcamnote.SortingCriteria
 

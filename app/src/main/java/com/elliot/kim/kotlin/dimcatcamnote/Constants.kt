@@ -35,6 +35,7 @@ enum class SortingCriteria(val index: Int) {
 
 enum class CurrentFragment {
     ALARM_FRAGMENT,
+    CALENDAR_FRAGMENT,
     CAMERA_FRAGMENT,
     EDIT_FRAGMENT,
     PHOTO_FRAGMENT,

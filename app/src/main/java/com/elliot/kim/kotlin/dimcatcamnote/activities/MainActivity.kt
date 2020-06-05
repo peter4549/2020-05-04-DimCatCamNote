@@ -14,7 +14,10 @@ import android.os.Bundle
 import android.os.Process
 import android.provider.CalendarContract
 import android.util.Log
-import android.view.*
+import android.view.KeyEvent
+import android.view.Menu
+import android.view.MenuItem
+import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.appcompat.app.ActionBarDrawerToggle
@@ -31,7 +34,11 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.elliot.kim.kotlin.dimcatcamnote.*
+import com.elliot.kim.kotlin.dimcatcamnote.adapters.FolderAdapter
+import com.elliot.kim.kotlin.dimcatcamnote.adapters.NoteAdapter
 import com.elliot.kim.kotlin.dimcatcamnote.broadcast_receivers.AlarmReceiver
+import com.elliot.kim.kotlin.dimcatcamnote.data.Folder
+import com.elliot.kim.kotlin.dimcatcamnote.data.Note
 import com.elliot.kim.kotlin.dimcatcamnote.databinding.ActivityMainBinding
 import com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments.DialogFragmentManager
 import com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments.DialogFragments
@@ -67,13 +74,13 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
     lateinit var fragmentManager: FragmentManager
 
     val alarmFragment = AlarmFragment(this)
-    val calendarFragment =
-        CalendarFragment()
+    val calendarFragment = CalendarFragment()
     val cameraFragment = CameraFragment()
-    val editFragment = EditFragment()
+    val editFragment = EditFragment(this)
     val writeFragment = WriteFragment()
 
     private var initialization = true
+    private var isCalendarClicked = false
     private var pressedTime = 0L
 
     private lateinit var dialogFragmentManager: DialogFragmentManager
@@ -102,10 +109,8 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
 
         fragmentManager = supportFragmentManager
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
-        setSupportActionBar(binding.toolBar)
         binding.writeFloatingActionButton.setOnClickListener { startWriteFragment() }
-
-        //supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        setSupportActionBar(binding.toolBar)
 
         val viewModelFactory = ViewModelProvider.AndroidViewModelFactory.getInstance(application)
         viewModel = ViewModelProvider(this, viewModelFactory)[MainViewModel::class.java]
@@ -115,20 +120,30 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         // 데이터를 읽어오고, 그놈을 등록하고, 오브저브 설정도 하는 것으로. 이걸 통으로 이니셜라이즈로 이동하는게 맞는 모양새일듯.
         viewModel.getAll().observe(this, androidx.lifecycle.Observer { notes ->
             if (initialization) {// 초기화 로직 정리할 것.
-                noteAdapter = NoteAdapter(this, notes)
-                initialize()
+
+                initialize(notes)
                 createUnderlayButtons()
 
                 initialization = false
             } else {
                 when {
-                    notesSize < notes.size -> noteAdapter.insert(notes[notes.size - 1])
-                    notesSize == notes.size -> noteAdapter.update(viewModel.targetNote!!)
-                    notesSize > notes.size -> noteAdapter.delete(viewModel.targetNote!!)
+                    notesSize < notes.size -> noteAdapter.insert(viewModel.targetNote!!)
+                    notesSize == notes.size -> {
+                        Log.d("THIS IS UPDATE MODEL", notes.size.toString())
+                        noteAdapter.update(viewModel.targetNote!!)
+                    }
+                    notesSize > notes.size -> {
+                        Log.d("THIS IS DELETE MODEL", notes.size.toString())
+                        noteAdapter.delete(viewModel.targetNote!!)
+                    }
                 }
             }
             notesSize = notes.size
         })
+    }
+
+    fun recyclerViewScrollToTop() {
+        binding.recyclerView.smoothScrollToPosition(0)
     }
 
     override fun onResume() {
@@ -189,12 +204,14 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
                         getColor(R.color.colorUnderlayButtonAlarm),
                         object : UnderlayButtonClickListener {
                             override fun onClick(position: Int) {
-                                if (noteAdapter.getNoteByPosition(position).alarmTime == null)
+                                if (noteAdapter.getNoteByPosition(position).alarmTime == null) {
                                     startAlarmFragment(noteAdapter.getNoteByPosition(position))
-                                else
+                                    noteAdapter.notifyItemChanged(position)
+                                } else {
                                     cancelAlarm(noteAdapter.getNoteByPosition(position), false)
+                                }
 
-                                noteAdapter.notifyItemChanged(position)
+
                             }
                         })
                 )
@@ -235,8 +252,8 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
                         getColor(R.color.colorUnderlayButtonDelete),
                         object : UnderlayButtonClickListener {
                             override fun onClick(position: Int) {
-                                viewModel.delete(noteAdapter
-                                    .getNoteByPosition(position))
+                                showDialogFragment(DialogFragments.CONFIRM_DELETE)
+                                //noteAdapter.notifyItemChanged(position)
                             }
                         })
                 )
@@ -252,6 +269,7 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
             else {
                 when (currentFragment) {
                     CurrentFragment.ALARM_FRAGMENT -> super.onBackPressed()
+                    CurrentFragment.CALENDAR_FRAGMENT -> super.onBackPressed()
                     CurrentFragment.CAMERA_FRAGMENT -> super.onBackPressed()
                     CurrentFragment.EDIT_FRAGMENT -> editFragment.finish(EditFragment.BACK_PRESSED)
                     CurrentFragment.PHOTO_FRAGMENT -> super.onBackPressed()
@@ -362,11 +380,19 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         startFragment(alarmFragment)
     }
 
-    fun startCalendarFragment() {
+    private fun startCalendarFragment() {
+        // 여기에 알람 설정된 애들.. 담아서 던지고,,
+        // 달력뷰는 바인딩 하는 중에, 날짜 당일 비교,, 어떤식으로.. current month와 current date를 비교해서.
+        // 뭐랑 비교 => 각 노트의 알람시간으로부터 추출.
+        isCalendarClicked = true
+        //binding.drawerLayout.closeDrawer(GravityCompat.START, true)
+        //binding.drawerLayout.closeDrawer(GravityCompat.START, true)
         startFragment(calendarFragment)
+
     }
 
     fun startEditFragment() {
+        editFragment.setNote(noteAdapter.selectedNote!!)
         startFragment(editFragment)
     }
 
@@ -378,8 +404,8 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         hideFloatingActionButton()
         fragmentManager.beginTransaction()
             .setCustomAnimations(
-                R.anim.anim_slide_up_enter,
-                R.anim.anim_slide_up_exit,
+                R.anim.anim_slide_in_left_enter,
+                R.anim.anim_slide_in_left_exit,
                 R.anim.anim_slide_down_pop_enter,
                 R.anim.anim_slide_down_pop_exit
             )
@@ -413,7 +439,6 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         if (!isDelete) {
             note.alarmTime = null
             viewModel.update(note)
-
             Toast.makeText(this, "알림이 해제되었습니다.", Toast.LENGTH_SHORT).show()
         }
     }
@@ -485,19 +510,17 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         Toast.makeText(this, text, duration).show()
     }
 
-    private fun initialize() {
-        folderAdapter = FolderAdapter(this)
+    private fun initialize(notes: MutableList<Note>) {
 
-        binding.navDrawerRecyclerview.apply {
-            setHasFixedSize(true)
-            adapter = folderAdapter
-            layoutManager = LinearLayoutManager(context)
-        }
+        folderAdapter =
+            FolderAdapter(this)
+
+        initializeRecyclerView(notes)
         loadCurrentFolderName()
         initializeNavigationDrawer()
         initializeDialogFragmentManager()
-        initializeRecyclerView()
         initializeSortingCriteria()
+
     }
 
     private fun initializeDialogFragmentManager() {
@@ -510,11 +533,13 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
             R.string.navigation_drawer_open,
             R.string.navigation_drawer_close
         )
+
         binding.drawerLayout.addDrawerListener(toggle)
         toggle.syncState()
 
         ////
 
+        // Calendar
         binding.navigationDrawerButtonCalender.setOnClickListener {
             startCalendarFragment()
         }
@@ -527,10 +552,8 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
             showDialogFragment(DialogFragments.ADD_FOLDER) }
     }
 
-    private fun initializeRecyclerView() {
-
-        // Set the animation of the recyclerView.
-        // 불필ㅇ쇼 할지도, 정의할것. ,xml에
+    private fun initializeRecyclerView(notes: MutableList<Note>) {
+        noteAdapter = NoteAdapter(this, notes)
         val layoutAnimationController = android.view.animation.AnimationUtils
             .loadLayoutAnimation(this,
                 R.anim.layout_animation
@@ -542,8 +565,25 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
             layoutManager = LinearLayoutManager(context)
             layoutAnimation = layoutAnimationController
         }
+        val shortAnimationDuration = resources.getInteger(android.R.integer.config_shortAnimTime)
+        binding.recyclerView.apply {
+            alpha = 0F
+            visibility = View.VISIBLE
 
-        binding.recyclerView.scheduleLayoutAnimation()
+            animate()
+                .alpha(1F)
+                .setDuration(shortAnimationDuration.toLong())
+                .setListener(null)
+        }
+
+        //binding.recyclerView.scheduleLayoutAnimation()
+        //binding.recyclerView.adapter!!.notifyDataSetChanged()
+
+        binding.navDrawerRecyclerview.apply {
+            setHasFixedSize(true)
+            adapter = folderAdapter
+            layoutManager = LinearLayoutManager(context)
+        }
     }
 
     private fun initializeSortingCriteria() {
@@ -611,9 +651,13 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         }
     }
 
+    fun closeDrawer() {
+        binding.drawerLayout.closeDrawer(GravityCompat.START, true)
+    }
+
     companion object {
 
-        const val DATABASE_NAME = "dim_cat_cam_notes_9"
+        const val DATABASE_NAME = "dim_cat_cam_notes_10"
 
         const val PREFERENCES_CURRENT_FOLDER = "current_folder"
 
@@ -714,4 +758,6 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
             context.startActivity(chooser)
         }
     }
+
+
 }

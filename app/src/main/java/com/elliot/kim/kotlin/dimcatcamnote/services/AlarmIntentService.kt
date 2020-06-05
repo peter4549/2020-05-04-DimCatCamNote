@@ -8,6 +8,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.room.Room
 import com.elliot.kim.kotlin.dimcatcamnote.*
 import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity
+import com.elliot.kim.kotlin.dimcatcamnote.database.AppDatabase
 
 class AlarmIntentService : IntentService("AlarmIntentService") {
 

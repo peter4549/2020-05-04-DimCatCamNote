@@ -9,6 +9,7 @@ import android.content.pm.PackageManager
 import android.graphics.Rect
 import android.media.AudioManager
 import android.net.Uri
+import android.os.AsyncTask
 import android.os.Bundle
 import android.os.Handler
 import android.speech.RecognitionListener
@@ -16,6 +17,8 @@ import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
 import android.util.Log
 import android.view.*
+import android.view.animation.Animation
+import android.view.animation.AnimationUtils
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
@@ -24,7 +27,7 @@ import com.elliot.kim.kotlin.dimcatcamnote.CurrentFragment
 import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity
 import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity.Companion.CAMERA_PERMISSIONS_REQUEST_CODE
 import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity.Companion.RECORD_AUDIO_PERMISSIONS_REQUEST_CODE
-import com.elliot.kim.kotlin.dimcatcamnote.Note
+import com.elliot.kim.kotlin.dimcatcamnote.data.Note
 import com.elliot.kim.kotlin.dimcatcamnote.PATTERN_YYYY_MM_dd
 import com.elliot.kim.kotlin.dimcatcamnote.R
 import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity.Companion.getCurrentTime
@@ -42,9 +45,11 @@ class WriteFragment : Fragment() {
     private lateinit var recognizer: SpeechRecognizer
     private lateinit var title: String
     private lateinit var content: String
+    private var newNote: Note? = null
     private var originalVolume = 0
     private var previousPartialText = ""
     private var shortAnimationDuration = 0
+    private var isFinish = false
     private var isFirstOnResults = true
     private var isRecognizingSpeech = false
     var uri: String? = null
@@ -75,7 +80,7 @@ class WriteFragment : Fragment() {
         super.onResume()
         clearText()
         activity.setCurrentFragment(CurrentFragment.WRITE_FRAGMENT)
-
+        isFinish = false// 스탑에 있으면 안될듯.
         originalVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
     }
 
@@ -115,7 +120,6 @@ class WriteFragment : Fragment() {
                             MainActivity.RECORD_AUDIO_PERMISSIONS_REQUESTED,
                             RECORD_AUDIO_PERMISSIONS_REQUEST_CODE)
 
-                    // it.isChecked = false ?? 아마 마이크 버튼 포커스 해제하려고 시도한듯? 일단 주석.
                 }
                 R.id.menu_location -> {
                     /*
@@ -132,7 +136,6 @@ class WriteFragment : Fragment() {
         }
 
         binding.buttonCompleteSpeechRecognition.setOnClickListener { finishSpeechRecognition() }
-
         binding.editTextContent.viewTreeObserver.addOnGlobalLayoutListener {
             if (keyboardShown(binding.editTextContent.rootView)) crossFadeImageView(false)
             else showImage()
@@ -156,6 +159,35 @@ class WriteFragment : Fragment() {
         }
     }
 
+    override fun onCreateAnimation(transit: Int, enter: Boolean, nextAnim: Int): Animation? {
+
+        val animation = AnimationUtils.loadAnimation(activity, nextAnim)
+
+        animation!!.setAnimationListener( object: Animation.AnimationListener {
+            override fun onAnimationRepeat(animation: Animation?) {
+
+            }
+
+            override fun onAnimationEnd(animation: Animation?) {
+                MainActivity.hideKeyboard(context, view)
+
+
+                if(isFinish) {
+                    val asyncSaveTask = AsyncSaveTask(activity) {
+                        save()
+                    }
+                    asyncSaveTask.execute()
+                }
+            }
+
+            override fun onAnimationStart(animation: Animation?) {
+
+            }
+        })
+
+        return animation
+    }
+
     override fun onStop() {
         super.onStop()
         uri = null
@@ -174,7 +206,7 @@ class WriteFragment : Fragment() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        MainActivity.hideKeyboard(context, view)
+        // MainActivity.hideKeyboard(context, view)
 
         when (item.itemId) {
             android.R.id.home -> finish(BACK_PRESSED)
@@ -370,25 +402,10 @@ class WriteFragment : Fragment() {
     }
 
     private fun save() {
-        if (title.isBlank() && content.isBlank())
-            title = longTimeToString(getCurrentTime(), PATTERN_YYYY_MM_dd)
-        else {
-            if (title.isBlank()) title = if (content.length > 12) content.substring(0, 12)
-            else content
-        }
-
-        val note = Note(
-            title,
-            MainActivity.getCurrentTime(),
-            uri
-        )
-        note.content = content
-        note.folderId = activity.currentFolder.id
-
-        activity.viewModel.insert(note)
-
-        Toast.makeText(context, "저장되었습니다.", Toast.LENGTH_SHORT).show()
+        Log.d("dddd", "NOTE???")
+        activity.viewModel.insert(newNote!!)
     }
+
 
     fun finish(save: Int) {
         if (isRecognizingSpeech) finishSpeechRecognition()
@@ -407,7 +424,9 @@ class WriteFragment : Fragment() {
     private fun isEmpty() = title == "" && content == "" && uri == null
 
     private fun finishWithSaving() {
-        save()
+        newNote = createNote()
+        isFinish = true
+        //activity.getNoteAdapter().insert(newNote!!)
         activity.backPressed()
     }
 
@@ -537,6 +556,21 @@ class WriteFragment : Fragment() {
         }
     }
 
+    private fun createNote(): Note? {
+        if (title.isBlank() && content.isBlank())
+            title = longTimeToString(getCurrentTime(), PATTERN_YYYY_MM_dd)
+        else {
+            if (title.isBlank()) title = if (content.length > 12) content.substring(0, 12)
+            else content
+        }
+
+        val note = Note(title, getCurrentTime(), uri)
+        note.content = content
+        note.folderId = activity.currentFolder.id
+
+        return note
+    }
+
     companion object {
         const val SHOW_BOTTOM_NAVIGATION_VIEW = 0
         const val BACK_PRESSED = 0
@@ -547,4 +581,17 @@ class WriteFragment : Fragment() {
         private const val VALUE_MAX_RESULTS = 64
         private const val SPEECH_RECOGNIZER_ERROR_TAG = "Speech Recognizer Error"
     }
+
+
+    class AsyncSaveTask(val activity: MainActivity, val handler: () -> Unit) : AsyncTask<Void, Void, Void>() {
+        override fun doInBackground(vararg params: Void?): Void? {
+            handler()
+            return null
+        }
+
+        override fun onPostExecute(result: Void?) {
+            super.onPostExecute(result)
+        }
+    }
+
 }

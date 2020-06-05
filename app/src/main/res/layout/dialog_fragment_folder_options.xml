@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#FDFDFD">
 
     <TextView
-        android:id="@+id/title"
+        android:id="@+id/text_view_title"
         android:layout_width="match_parent"
         android:layout_height="80dp"
         android:gravity="center"
@@ -15,8 +15,10 @@
         android:background="@color/colorAccent"/>
 
     <LinearLayout
+        android:id="@+id/linear_layout_folder_selection"
         android:layout_width="match_parent"
         android:layout_height="40dp"
+        android:layout_below="@+id/text_view_title"
         android:orientation="horizontal">
 
         <TextView
@@ -29,13 +31,15 @@
             android:id="@+id/spinner"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_marginEnd="8dp" />
+            android:layout_marginEnd="8dp"
+            android:minHeight="40dp"/>
 
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="40dp"
+        android:layout_below="@+id/linear_layout_folder_selection"
         android:orientation="horizontal">
 
         <Button
@@ -54,6 +58,4 @@
 
     </LinearLayout>
 
-
-
-</LinearLayout>
+</RelativeLayout>

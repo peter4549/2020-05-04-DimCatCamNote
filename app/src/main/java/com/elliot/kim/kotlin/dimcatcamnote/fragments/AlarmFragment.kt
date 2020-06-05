@@ -1,6 +1,5 @@
 package com.elliot.kim.kotlin.dimcatcamnote.fragments
 
-import android.app.Activity
 import android.app.AlarmManager
 import android.app.DatePickerDialog
 import android.app.DatePickerDialog.OnDateSetListener
@@ -25,6 +24,7 @@ import com.elliot.kim.kotlin.dimcatcamnote.activities.EditActivity
 import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity
 import com.elliot.kim.kotlin.dimcatcamnote.broadcast_receivers.AlarmReceiver
 import com.elliot.kim.kotlin.dimcatcamnote.broadcast_receivers.DeviceBootReceiver
+import com.elliot.kim.kotlin.dimcatcamnote.data.Note
 import com.elliot.kim.kotlin.dimcatcamnote.databinding.FragmentAlarmBinding
 import java.text.SimpleDateFormat
 import java.util.*

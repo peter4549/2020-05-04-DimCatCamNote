@@ -1,4 +1,4 @@
-package com.elliot.kim.kotlin.dimcatcamnote
+package com.elliot.kim.kotlin.dimcatcamnote.adapters
 
 import android.annotation.SuppressLint
 import android.app.PendingIntent
@@ -16,10 +16,12 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CircleCrop
+import com.elliot.kim.kotlin.dimcatcamnote.*
 import com.elliot.kim.kotlin.dimcatcamnote.activities.APP_WIDGET_PREFERENCES
 import com.elliot.kim.kotlin.dimcatcamnote.activities.EditActivity
 import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity
 import com.elliot.kim.kotlin.dimcatcamnote.activities.SingleNoteConfigureActivity
+import com.elliot.kim.kotlin.dimcatcamnote.data.Note
 import com.elliot.kim.kotlin.dimcatcamnote.databinding.CardViewBinding
 import com.elliot.kim.kotlin.dimcatcamnote.databinding.CardViewBinding.bind
 import com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments.PasswordConfirmationDialogFragment
@@ -76,9 +78,13 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
         val alarmTime: Long? = note.alarmTime
 
         val time: String = if (editTime != null)
-            "${context?.getString(R.string.creation_time)}: ${MainActivity.longTimeToString(creationTime, PATTERN_UP_TO_SECONDS)}"
+            "${context?.getString(R.string.creation_time)}: ${MainActivity.longTimeToString(creationTime,
+                PATTERN_UP_TO_SECONDS
+            )}"
         else
-            "${context?.getString(R.string.edit_time)}: ${MainActivity.longTimeToString(editTime, PATTERN_UP_TO_SECONDS)}"
+            "${context?.getString(R.string.edit_time)}: ${MainActivity.longTimeToString(editTime,
+                PATTERN_UP_TO_SECONDS
+            )}"
 
         holder.binding.textViewTitle.text = title
         holder.binding.textViewTime.text = time
@@ -115,7 +121,9 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
             holder.binding.imageViewAlarm.visibility = View.GONE
         } else {
             val alarmTimeText =
-                "${context?.getString(R.string.alarm_time)}: ${MainActivity.longTimeToString(alarmTime, PATTERN_UP_TO_SECONDS)}"
+                "${context?.getString(R.string.alarm_time)}: ${MainActivity.longTimeToString(alarmTime,
+                    PATTERN_UP_TO_SECONDS
+                )}"
             holder.binding.textViewAlarmTime.visibility = View.VISIBLE
             holder.binding.textViewAlarmTime.text = alarmTimeText
             holder.binding.imageViewAlarm.visibility = View.VISIBLE
@@ -184,8 +192,7 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
                     }
                     notesFiltered = noteListFiltering
                 } else if (searchWord.isEmpty() && currentFolderId != DEFAULT_FOLDER_ID){
-                    val noteListFiltering: MutableList<Note> =
-                        ArrayList()
+                    val noteListFiltering: MutableList<Note> = ArrayList()
                     for (note in notes) {
                         if (note.folderId == currentFolderId) {
                             noteListFiltering.add(note)
@@ -210,6 +217,7 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
                 return filterResults
             }
 
+            @Suppress("UNCHECKED_CAST")
             override fun publishResults(
                 constraint: CharSequence,
                 results: FilterResults
@@ -220,10 +228,25 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
         }
     }
 
-    fun insert(camNote: Note) {
-        notes.add(camNote)
-        notifyItemInserted(notes.size - 1)
+    fun insert(note: Note) {
+        notes.add(0, note)
         (context as MainActivity).showCurrentFolderItems((context).currentFolder)
+
+        notifyItemInserted(0)
+        context.recyclerViewScrollToTop()
+
+        /** The code below controls the scrolling speed.
+        val linearSmoothScroller: LinearSmoothScroller =
+            object : LinearSmoothScroller(recyclerView.context) {
+                override fun calculateSpeedPerPixel(displayMetrics: DisplayMetrics): Float {
+                    return 256f / displayMetrics.densityDpi
+                }
+            }
+
+        linearSmoothScroller.targetPosition = 0
+        recyclerView.layoutManager!!.startSmoothScroll(linearSmoothScroller)
+         */
+
     }
 
     fun update(note: Note) {
@@ -235,10 +258,10 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
         notesFiltered.removeAt(position)
         notes.remove(note)
         notifyItemRemoved(position)
-
+        //(context as MainActivity).viewModel.delete(note)
         note.isDeleted = true
         (context as MainActivity).cancelAlarm(note, true)
-        if (note.uri != null) (context as MainActivity).deleteFileFromUri(note.uri!!)
+        if (note.uri != null) context.deleteFileFromUri(note.uri!!)
     }
 
     fun removePhoto(note: Note) {
@@ -263,6 +286,7 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
                 }
             }
         )
+
         recyclerView.scheduleLayoutAnimation()
         notifyDataSetChanged()
 
@@ -292,7 +316,9 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
         intent.action = ACTION_APP_WIDGET_ATTACHED + note.id
         val pendingIntent = PendingIntent.getActivity(activity, 0, intent, 0)
 
-        RemoteViews(activity.packageName, R.layout.app_widget).apply {
+        RemoteViews(activity.packageName,
+            R.layout.app_widget
+        ).apply {
             setOnClickPendingIntent(R.id.text_view_content, pendingIntent)
             setCharSequence(R.id.text_view_title, "setText", note.title)
             setCharSequence(R.id.text_view_content, "setText", note.content)
@@ -334,4 +360,6 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
         activity.setResult(AppCompatActivity.RESULT_OK, resultIntent)
         activity.finish()
     }
+
+    fun getAlarmedNotes() = notes.filter { it.alarmTime != null }
 }

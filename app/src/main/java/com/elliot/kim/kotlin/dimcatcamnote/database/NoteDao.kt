@@ -1,7 +1,8 @@
-package com.elliot.kim.kotlin.dimcatcamnote
+package com.elliot.kim.kotlin.dimcatcamnote.database
 
 import androidx.lifecycle.LiveData
 import androidx.room.*
+import com.elliot.kim.kotlin.dimcatcamnote.data.Note
 
 @Dao
 interface NoteDao {

@@ -1,14 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="240dp"
-    android:layout_height="120dp">
+    style="@style/SmallDialogFragmentSize">
 
     <TextView
         android:id="@+id/text_view_title"
         android:layout_width="match_parent"
-        android:layout_height="40dp"
-        android:text="@string/title_add_folder_dialog_fragment" />
+        android:layout_height="32dp"
+        android:layout_marginTop="16dp"
+        android:text="@string/title_add_folder_dialog_fragment"
+        android:textSize="18sp"
+        android:textAlignment="center"
+        android:textStyle="bold"
+        android:gravity="center"/>
 
     <EditText
         android:id="@+id/edit_text"
@@ -16,13 +20,21 @@
         android:layout_height="40dp"
         android:layout_below="@+id/text_view_title"
         android:autofillHints="folder_name"
+        android:layout_marginEnd="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
         android:hint="@string/hint_add_folder_dialog_fragment"
+        android:textSize="16sp"
         android:inputType="text" />
 
     <Button
         android:id="@+id/button"
-        android:layout_width="match_parent"
+        android:layout_width="160dp"
         android:layout_height="40dp"
-        android:layout_below="@+id/edit_text" />
+        android:layout_below="@+id/edit_text"
+        android:layout_centerInParent="true"
+        android:layout_marginTop="8dp"
+        android:text="@string/ok"
+        android:textStyle="bold"/>
 
 </RelativeLayout>

@@ -1,11 +1,15 @@
-package com.elliot.kim.kotlin.dimcatcamnote
+package com.elliot.kim.kotlin.dimcatcamnote.adapters
 
 import android.annotation.SuppressLint
 import android.content.Context
 import android.util.Log
 import android.view.*
 import androidx.recyclerview.widget.RecyclerView
+import com.elliot.kim.kotlin.dimcatcamnote.DEFAULT_FOLDER_NAME
+import com.elliot.kim.kotlin.dimcatcamnote.R
 import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity
+import com.elliot.kim.kotlin.dimcatcamnote.data.Folder
+import com.elliot.kim.kotlin.dimcatcamnote.data.Note
 import com.elliot.kim.kotlin.dimcatcamnote.databinding.CardViewNavigationDrawerBinding
 import com.elliot.kim.kotlin.dimcatcamnote.databinding.CardViewNavigationDrawerBinding.bind
 import com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments.PasswordConfirmationDialogFragment
@@ -88,7 +92,8 @@ class FolderAdapter(private val context: Context?):
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val v = LayoutInflater.from(parent.context).inflate(R.layout.card_view_navigation_drawer,
+        val v = LayoutInflater.from(parent.context).inflate(
+            R.layout.card_view_navigation_drawer,
             parent, false)
         return ViewHolder(context, v)
     }
@@ -151,7 +156,12 @@ class FolderAdapter(private val context: Context?):
 
         Arrays.sort(keySet)
 
-        folders.add(Folder(0, DEFAULT_FOLDER_NAME))
+        folders.add(
+            Folder(
+                0,
+                DEFAULT_FOLDER_NAME
+            )
+        )
         for (i in 0 until entriesSize) {
             val key = keySet[i].toString()
 
@@ -164,7 +174,8 @@ class FolderAdapter(private val context: Context?):
 
             if (++count >= 4) {
                 count = 0
-                val folder = Folder(id, name)
+                val folder =
+                    Folder(id, name)
                 folder.isLocked = isLocked
                 if (folder.isLocked) folder.password = password
                 folders.add(folder)
@@ -188,7 +199,12 @@ class FolderAdapter(private val context: Context?):
     }
 
     fun addFolder(name: String): Boolean {
-        return if (folders.add(Folder(++lastId, name))) {
+        return if (folders.add(
+                Folder(
+                    ++lastId,
+                    name
+                )
+            )) {
             notifyItemInserted(folders.size - 1)
             saveFolder(folders.last())
             (context as MainActivity).showToast("폴더가 생성되었습니다.")

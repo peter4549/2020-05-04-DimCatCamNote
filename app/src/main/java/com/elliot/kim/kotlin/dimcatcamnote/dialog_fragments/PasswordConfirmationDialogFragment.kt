@@ -7,6 +7,8 @@ import android.widget.EditText
 import androidx.fragment.app.DialogFragment
 import com.elliot.kim.kotlin.dimcatcamnote.*
 import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity
+import com.elliot.kim.kotlin.dimcatcamnote.adapters.FolderAdapter
+import com.elliot.kim.kotlin.dimcatcamnote.adapters.NoteAdapter
 
 class PasswordConfirmationDialogFragment(private val adapter: Any,
                                          private val forUnlocking: Boolean = false)
@@ -19,7 +21,7 @@ class PasswordConfirmationDialogFragment(private val adapter: Any,
         activity = requireActivity() as MainActivity
 
         val dialog = Dialog(activity)
-        dialog.setContentView(R.layout.dialog_set_password)
+        dialog.setContentView(R.layout.dialog_fragment_set_password)
 
         val editText = dialog.findViewById<EditText>(R.id.edit_text_password)
 

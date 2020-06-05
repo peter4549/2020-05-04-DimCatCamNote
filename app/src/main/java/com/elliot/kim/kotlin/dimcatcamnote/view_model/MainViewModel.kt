@@ -5,12 +5,15 @@ import android.appwidget.AppWidgetManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.room.Room
 import com.elliot.kim.kotlin.dimcatcamnote.*
 import com.elliot.kim.kotlin.dimcatcamnote.activities.APP_WIDGET_PREFERENCES
 import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity
+import com.elliot.kim.kotlin.dimcatcamnote.data.Note
+import com.elliot.kim.kotlin.dimcatcamnote.database.AppDatabase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -37,6 +40,7 @@ class MainViewModel(application: Application): AndroidViewModel(application) {
 
     fun insert(note: Note) {
         scope.launch {
+            targetNote = note
             database.dao().insert(note)
         }
     }
@@ -72,7 +76,6 @@ class MainViewModel(application: Application): AndroidViewModel(application) {
         }
         scope.launch {
             targetNote = note
-
             database.dao().update(note)
         }
     }

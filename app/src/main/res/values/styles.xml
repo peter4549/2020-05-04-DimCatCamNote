@@ -59,4 +59,13 @@
         <item name="android:textSize">9sp</item>
     </style>
 
+    <style name="SmallDialogFragmentSize">
+        <item name="android:layout_width">260dp</item>
+        <item name="android:layout_height">160dp</item>
+    </style>
+
+    <style name="ToolbarTheme" parent="@style/ThemeOverlay.AppCompat.ActionBar">
+        <item name="colorControlNormal">@android:color/white</item>
+    </style>
+
 </resources>

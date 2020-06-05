@@ -20,7 +20,9 @@ import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
 import com.elliot.kim.kotlin.dimcatcamnote.*
+import com.elliot.kim.kotlin.dimcatcamnote.adapters.NoteAdapter
 import com.elliot.kim.kotlin.dimcatcamnote.broadcast_receivers.AlarmReceiver
+import com.elliot.kim.kotlin.dimcatcamnote.data.Note
 import com.elliot.kim.kotlin.dimcatcamnote.databinding.ActivityEditBinding
 import com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments.PasswordSettingDialogFragment
 import com.elliot.kim.kotlin.dimcatcamnote.fragments.AlarmFragment
@@ -76,7 +78,11 @@ class EditActivity: AppCompatActivity() {
         viewModel.setContext(this)
 
         viewModel.getAll().observe(this, androidx.lifecycle.Observer { notes ->
-            noteAdapter = NoteAdapter(this, notes)
+            noteAdapter =
+                NoteAdapter(
+                    this,
+                    notes
+                )
             note = noteAdapter.getNoteById(id)
             binding.editTextContent.setText(note.content)
             originAlarmTime = note.alarmTime
@@ -213,8 +219,8 @@ class EditActivity: AppCompatActivity() {
     private fun startPhotoFragment() {
         fragmentManager.beginTransaction()
             .addToBackStack(null)
-            .setCustomAnimations(R.anim.anim_slide_up_enter,
-                R.anim.anim_slide_up_exit,
+            .setCustomAnimations(R.anim.anim_slide_in_left_enter,
+                R.anim.anim_slide_in_left_exit,
                 R.anim.anim_slide_down_pop_enter,
                 R.anim.anim_slide_down_pop_exit)
             .replace(R.id.edit_note_container, PhotoFragment(this, note.uri!!)).commit()

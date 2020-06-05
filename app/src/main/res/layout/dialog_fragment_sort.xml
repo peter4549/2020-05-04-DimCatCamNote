@@ -2,28 +2,55 @@
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="200dp"
+    android:layout_height="240dp"
     android:background="@color/colorAmberfff8e1"
     android:layout_margin="64dp">
 
-    <TextView
-        android:id="@+id/text_view_message"
-        android:layout_width="match_parent"
-        android:layout_height="40dp"
-        android:background="@color/colorPurplef3e5f5"
-        android:text="정말로 삭제하시겠습니까?"/>
-
-    <TextView
-        android:id="@+id/text_view_target_title"
-        android:layout_width="match_parent"
-        android:layout_height="40dp"
-        android:background="@color/colorLime50"
-        android:layout_below="@+id/text_view_message"/>
-
     <LinearLayout
+        android:id="@+id/by_creation_time"
         android:layout_width="match_parent"
         android:layout_height="80dp"
-        android:ori
+        android:orientation="horizontal"
+        android:clickable="true"
+        android:focusable="true">
 
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="생성 시간 순으로 정렬"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/by_edit_time"
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:layout_below="@id/by_creation_time"
+        android:orientation="horizontal"
+        android:clickable="true"
+        android:focusable="true">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="수정 시간 순으로 정렬"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/by_name"
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:orientation="horizontal"
+        android:layout_below="@id/by_edit_time"
+        android:clickable="true"
+        android:focusable="true">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="이름 순으로 정렬"/>
+
+    </LinearLayout>
 
 </RelativeLayout>

@@ -12,6 +12,9 @@ import androidx.fragment.app.DialogFragment
 import com.elliot.kim.kotlin.dimcatcamnote.*
 import com.elliot.kim.kotlin.dimcatcamnote.activities.EditActivity
 import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity
+import com.elliot.kim.kotlin.dimcatcamnote.adapters.FolderAdapter
+import com.elliot.kim.kotlin.dimcatcamnote.adapters.NoteAdapter
+import com.elliot.kim.kotlin.dimcatcamnote.data.Note
 import java.lang.Exception
 import kotlin.RuntimeException
 
@@ -30,7 +33,7 @@ class PasswordSettingDialogFragment(private val adapter: Any) : DialogFragment()
         }
 
         val dialog = Dialog(activity)
-        dialog.setContentView(R.layout.dialog_set_password)
+        dialog.setContentView(R.layout.dialog_fragment_set_password)
 
         val editText = dialog.findViewById<EditText>(R.id.edit_text_password)
         val textView = dialog.findViewById<TextView>(R.id.text_view_set_password)

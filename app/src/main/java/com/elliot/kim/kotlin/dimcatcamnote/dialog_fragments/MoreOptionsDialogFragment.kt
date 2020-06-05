@@ -5,7 +5,7 @@ import android.os.Bundle
 import android.widget.LinearLayout
 import androidx.fragment.app.DialogFragment
 import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity
-import com.elliot.kim.kotlin.dimcatcamnote.NoteAdapter
+import com.elliot.kim.kotlin.dimcatcamnote.adapters.NoteAdapter
 import com.elliot.kim.kotlin.dimcatcamnote.R
 
 class MoreOptionsDialogFragment(private val noteAdapter: NoteAdapter) : DialogFragment() {
@@ -17,7 +17,7 @@ class MoreOptionsDialogFragment(private val noteAdapter: NoteAdapter) : DialogFr
         activity = requireActivity() as MainActivity
 
         val dialog = Dialog(activity)
-        dialog.setContentView(R.layout.dialog_more_options)
+        dialog.setContentView(R.layout.dialog_fragment_more_options)
 
         dialog.findViewById<LinearLayout>(R.id.linear_layout_add_to_calendar).setOnClickListener {
             AddToCalendarDialogFragment(noteAdapter.selectedNote!!)
