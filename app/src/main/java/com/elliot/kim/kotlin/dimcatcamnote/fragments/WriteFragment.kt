@@ -24,14 +24,14 @@ import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
 import com.elliot.kim.kotlin.dimcatcamnote.CurrentFragment
+import com.elliot.kim.kotlin.dimcatcamnote.PATTERN_YYYY_MM_dd
+import com.elliot.kim.kotlin.dimcatcamnote.R
 import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity
 import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity.Companion.CAMERA_PERMISSIONS_REQUEST_CODE
 import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity.Companion.RECORD_AUDIO_PERMISSIONS_REQUEST_CODE
-import com.elliot.kim.kotlin.dimcatcamnote.data.Note
-import com.elliot.kim.kotlin.dimcatcamnote.PATTERN_YYYY_MM_dd
-import com.elliot.kim.kotlin.dimcatcamnote.R
 import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity.Companion.getCurrentTime
 import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity.Companion.longTimeToString
+import com.elliot.kim.kotlin.dimcatcamnote.data.Note
 import com.elliot.kim.kotlin.dimcatcamnote.databinding.FragmentWriteBinding
 import kotlinx.android.synthetic.main.fragment_write.view.*
 
@@ -49,7 +49,7 @@ class WriteFragment : Fragment() {
     private var originalVolume = 0
     private var previousPartialText = ""
     private var shortAnimationDuration = 0
-    private var isFinish = false
+    private var isSaved = false
     private var isFirstOnResults = true
     private var isRecognizingSpeech = false
     var uri: String? = null
@@ -80,7 +80,7 @@ class WriteFragment : Fragment() {
         super.onResume()
         clearText()
         activity.setCurrentFragment(CurrentFragment.WRITE_FRAGMENT)
-        isFinish = false// 스탑에 있으면 안될듯.
+        isSaved = false
         originalVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
     }
 
@@ -169,19 +169,12 @@ class WriteFragment : Fragment() {
             }
 
             override fun onAnimationEnd(animation: Animation?) {
-                MainActivity.hideKeyboard(context, view)
-
-
-                if(isFinish) {
-                    val asyncSaveTask = AsyncSaveTask(activity) {
-                        save()
-                    }
-                    asyncSaveTask.execute()
-                }
+                //MainActivity.hideKeyboard(context, view)
+                if (isSaved) activity.showToast(activity.getString(R.string.save_complete_message))
             }
 
             override fun onAnimationStart(animation: Animation?) {
-
+                MainActivity.hideKeyboard(context, view)
             }
         })
 
@@ -200,14 +193,11 @@ class WriteFragment : Fragment() {
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
-
         menu.clear()
         inflater.inflate(R.menu.menu_write, menu)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        // MainActivity.hideKeyboard(context, view)
-
         when (item.itemId) {
             android.R.id.home -> finish(BACK_PRESSED)
             R.id.save -> finish(SAVE)
@@ -401,10 +391,7 @@ class WriteFragment : Fragment() {
         builder?.show()
     }
 
-    private fun save() {
-        Log.d("dddd", "NOTE???")
-        activity.viewModel.insert(newNote!!)
-    }
+    private fun save() { activity.viewModel.insert(newNote!!) }
 
 
     fun finish(save: Int) {
@@ -424,10 +411,12 @@ class WriteFragment : Fragment() {
     private fun isEmpty() = title == "" && content == "" && uri == null
 
     private fun finishWithSaving() {
+        isSaved = true
         newNote = createNote()
-        isFinish = true
-        //activity.getNoteAdapter().insert(newNote!!)
-        activity.backPressed()
+        val asyncSaveTask = AsyncSaveTask(activity) {
+            save()
+        }
+        asyncSaveTask.execute()
     }
 
     private fun finishWithoutSaving() {
@@ -591,6 +580,10 @@ class WriteFragment : Fragment() {
 
         override fun onPostExecute(result: Void?) {
             super.onPostExecute(result)
+            val handler = Handler()
+            handler.postDelayed({
+                activity.backPressed()
+            }, 64)
         }
     }
 

@@ -34,7 +34,7 @@ class ConfirmDeleteDialogFragment(private val note: Note) : DialogFragment() {
         dialog.findViewById<Button>(R.id.button_ok).setOnClickListener {
             activity.viewModel.delete(note)
 
-
+            activity.showToast(note.title)
             if (MainActivity.currentFragment == CurrentFragment.EDIT_FRAGMENT)
                 activity.backPressed()
 

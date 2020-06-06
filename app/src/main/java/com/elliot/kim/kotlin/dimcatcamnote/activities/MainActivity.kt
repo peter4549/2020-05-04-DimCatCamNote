@@ -33,6 +33,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.SimpleItemAnimator
 import com.elliot.kim.kotlin.dimcatcamnote.*
 import com.elliot.kim.kotlin.dimcatcamnote.adapters.FolderAdapter
 import com.elliot.kim.kotlin.dimcatcamnote.adapters.NoteAdapter
@@ -56,12 +57,9 @@ const val KEY_EVENT_ACTION = "key_event_action"
 const val KEY_EVENT_EXTRA = "key_event_extra"
 
 class MainActivity : AppCompatActivity(), LifecycleOwner {
-    private val tag = "MainActivity"
-
-    private lateinit var binding: ActivityMainBinding
 
     lateinit var viewModel: MainViewModel
-
+    private lateinit var binding: ActivityMainBinding
     private lateinit var noteAdapter: NoteAdapter
     private lateinit var folderAdapter: FolderAdapter
     private lateinit var recyclerViewTouchHelper: RecyclerViewTouchHelper
@@ -111,6 +109,7 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
         binding.writeFloatingActionButton.setOnClickListener { startWriteFragment() }
         setSupportActionBar(binding.toolBar)
+        initializeNavigationDrawer()
 
         val viewModelFactory = ViewModelProvider.AndroidViewModelFactory.getInstance(application)
         viewModel = ViewModelProvider(this, viewModelFactory)[MainViewModel::class.java]
@@ -127,15 +126,11 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
                 initialization = false
             } else {
                 when {
-                    notesSize < notes.size -> noteAdapter.insert(viewModel.targetNote!!)
+                    notesSize < notes.size -> noteAdapter.insert(notes[notes.size - 1])
                     notesSize == notes.size -> {
-                        Log.d("THIS IS UPDATE MODEL", notes.size.toString())
                         noteAdapter.update(viewModel.targetNote!!)
                     }
-                    notesSize > notes.size -> {
-                        Log.d("THIS IS DELETE MODEL", notes.size.toString())
-                        noteAdapter.delete(viewModel.targetNote!!)
-                    }
+                    notesSize > notes.size -> noteAdapter.delete(viewModel.targetNote!!)
                 }
             }
             notesSize = notes.size
@@ -336,10 +331,12 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
             }
 
             override fun onQueryTextChange(newText: String): Boolean {
+                if (noteAdapter.isFirstBinding) noteAdapter.isFirstBinding = false
                 noteAdapter.getFilter().filter(newText)
                 return true
             }
         })
+
         searchView.setOnSearchClickListener {
             binding.imageViewLogo.visibility = View.GONE
         }
@@ -512,12 +509,7 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
 
     private fun initialize(notes: MutableList<Note>) {
 
-        folderAdapter =
-            FolderAdapter(this)
-
         initializeRecyclerView(notes)
-        loadCurrentFolderName()
-        initializeNavigationDrawer()
         initializeDialogFragmentManager()
         initializeSortingCriteria()
 
@@ -528,16 +520,24 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
     }
 
     private fun initializeNavigationDrawer() {
+        folderAdapter = FolderAdapter(this)
+
+        loadCurrentFolderName()
+
         val toggle = ActionBarDrawerToggle(
             this, binding.drawerLayout, binding.toolBar,
             R.string.navigation_drawer_open,
             R.string.navigation_drawer_close
         )
 
+        binding.navDrawerRecyclerview.apply {
+            setHasFixedSize(true)
+            adapter = folderAdapter
+            layoutManager = LinearLayoutManager(context)
+        }
+
         binding.drawerLayout.addDrawerListener(toggle)
         toggle.syncState()
-
-        ////
 
         // Calendar
         binding.navigationDrawerButtonCalender.setOnClickListener {
@@ -565,25 +565,8 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
             layoutManager = LinearLayoutManager(context)
             layoutAnimation = layoutAnimationController
         }
-        val shortAnimationDuration = resources.getInteger(android.R.integer.config_shortAnimTime)
-        binding.recyclerView.apply {
-            alpha = 0F
-            visibility = View.VISIBLE
 
-            animate()
-                .alpha(1F)
-                .setDuration(shortAnimationDuration.toLong())
-                .setListener(null)
-        }
-
-        //binding.recyclerView.scheduleLayoutAnimation()
-        //binding.recyclerView.adapter!!.notifyDataSetChanged()
-
-        binding.navDrawerRecyclerview.apply {
-            setHasFixedSize(true)
-            adapter = folderAdapter
-            layoutManager = LinearLayoutManager(context)
-        }
+        showCurrentFolderItems(currentFolder)
     }
 
     private fun initializeSortingCriteria() {
@@ -591,10 +574,13 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         noteAdapter.sort(preferences.getInt(KEY_SORTING_CRITERIA, SortingCriteria.EDIT_TIME.index))
     }
 
-    fun showCurrentFolderItems(folder: Folder) { // showCurrentFolderItems 로 바꾸는게 나은듯.
+    fun showCurrentFolderItems(folder: Folder, showAnimation: Boolean = true) {
         currentFolder = folder
         saveCurrentFolder(currentFolder)
         binding.textViewCurrentFolderName.text = currentFolder.name
+
+        if (showAnimation) binding.recyclerView.scheduleLayoutAnimation()
+
         noteAdapter.getFilter().filter("")
     }
 
@@ -611,7 +597,9 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         val preferences = getSharedPreferences(
             PREFERENCES_CURRENT_FOLDER,
             Context.MODE_PRIVATE)
-        showCurrentFolderItems(folderAdapter.getFolderById(preferences.getInt(KEY_CURRENT_FOLDER, 0)))
+        val folder = folderAdapter.getFolderById(preferences.getInt(KEY_CURRENT_FOLDER, 0))
+
+        binding.textViewCurrentFolderName.text = folder.name
     }
 
     fun showDialogFragment(dialogFragment: DialogFragments) {

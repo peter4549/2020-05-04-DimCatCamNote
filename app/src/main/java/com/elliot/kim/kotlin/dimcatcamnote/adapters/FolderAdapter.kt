@@ -27,9 +27,6 @@ class FolderAdapter(private val context: Context?):
     init {
         folders = loadFolders()
         if (folders.isNotEmpty()) lastId = folders.last().id
-        else {
-            for (folder in folders) Log.d("HERE", folder.name)
-        }
     }
 
     enum class MenuItemId(val id: Int) {

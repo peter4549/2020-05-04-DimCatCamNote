@@ -62,8 +62,8 @@
                 android:id="@+id/recycler_view"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:layoutAnimation="@anim/layout_animation"
-                android:visibility="invisible"
+                android:layout_marginTop="4dp"
+                android:paddingTop="4dp"
                 android:scrollbars="vertical"
 
                 app:layout_constraintBottom_toBottomOf="parent"

@@ -7,12 +7,15 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Paint
 import android.net.Uri
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.AnimationUtils
 import android.widget.Filter
 import android.widget.RemoteViews
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CircleCrop
@@ -39,6 +42,10 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
     private var notesFiltered: MutableList<Note> = notes
     private lateinit var recyclerView: RecyclerView
     var selectedNote: Note? = null
+
+    private var lastPosition = -1
+
+    var isFirstBinding = true
 
     class ViewHolder(v: View) : RecyclerView.ViewHolder(v) {
         val binding: CardViewBinding = bind(v)
@@ -68,6 +75,8 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+
+        if (isFirstBinding) recyclerView.scheduleLayoutAnimation()
 
         val note: Note = notesFiltered[position]
         val title: String = note.title
@@ -138,7 +147,7 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
         }
 
         holder.binding.cardView.setOnTouchListener { _, _ ->
-
+            if (isFirstBinding) isFirstBinding = false
             selectedNote = note
             false
         }
@@ -181,7 +190,7 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
                 val currentFolderId = (context as MainActivity).currentFolder.id
                 val searchWord = constraint.toString()
                 if (searchWord.isEmpty() && currentFolderId == DEFAULT_FOLDER_ID)  notesFiltered = notes
-                else if (searchWord.isNotEmpty() && currentFolderId == 0){
+                else if (searchWord.isNotEmpty() && currentFolderId == DEFAULT_FOLDER_ID){
                     val noteListFiltering: MutableList<Note> =
                         ArrayList()
                     for (note in notes) {
@@ -214,6 +223,8 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
 
                 val filterResults = FilterResults()
                 filterResults.values = notesFiltered
+                //recyclerView.scheduleLayoutAnimation()
+                //if(isFirst) isFirst = false
                 return filterResults
             }
 
@@ -229,11 +240,22 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
     }
 
     fun insert(note: Note) {
-        notes.add(0, note)
-        (context as MainActivity).showCurrentFolderItems((context).currentFolder)
+        if (isFirstBinding) isFirstBinding = false
 
+        notes.add(0, note)
         notifyItemInserted(0)
-        context.recyclerViewScrollToTop()
+        (context as MainActivity).recyclerViewScrollToTop()
+
+        context.showCurrentFolderItems((context).currentFolder, false)
+
+        /*
+        val handler = Handler()
+        handler.postDelayed( {
+
+        }, 240)
+
+         */
+
 
         /** The code below controls the scrolling speed.
         val linearSmoothScroller: LinearSmoothScroller =
@@ -246,7 +268,6 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
         linearSmoothScroller.targetPosition = 0
         recyclerView.layoutManager!!.startSmoothScroll(linearSmoothScroller)
          */
-
     }
 
     fun update(note: Note) {
@@ -254,6 +275,8 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
     }
 
     fun delete(note: Note) {
+        if (isFirstBinding) isFirstBinding = false
+
         val position: Int = notesFiltered.indexOf(note)
         notesFiltered.removeAt(position)
         notes.remove(note)
@@ -266,13 +289,6 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
 
     fun removePhoto(note: Note) {
         if (note.uri != null) (context as MainActivity).deleteFileFromUri(note.uri!!)
-    }
-
-    fun delete(position: Int) {
-        val removedNote = notesFiltered.removeAt(position)
-        notes.remove(removedNote)
-        notifyItemRemoved(position)
-        if (removedNote.uri != null) (context as MainActivity).deleteFileFromUri(removedNote.uri!!)
     }
 
     fun sort(sortingCriteria: Int): Long {
@@ -359,6 +375,34 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
         activity.viewModel.update(note, false)
         activity.setResult(AppCompatActivity.RESULT_OK, resultIntent)
         activity.finish()
+    }
+
+    private fun animate(view: RecyclerView, position: Int){
+        val animation = AnimationUtils.loadLayoutAnimation(context, R.anim.layout_animation)
+        view.layoutAnimation = animation
+        //view.scheduleLayoutAnimation()
+        lastPosition = position
+    }
+
+    private fun animateNewItem(view: View, position: Int) {
+        if (position == 0) {
+            val animation = AnimationUtils.loadAnimation(
+                context,
+                android.R.anim.slide_in_left
+            )
+            view.startAnimation(animation)
+        }
+    }
+
+    private fun animateSingleItem(view: View, position: Int) {
+        if (position > lastPosition) {
+            val animation = AnimationUtils.loadAnimation(
+                context,
+                android.R.anim.slide_in_left
+            )
+            view.startAnimation(animation)
+            lastPosition = position
+        }
     }
 
     fun getAlarmedNotes() = notes.filter { it.alarmTime != null }
