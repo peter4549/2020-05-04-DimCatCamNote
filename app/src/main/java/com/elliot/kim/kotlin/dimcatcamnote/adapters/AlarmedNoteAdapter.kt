@@ -17,7 +17,7 @@ import com.elliot.kim.kotlin.dimcatcamnote.R
 import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity
 import com.elliot.kim.kotlin.dimcatcamnote.data.Note
 import com.elliot.kim.kotlin.dimcatcamnote.databinding.CardViewAlarmedNoteBinding
-import com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments.PasswordConfirmationDialogFragment
+import com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments.ConfirmPasswordDialogFragment
 
 class AlarmedNoteAdapter(private val activity: MainActivity,
                          private val notes: ArrayList<Note>):
@@ -25,17 +25,18 @@ class AlarmedNoteAdapter(private val activity: MainActivity,
 
     private val tag = "AlarmedNoteAdapter"
 
+    private lateinit var recyclerView: RecyclerView
     var selectedNote: Note? = null
-
-    init {
-        // 표시의 문제인건지 전달의 문제인건지 체크. 전달의 문제로 밝혀짐. 시바.
-        //notes += Note("aaaa", 0L, null)
-    }
 
     inner class ViewHolder(context: Context?, v: View)
         : RecyclerView.ViewHolder(v){
         var binding: CardViewAlarmedNoteBinding = bind(v)!!
+    }
 
+    override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
+        super.onAttachedToRecyclerView(recyclerView)
+
+        this.recyclerView = recyclerView
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AlarmedNoteAdapter.ViewHolder {
@@ -47,10 +48,6 @@ class AlarmedNoteAdapter(private val activity: MainActivity,
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-
-        if (notes.isNotEmpty()) {
-            Log.d("NOT EMPTYYY", notes[0].title)
-        }
 
         val note: Note = notes[position]
         val title: String = note.title
@@ -122,11 +119,9 @@ class AlarmedNoteAdapter(private val activity: MainActivity,
 
         holder.binding.cardView.setOnTouchListener { _, _ ->
             selectedNote = note
+            activity.getNoteAdapter().setSelectedNoteByCreationTime(note.creationTime) // 초이스를 안하고 대입을 해버리니 새로운 존재가 생긴듯.
             false
         }
-
-        // If the NoteAdapter is instantiated in the SingleNoteConfigureActivity,
-        // it handles click events differently than instantiated in the MainActivity.
 
         holder.binding.cardView.setOnClickListener {
             if (note.isLocked)
@@ -136,7 +131,7 @@ class AlarmedNoteAdapter(private val activity: MainActivity,
     }
 
     private fun confirmPassword() {
-        PasswordConfirmationDialogFragment(this).show(activity.fragmentManager,
+        ConfirmPasswordDialogFragment(this).show(activity.fragmentManager,
             "")
     }
 
@@ -147,6 +142,7 @@ class AlarmedNoteAdapter(private val activity: MainActivity,
 
     private fun startEditFragment(note: Note) {
         activity.editFragment.setNote(note)
+        activity.editFragment.isFromAlarmedNoteSelectionFragment = true
         activity.fragmentManager.beginTransaction()
             .addToBackStack(null)
             .setCustomAnimations(R.anim.anim_slide_in_left_enter,
@@ -155,4 +151,20 @@ class AlarmedNoteAdapter(private val activity: MainActivity,
                 R.anim.anim_slide_down_pop_exit)
             .replace(R.id.calendar_container, activity.editFragment).commit()
     }
+
+    fun insert(note: Note) {
+        notes.add(0, note)
+        notifyItemInserted(0)
+        recyclerView.smoothScrollToPosition(0)
+    }
+
+    fun delete(note: Note) {
+        val position: Int = notes.indexOf(note)
+        notes.remove(note)
+        notifyItemRemoved(position)
+        activity.cancelAlarm(note, true)
+        if (note.uri != null) activity.deleteFileFromUri(note.uri!!)
+    }
+
+    fun getSelectedNoteByCreationTime(creationTime: Long) = notes.filter { it.creationTime == creationTime }[0]
 }

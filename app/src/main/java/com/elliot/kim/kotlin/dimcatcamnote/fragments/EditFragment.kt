@@ -7,7 +7,6 @@ import android.content.DialogInterface
 import android.graphics.Rect
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import android.view.*
 import android.view.GestureDetector.SimpleOnGestureListener
 import android.view.View.OnTouchListener
@@ -25,9 +24,10 @@ import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity
 import com.elliot.kim.kotlin.dimcatcamnote.data.Note
 import com.elliot.kim.kotlin.dimcatcamnote.databinding.FragmentEditBinding
 import com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments.DialogFragments
-import com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments.PasswordSettingDialogFragment
+import com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments.SetPasswordDialogFragment
 import com.elliot.kim.kotlin.dimcatcamnote.view_model.MainViewModel
 
+// 등록 해제하는 방식으로 변경할 것.
 class EditFragment(private val activity: MainActivity) : Fragment() {
 
     private lateinit var binding: FragmentEditBinding
@@ -39,6 +39,7 @@ class EditFragment(private val activity: MainActivity) : Fragment() {
     private var originAlarmTime: Long? = null
     private var shortAnimationDuration = 0
     private var uri: String? = null
+    var isFromAlarmedNoteSelectionFragment = false
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -50,7 +51,6 @@ class EditFragment(private val activity: MainActivity) : Fragment() {
     }
 
     private fun init() {
-
         originAlarmTime = note.alarmTime
         originContent = note.content
         shortAnimationDuration = resources.getInteger(android.R.integer.config_shortAnimTime)
@@ -69,9 +69,12 @@ class EditFragment(private val activity: MainActivity) : Fragment() {
         binding = FragmentEditBinding.bind(view)
         textViewTime = binding.textViewTime
 
-        activity.setSupportActionBar(binding.toolBar)
+        activity.setSupportActionBar(binding.toolbar)
         activity.supportActionBar?.setDisplayHomeAsUpEnabled(true)
         setHasOptionsMenu(true)
+
+        binding.toolbar.setTitleTextAppearance(activity, R.style.FontNanumPen)
+
 
         showImage()
 
@@ -87,7 +90,6 @@ class EditFragment(private val activity: MainActivity) : Fragment() {
 
                     override fun onDoubleTap(e: MotionEvent): Boolean {
                         isEditMode = true
-                        activity.showToast("노트를 편집하세요.")
                         getFocus()
                         return super.onDoubleTap(e)
                     }
@@ -128,6 +130,7 @@ class EditFragment(private val activity: MainActivity) : Fragment() {
 
     override fun onResume() {
         super.onResume()
+        binding.toolbar.setBackgroundColor(MainActivity.toolbarColor)
         uri = note.uri
         setContent(note)
         activity.setCurrentFragment(CurrentFragment.EDIT_FRAGMENT)
@@ -136,8 +139,13 @@ class EditFragment(private val activity: MainActivity) : Fragment() {
     override fun onStop() {
         super.onStop()
         isEditMode = false
-        activity.setCurrentFragment(null)
-        activity.showFloatingActionButton()
+
+        if (isFromAlarmedNoteSelectionFragment)
+            activity.setCurrentFragment(CurrentFragment.CALENDAR_FRAGMENT)
+        else {
+            activity.setCurrentFragment(null)
+            activity.showFloatingActionButton()
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -189,7 +197,7 @@ class EditFragment(private val activity: MainActivity) : Fragment() {
                 if (note.alarmTime == null)
                     startAlarmFragment(note)
                 else {
-                    activity.cancelAlarm(note, false)
+                    activity.cancelAlarm(note, isDelete = false, isByUser = true)
                     setTimeText(note)
                 }
             }
@@ -212,7 +220,7 @@ class EditFragment(private val activity: MainActivity) : Fragment() {
     }
 
     private fun lock() {
-        PasswordSettingDialogFragment(activity.getNoteAdapter()).show(activity.fragmentManager, tag)
+        SetPasswordDialogFragment(activity.getNoteAdapter()).show(activity.fragmentManager, tag)
     }
 
     private fun unlock() {
@@ -224,11 +232,10 @@ class EditFragment(private val activity: MainActivity) : Fragment() {
 
     fun setContent(note: Note) {
         setText(note)
-        // showImage()
     }
 
     private fun setText(note: Note) {
-        binding.toolBar.title = note.title
+        binding.toolbar.title = note.title
         binding.editTextContent.setText(note.content)
         binding.editTextContent.isEnabled = false
         setTimeText(note)

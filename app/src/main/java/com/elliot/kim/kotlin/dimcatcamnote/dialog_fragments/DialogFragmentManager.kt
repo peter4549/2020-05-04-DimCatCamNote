@@ -1,5 +1,7 @@
 package com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments
 
+
+import androidx.appcompat.widget.Toolbar
 import com.elliot.kim.kotlin.dimcatcamnote.adapters.FolderAdapter
 import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity
 import com.elliot.kim.kotlin.dimcatcamnote.adapters.NoteAdapter
@@ -11,14 +13,14 @@ import com.elliot.kim.kotlin.dimcatcamnote.adapters.NoteAdapter
 class DialogFragmentManager(private val activity: MainActivity,
                             private val folderAdapter: FolderAdapter,
                             private val noteAdapter: NoteAdapter
-) {
 
+) {
     private val tag = "DialogFragmentManager"
 
-    fun showDialogFragment(dialogFragment: DialogFragments) {
+    fun showDialogFragment(dialogFragment: DialogFragments, toolbar: Toolbar? = null) {
 
         when (dialogFragment) {
-            DialogFragments.ADD_FOLDER -> AddFolderDialogFragment(folderAdapter, themeColor)
+            DialogFragments.ADD_FOLDER -> AddFolderDialogFragment(folderAdapter)
                 .show(activity.fragmentManager, tag)
             DialogFragments.ADD_TO_CALENDER -> AddToCalendarDialogFragment(noteAdapter.selectedNote!!)
                 .show(activity.fragmentManager, tag)
@@ -30,14 +32,14 @@ class DialogFragmentManager(private val activity: MainActivity,
                 .show(activity.fragmentManager, tag)
             DialogFragments.SORT -> SortDialogFragment(noteAdapter)
                 .show(activity.fragmentManager, tag)
-            DialogFragments.THEME_OPTIONS -> ThemeOptionsDialogFragment()
+            DialogFragments.SET_THEME_COLOR -> SetThemeColorDialogFragment(toolbar)
+                .show(activity.fragmentManager, tag)
+            DialogFragments.SET_NOTE_COLOR -> SetNoteColorDialogFragment()
+                .show(activity.fragmentManager, tag)
+            DialogFragments.SET_INLAY_COLOR -> SetInlayColorDialogFragment()
+                .show(activity.fragmentManager, tag)
+            DialogFragments.SET_FONT -> SetFontDialogFragment(toolbar)
                 .show(activity.fragmentManager, tag)
         }
-    }
-
-    // theme color load func 추가할것.
-
-    companion object {
-        var themeColor = 0
     }
 }

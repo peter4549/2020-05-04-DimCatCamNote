@@ -1,6 +1,5 @@
 package com.elliot.kim.kotlin.dimcatcamnote.services
 
-import android.app.ActivityManager
 import android.app.IntentService
 import android.content.Context
 import android.content.Intent
@@ -18,7 +17,7 @@ class AlarmIntentService : IntentService("AlarmIntentService") {
             DEFAULT_VALUE_NOTE_ID
         ) ?: DEFAULT_VALUE_NOTE_ID
 
-        if (isAppRunning(this)) notifyIsAppRunning(id)
+        if (MainActivity.isAppRunning) notifyIsAppRunning(id)
         else
             if (id != DEFAULT_VALUE_NOTE_ID) updateDatabase(id)
     }
@@ -32,22 +31,25 @@ class AlarmIntentService : IntentService("AlarmIntentService") {
         val note = dao.findNoteById(id)
         note.alarmTime = null
         dao.update(note)
-    }
-
-    private fun isAppRunning(context: Context?): Boolean {
-        val activityManager = context!!
-            .getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-        val packageName = context.packageName
-        val processInfoList: List<ActivityManager.RunningAppProcessInfo>
-                = activityManager.runningAppProcesses
-        for (processInfo in processInfoList)
-            if (processInfo.processName == packageName) return true
-        return false
+        removeAlarmPreferences(id)
     }
 
     private fun notifyIsAppRunning(id: Int) {
         val intent = Intent(MainActivity.ACTION_IS_APP_RUNNING)
         intent.putExtra(KEY_NOTE_ID, id)
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
+    }
+
+    private fun removeAlarmPreferences(id: Int) {
+        val sharedPreferences = getSharedPreferences(
+            "alarm_information",
+            Context.MODE_PRIVATE
+        )
+        val editor = sharedPreferences.edit()
+        editor.remove(id.toString() + "0")
+        editor.remove(id.toString() + "1")
+        editor.remove(id.toString() + "2")
+        editor.remove(id.toString() + "3")
+        editor.apply()
     }
 }

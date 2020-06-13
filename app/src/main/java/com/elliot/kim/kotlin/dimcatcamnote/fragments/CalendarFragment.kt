@@ -1,7 +1,6 @@
 package com.elliot.kim.kotlin.dimcatcamnote.fragments
 
 import android.os.Bundle
-import android.util.Log
 import android.view.*
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
@@ -22,6 +21,7 @@ class CalendarFragment : Fragment() {
     private lateinit var alarmedNotes: MutableList<Note>
     private lateinit var binding: FragmentCalendarBinding
     private var currentTime = 0L
+    lateinit var calendarAdapter: CalendarAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -30,6 +30,7 @@ class CalendarFragment : Fragment() {
         activity = requireActivity() as MainActivity
         currentTime = MainActivity.getCurrentTime()
         alarmedNotes = activity.getNoteAdapter().getAlarmedNotes() as MutableList<Note>
+
         return inflater.inflate(R.layout.fragment_calendar, container, false)
     }
 
@@ -37,16 +38,19 @@ class CalendarFragment : Fragment() {
 
         super.onViewCreated(view, savedInstanceState)
         binding = FragmentCalendarBinding.bind(view)
+        activity.setSupportActionBar(binding.toolbar)
+        activity.supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        setHasOptionsMenu(true)
 
         var currentYear = SimpleDateFormat("yyyy",
             Locale.getDefault()).format(currentTime).toInt()
         var currentMonth = SimpleDateFormat("MM",
-            Locale.getDefault()).format(currentTime).toInt()
-        var currentDayOfMonth = SimpleDateFormat("dd",
+            Locale.getDefault()).format(currentTime).toInt() - 1
+        val todayDate = SimpleDateFormat("dd",
             Locale.getDefault()).format(currentTime).toInt()
 
-        //
-        currentMonth--
+        var currentYearMonthText = "${currentYear}년 ${currentMonth + 1}월"
+        setYearMonthText(currentYearMonthText)
 
         val dateFormat = SimpleDateFormat(PATTERN_YYYY_MM_dd, Locale.getDefault())
         val calendar = Calendar.getInstance()
@@ -55,18 +59,11 @@ class CalendarFragment : Fragment() {
 
         calendar.time = dateFormat.parse("${currentYear}년 ${stringCurrentMonth}월 01일")!!
 
-        //Log.d("Before in adapter", "${currentYear}년 ${stringCurrentMonth}월 01일")
+        calendarAdapter = CalendarAdapter(activity, R.layout.calendar_view_row, calendar,
+            alarmedNotes, todayDate)
+        binding.gridView.adapter = calendarAdapter // 여기가 그리드 뷰 업데이트 부분. 고칠 필요 없음.
 
-        // UI
-
-        // set title
-        binding.calendarHeader.text =
-            "${currentYear}년 ${currentMonth + 1}월" // 변수화 하라는 듯.
-
-        var cal = CalendarAdapter(activity, R.layout.calendar_view_row, calendar, alarmedNotes)
-        binding.gridView.adapter = cal // 여기가 그리드 뷰 업데이트 부분. 고칠 필요 없음.
-
-        binding.buttonNextMonth.setOnClickListener {
+        binding.imageButtonNext.setOnClickListener {
             if (currentMonth > 10) {
                 currentMonth = 0
                 calendar.set(++currentYear, currentMonth, 1)
@@ -74,16 +71,14 @@ class CalendarFragment : Fragment() {
             else
                 calendar.set(currentYear, ++currentMonth, 1)
 
-            Log.d("TIME", MainActivity.longTimeToString(calendar.timeInMillis, PATTERN_YYYY_MM_dd))
-
-
-            cal = CalendarAdapter(activity, R.layout.calendar_view_row, calendar, alarmedNotes)
-            binding.gridView.adapter = cal
-            binding.calendarHeader.text =
-                "${currentYear}년 ${currentMonth + 1}월"
+            calendarAdapter = CalendarAdapter(activity, R.layout.calendar_view_row, calendar,
+                alarmedNotes, todayDate)
+            binding.gridView.adapter = calendarAdapter
+            currentYearMonthText = "${currentYear}년 ${currentMonth + 1}월"
+            setYearMonthText(currentYearMonthText)
         }
 
-        binding.buttonPreviousMonth.setOnClickListener {
+        binding.imageButtonPrevious.setOnClickListener {
             if (currentMonth < 1) {
                 currentMonth = 11
                 calendar.set(--currentYear, currentMonth, 1)
@@ -91,21 +86,18 @@ class CalendarFragment : Fragment() {
                 calendar.set(currentYear, --currentMonth, 1)
             }
 
+            calendarAdapter = CalendarAdapter(activity, R.layout.calendar_view_row, calendar,
+                alarmedNotes, todayDate)
+            binding.gridView.adapter = calendarAdapter
+            currentYearMonthText = "${currentYear}년 ${currentMonth + 1}월"
+            setYearMonthText(currentYearMonthText)
 
-            Log.d("PREV", MainActivity.longTimeToString(calendar.timeInMillis, PATTERN_YYYY_MM_dd))
-            cal = CalendarAdapter(activity, R.layout.calendar_view_row, calendar, alarmedNotes)
-            binding.gridView.adapter = cal
-            binding.calendarHeader.text =
-                "${currentYear}년 ${currentMonth + 1}월"
         }
-
-
-        //activity.closeDrawer()// 속도문제도 쫌 잇네.
-        //activity.closeDrawer()
     }
 
     override fun onResume() {
         super.onResume()
+        binding.toolbar.setBackgroundColor(MainActivity.toolbarColor)
         activity.setCurrentFragment(CurrentFragment.CALENDAR_FRAGMENT)
     }
 
@@ -114,8 +106,6 @@ class CalendarFragment : Fragment() {
         activity.setCurrentFragment(null)
         activity.showFloatingActionButton()
     }
-
-
 
     override fun onCreateAnimation(transit: Int, enter: Boolean, nextAnim: Int): Animation? {
 
@@ -138,7 +128,23 @@ class CalendarFragment : Fragment() {
         return animation
     }
 
-    companion object {
-        private const val PATTERN = "yyyy-MM-dd"
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        super.onCreateOptionsMenu(menu, inflater)
+        menu.clear()
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            android.R.id.home -> {
+                activity.backPressed()
+            }
+        }
+
+        return super.onOptionsItemSelected(item)
+    }
+
+    private fun setYearMonthText(text: String) {
+        binding.toolbar.title = text
+        binding.calendarHeader.text = text
     }
 }

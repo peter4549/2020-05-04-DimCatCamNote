@@ -36,5 +36,11 @@
     <dimen name="widget_margin">8dp</dimen>
 
     <!-- about layout size.. -->
-    <dimen name="more_options_menu_item_height">60dp</dimen>
+    <dimen name="more_options_menu_item_height">48dp</dimen>
+
+    <dimen name="text_size_small">12sp</dimen>
+    <dimen name="text_size_small_middle">14sp</dimen>
+    <dimen name="text_size_middle">16sp</dimen>
+    <dimen name="text_size_middle_large">18sp</dimen>
+    <dimen name="text_size_large">20sp</dimen>
 </resources>

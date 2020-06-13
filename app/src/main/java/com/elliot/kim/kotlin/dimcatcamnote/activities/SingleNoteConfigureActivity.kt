@@ -16,9 +16,7 @@ const val APP_WIDGET_PREFERENCES = "app_widget_preferences"
 
 class SingleNoteConfigureActivity : AppCompatActivity() {
 
-    lateinit var viewModel: MainViewModel
     private lateinit var binding: ActivitySingleNoteConfigureBinding
-    private var appWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,12 +28,20 @@ class SingleNoteConfigureActivity : AppCompatActivity() {
         val configureIntent = intent
         val extras: Bundle? = configureIntent.extras
 
-        if (extras != null)
-            appWidgetId = extras.getInt(AppWidgetManager.EXTRA_APPWIDGET_ID,
-                AppWidgetManager.INVALID_APPWIDGET_ID)
+        var appWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID
+        val action = intent.action
+
+        if (action!!.startsWith(ACTION_APP_WIDGET_ATTACHED))
+            appWidgetId = action.substring(ACTION_APP_WIDGET_ATTACHED.length).toInt()
+        else if (extras != null) {
+            appWidgetId = extras.getInt(
+                AppWidgetManager.EXTRA_APPWIDGET_ID,
+                AppWidgetManager.INVALID_APPWIDGET_ID
+            )
+        }
 
         val viewModelFactory = ViewModelProvider.AndroidViewModelFactory.getInstance(application)
-        viewModel = ViewModelProvider(this, viewModelFactory)[MainViewModel::class.java]
+        val viewModel = ViewModelProvider(this, viewModelFactory)[MainViewModel::class.java]
 
         viewModel.setContext(this)
         viewModel.getAll().observe(this, androidx.lifecycle.Observer { notes ->

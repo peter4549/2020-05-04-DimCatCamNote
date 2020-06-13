@@ -67,7 +67,6 @@
     <!--color name="colorUnderlayButtonShare">#26a69a</color> -->
 
     <color name="colorUnderlayButtonDelete">#ef5350</color>
-
     <color name="colorUnderlayButtonDone">#90caf9</color>
     <color name="colorUnderlayButtonAlarm">#81d4fa</color>
     <color name="colorUnderlayButtonEdit">#80deea</color>
@@ -77,6 +76,81 @@
     <color name="backgroundColorPhotoFragment">#263238</color>
 
     <!-- More Options -->
-    <color name="colorMoreOptionsMenuItemIcon">#0277bd</color>
+    <color name="colorMoreOptionsMenuItemIcon">#ce93d8</color>
+
+    <!-- Calendar -->
+    <color name="colorDivider">#e5e5e5</color>
+    <color name="backgroundColorDayOfWeek">#ab47bc</color>
+    <color name="colorCalenderHeaderContent">#ab47bc</color>
+    <color name="backgroundColorCalendar">#f9fbe7</color>
+
+    <!-- Background -->
+    <color name="backgroundColorRed">#ffebee</color>
+    <color name="backgroundColorPink">#fce4ec</color>
+    <color name="backgroundColorPurple">#f3e5f5</color>
+    <color name="backgroundColorDeepPurple">#ede7f6</color>
+    <color name="backgroundColorIndigo">#e8eaf6</color>
+    <color name="backgroundColorBlue">#e3f2fd</color>
+    <color name="backgroundColorLightBlue">#e1f5fe</color>
+    <color name="backgroundColorCyan">#e0f7fa</color>
+    <color name="backgroundColorTeal">#e0f2f1</color>
+    <color name="backgroundColorGreen">#e8f5e9</color>
+    <color name="backgroundColorLightGreen">#f1f8e9</color>
+    <color name="backgroundColorLime">#f9fbe7</color>
+    <color name="backgroundColorYellow">#fffde7</color>
+    <color name="backgroundColorAmber">#fff8e1</color>
+    <color name="backgroundColorOrange">#fff3e0</color>
+    <color name="backgroundColorDeepOrange">#fbe9e7</color>
+
+    <!-- Toolbar -->
+    <color name="colorToolbarRed">#ef9a9a</color>
+    <color name="colorToolbarPink">#f48fb1</color>
+    <color name="colorToolbarPurple">#ce93d8</color>
+    <color name="colorToolbarDeepPurple">#b39ddb</color>
+    <color name="colorToolbarIndigo">#9fa8da</color>
+    <color name="colorToolbarBlue">#90caf9</color>
+    <color name="colorToolbarLightBlue">#81d4fa</color>
+    <color name="colorToolbarCyan">#80deea</color>
+    <color name="colorToolbarTeal">#80cbc4</color>
+    <color name="colorToolbarGreen">#a5d6a7</color>
+    <color name="colorToolbarLightGreen">#c5e1a5</color>
+    <color name="colorToolbarLime">#e6ee9c</color>
+    <color name="colorToolbarYellow">#ffeb3b</color>
+    <color name="colorToolbarAmber">#ffe082</color>
+    <color name="colorToolbarOrange">#ffcc80</color>
+    <color name="colorToolbarDeepOrange">#ffab91</color>
+
+    <!-- Note -->
+    <color name="colorNoteRed">#ffcdd2</color>
+    <color name="colorNotePink">#f8bbd0</color>
+    <color name="colorNotePurple">#e1bee7</color>
+    <color name="colorNoteDeepPurple">#d1c4e9</color>
+    <color name="colorNoteIndigo">#c5cae9</color>
+    <color name="colorNoteBlue">#bbdefb</color>
+    <color name="colorNoteLightBlue">#b3e5fc</color>
+    <color name="colorNoteCyan">#b2ebf2</color>
+    <color name="colorNoteTeal">#b2dfdb</color>
+    <color name="colorNoteGreen">#c8e6c9</color>
+    <color name="colorNoteLightGreen">#dcedc8</color>
+    <color name="colorNoteLime">#f0f4c3</color>
+    <color name="colorNoteYellow">#fff9c4</color>
+    <color name="colorNoteAmber">#ffecb3</color>
+    <color name="colorNoteOrange">#ffe0b2</color>
+    <color name="colorNoteDeepOrange">#ffccbc</color>
+
+    <!-- Default Values -->
+    <color name="defaultColorToolbar">#90caf9</color>
+    <color name="defaultColorBackground">#bbdefb</color>
+    <color name="defaultColorNote">#fff9c4</color>
+    <color name="defaultColorInlay">#fff8e1</color>
+
+    <!-- Status Icon -->
+    <color name="colorStatusIcon">#546e7a</color>
+
+    <!-- Control Highlight -->
+    <color name="colorControlHighlight">#e1bee7</color>
+
+    <!-- Base Background Color -->
+    <color name="backgroundColorBase">#efebe9</color>
 
 </resources>

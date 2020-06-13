@@ -15,7 +15,7 @@ data class Note(var title: String = "", var creationTime: Long, var uri: String?
     var isDeleted = false
     var isLocked = false
     var password: String? = null
-    var appWidgetIds: Array<Int> = arrayOf(-1) //dummy
+    var appWidgetIds: Array<Int> = arrayOf() //dummy
 
     fun toSharedString(): String =
         """

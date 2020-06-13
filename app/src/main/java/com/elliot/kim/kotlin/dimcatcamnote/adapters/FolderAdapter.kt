@@ -2,7 +2,6 @@ package com.elliot.kim.kotlin.dimcatcamnote.adapters
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.util.Log
 import android.view.*
 import androidx.recyclerview.widget.RecyclerView
 import com.elliot.kim.kotlin.dimcatcamnote.DEFAULT_FOLDER_NAME
@@ -12,8 +11,8 @@ import com.elliot.kim.kotlin.dimcatcamnote.data.Folder
 import com.elliot.kim.kotlin.dimcatcamnote.data.Note
 import com.elliot.kim.kotlin.dimcatcamnote.databinding.CardViewNavigationDrawerBinding
 import com.elliot.kim.kotlin.dimcatcamnote.databinding.CardViewNavigationDrawerBinding.bind
-import com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments.PasswordConfirmationDialogFragment
-import com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments.PasswordSettingDialogFragment
+import com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments.ConfirmPasswordDialogFragment
+import com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments.SetPasswordDialogFragment
 import java.util.*
 
 class FolderAdapter(private val context: Context?):
@@ -84,7 +83,7 @@ class FolderAdapter(private val context: Context?):
     }
 
     private fun confirmPassword() {
-        PasswordConfirmationDialogFragment(this)
+        ConfirmPasswordDialogFragment(this)
             .show((context as MainActivity).fragmentManager, tag)
     }
 
@@ -101,24 +100,21 @@ class FolderAdapter(private val context: Context?):
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+        holder.binding.folderCardViewContainer.setBackgroundColor(MainActivity.backgroundColor)
+
         val folder: Folder = folders[position]
-        val name = folder.name
-        val isLocked = folder.isLocked
 
-        holder.binding.textView.text = name
+        holder.binding.textView.text = folder.name
 
-
-        if (isLocked) {
+        if (folder.isLocked) {
             holder.binding.imageViewThumbnail.visibility = View.VISIBLE
             holder.binding.imageViewThumbnail
                 .setImageDrawable((context as MainActivity).getDrawable(R.drawable.ic_lock_outline_black_24dp))
-        }
-        else holder.binding.imageViewThumbnail.visibility = View.GONE
+        } else holder.binding.imageViewThumbnail.visibility = View.GONE
 
 
         holder.binding.cardView.setOnTouchListener { _: View, _: MotionEvent ->
             selectedFolder = folder
-
             false
         }
 
@@ -234,12 +230,12 @@ class FolderAdapter(private val context: Context?):
     }
 
     fun lock() {
-        PasswordSettingDialogFragment(this)
+        SetPasswordDialogFragment(this)
             .show((context as MainActivity).fragmentManager, tag)
     }
 
     fun unlock() {
-        PasswordConfirmationDialogFragment(this, true)
+        ConfirmPasswordDialogFragment(this, true)
             .show((context as MainActivity).fragmentManager, tag)
     }
 

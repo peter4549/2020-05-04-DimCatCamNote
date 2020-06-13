@@ -19,10 +19,11 @@
             android:foreground="?attr/selectableItemBackground">
 
             <LinearLayout
+                android:id="@+id/color_container"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="horizontal"
-                android:background="@color/backgroundColorCardViewAmber">
+                android:background="@android:color/white">
 
                 <ImageView
                     android:id="@+id/image_view_thumbnail"
@@ -31,14 +32,17 @@
                     android:layout_margin="2dp"/>
 
                 <LinearLayout
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical" >
 
-                    <RelativeLayout
+                    <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="32dp">
+                        android:layout_height="32dp"
+                        android:orientation="horizontal"
+                        android:weightSum="1">
 
+                        <!--
                         <ImageView
                             android:id="@+id/image_view_logo"
                             android:layout_width="32dp"
@@ -49,52 +53,71 @@
                             android:layout_marginEnd="4dp"
                             android:layout_marginRight="4dp"
                             android:layout_marginBottom="4dp"
-                            android:src="@drawable/check_mark"/>
+                            android:src="@drawable/ic_done_white_24dp"/> -->
 
                         <TextView
                             android:id="@+id/text_view_title"
-                            android:layout_width="wrap_content"
+                            android:layout_width="0dp"
                             android:layout_height="match_parent"
                             android:layout_marginStart="8dp"
-                            android:layout_toEndOf="@id/image_view_logo"
-                            android:gravity="center"
+                            android:layout_weight="0.6"
+                            android:gravity="center_vertical"
                             android:textColor="@color/textColorCardView"
                             android:textSize="20sp"
                             android:textStyle="bold"
-                            android:maxLength="12"/>
+                            android:maxEms="10"
+                            android:maxLines="1"
+                            android:ellipsize="end"/>
+                        <!-- android:layout_toEndOf="@id/image_view_logo" -->
 
-                        <ImageView
-                            android:id="@+id/image_view_done"
-                            android:layout_width="32dp"
-                            android:layout_height="32dp"
-                            android:layout_marginTop="6dp"
-                            android:layout_marginBottom="6dp"
-                            android:layout_toStartOf="@id/image_view_alarm"
-                            android:visibility="gone" />
+                        <LinearLayout
+                            android:id="@+id/image_view_container"
+                            android:layout_width="0dp"
+                            android:layout_height="28dp"
+                            android:layout_marginEnd="8dp"
+                            android:layout_marginStart="8dp"
+                            android:layout_weight="0.4"
+                            android:layout_gravity="end"
+                            android:gravity="end"
+                            android:orientation="horizontal">
 
-                        <ImageView
-                            android:id="@+id/image_view_alarm"
-                            android:layout_width="32dp"
-                            android:layout_height="32dp"
-                            android:layout_alignParentEnd="true"
-                            android:layout_marginTop="6dp"
-                            android:layout_marginEnd="6dp"
-                            android:layout_marginBottom="6dp"
-                            android:visibility="gone"
-                            android:src="@drawable/ic_clock_card_view"/>
+                            <ImageView
+                                android:id="@+id/image_view_done"
+                                android:layout_width="28dp"
+                                android:layout_height="28dp"
+                                android:layout_gravity="end"
+                                android:layout_marginTop="6dp"
+                                android:layout_marginBottom="6dp"
+                                android:visibility="gone"
+                                android:src="@drawable/ic_done_white_24dp"
+                                android:tint="@color/colorStatusIcon"/>
 
-                        <ImageView
-                            android:id="@+id/image_view_lock"
-                            android:layout_width="32dp"
-                            android:layout_height="32dp"
-                            android:layout_alignParentEnd="true"
-                            android:layout_marginTop="6dp"
-                            android:layout_marginEnd="6dp"
-                            android:layout_marginBottom="6dp"
-                            android:visibility="gone"
-                            android:src="@drawable/ic_lock_outline_black_24dp"/>
+                            <ImageView
+                                android:id="@+id/image_view_alarm"
+                                android:layout_width="28dp"
+                                android:layout_height="28dp"
+                                android:layout_gravity="end"
+                                android:layout_marginTop="6dp"
+                                android:layout_marginBottom="6dp"
+                                android:visibility="gone"
+                                android:src="@drawable/ic_alarm_on_white_24dp"
+                                android:tint="@color/colorStatusIcon"/>
 
-                    </RelativeLayout>
+                            <ImageView
+                                android:id="@+id/image_view_lock"
+                                android:layout_width="28dp"
+                                android:layout_height="28dp"
+                                android:layout_gravity="end"
+                                android:layout_marginTop="6dp"
+                                android:layout_marginEnd="2dp"
+                                android:layout_marginBottom="6dp"
+                                android:visibility="gone"
+                                android:src="@drawable/ic_lock_outline_black_24dp"
+                                android:tint="@color/colorStatusIcon"/>
+
+                        </LinearLayout>
+
+                    </LinearLayout>
 
                     <TextView
                         android:id="@+id/text_view_time"
@@ -104,7 +127,8 @@
                         android:paddingStart="8dp"
                         android:textColor="@color/textColorCardView"
                         android:textSize="16sp"
-                        android:textStyle="italic" />
+                        android:textStyle="italic"
+                        android:maxLines="1"/>
 
                     <TextView
                         android:id="@+id/text_view_alarm_time"
@@ -114,7 +138,8 @@
                         android:paddingStart="8dp"
                         android:textColor="@color/textColorCardView"
                         android:textSize="16sp"
-                        android:textStyle="italic" />
+                        android:textStyle="italic"
+                        android:maxLines="1"/>
 
                     <TextView
                         android:id="@+id/text_view_content"
@@ -125,7 +150,9 @@
                         android:textColor="@color/textColorCardView"
                         android:textSize="16sp"
                         android:textStyle="bold"
-                        android:maxLength="16"/>
+                        android:maxEms="10"
+                        android:maxLines="1"
+                        android:ellipsize="end"/>
 
                 </LinearLayout>
 

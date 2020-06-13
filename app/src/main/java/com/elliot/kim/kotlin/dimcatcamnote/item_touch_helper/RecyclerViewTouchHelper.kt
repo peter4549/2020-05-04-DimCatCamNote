@@ -237,7 +237,7 @@ abstract class RecyclerViewTouchHelper(val context: Context, private val recycle
 
         if (direction == toLeft) {
             for (button in buffer) {
-                setButtonOptions(button, position)
+                setButtonStatusIcon(button, position)
                 left = right - buttonWidth
                 button.onDraw(
                     c, RectF(left, itemView.top.toFloat(), right, itemView.bottom.toFloat()),
@@ -272,12 +272,19 @@ abstract class RecyclerViewTouchHelper(val context: Context, private val recycle
         return 5.0F * defaultValue
     }
 
-    private fun setButtonOptions(button: UnderlayButton, position: Int) {
+    private fun setButtonStatusIcon(button: UnderlayButton, position: Int) {
+        // The icon changes even if without the else clause,
+        // but this is the code added for a quick change.
         if (((recyclerView.adapter as NoteAdapter).getNoteByPosition(position).alarmTime != null)
-            && button.id == MainActivity.Companion.UnderlayButtonIds.ALARM)
-                button.imageResourceId = R.drawable.ic_cat_footprint
+            && button.id == MainActivity.Companion.UnderlayButtonIds.ALARM) {
+            button.imageResourceId = R.drawable.ic_alarm_off_white_24dp
+        } else if (button.id == MainActivity.Companion.UnderlayButtonIds.ALARM)
+            button.imageResourceId = R.drawable.ic_add_alarm_white_24dp
+
         if ((recyclerView.adapter as NoteAdapter).getNoteByPosition(position).isDone
-            && button.id == MainActivity.Companion.UnderlayButtonIds.DONE)
-                button.text = "해제"
+            && button.id == MainActivity.Companion.UnderlayButtonIds.DONE) {
+            button.imageResourceId = R.drawable.ic_done_all_white_24dp
+        } else if (button.id == MainActivity.Companion.UnderlayButtonIds.DONE)
+            button.imageResourceId = R.drawable.ic_done_white_24dp
     }
 }

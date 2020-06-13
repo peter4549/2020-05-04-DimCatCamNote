@@ -8,7 +8,7 @@
         android:layout_height="match_parent"
         tools:context="com.elliot.kim.kotlin.dimcatcamnote.activities.EditActivity"
         android:orientation="vertical"
-        android:background="@color/backgroundColorAddEditText"
+        android:background="@color/backgroundColorBase"
         android:focusable="true"
         android:id="@+id/edit_note_container" >
 
@@ -16,7 +16,7 @@
             android:id="@+id/tool_bar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="@color/backgroundColorAddEditText"
+            android:background="@color/defaultColorToolbar"
             app:popupTheme="@style/AppTheme.PopupOverlay" >
 
         </androidx.appcompat.widget.Toolbar>
@@ -28,13 +28,15 @@
             android:layout_below="@id/tool_bar"
             android:padding="4dp"
             android:layout_marginBottom="2dp"
-            android:background="@color/backgroundColorAddEditText"
+            android:background="@color/defaultColorBackground"
             android:textColor="@color/textColorHintAddEditText"/>
 
         <RelativeLayout
+            android:id="@+id/edit_text_container"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_below="@id/text_view_time" >
+            android:layout_below="@id/text_view_time"
+            android:background="@color/defaultColorBackground">
 
             <ImageView
                 android:id="@+id/imageView"
@@ -53,8 +55,6 @@
                 android:paddingEnd="8dp"
                 android:textSize="20sp"
                 android:gravity="top"
-                android:background="@color/backgroundColorAddEditText"
-                android:textColor="@color/textColorHintAddEditText"
                 android:autofillHints="" />
 
             <View

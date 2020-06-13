@@ -7,7 +7,6 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Paint
 import android.net.Uri
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,7 +14,6 @@ import android.view.animation.AnimationUtils
 import android.widget.Filter
 import android.widget.RemoteViews
 import androidx.appcompat.app.AppCompatActivity
-import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CircleCrop
@@ -27,7 +25,7 @@ import com.elliot.kim.kotlin.dimcatcamnote.activities.SingleNoteConfigureActivit
 import com.elliot.kim.kotlin.dimcatcamnote.data.Note
 import com.elliot.kim.kotlin.dimcatcamnote.databinding.CardViewBinding
 import com.elliot.kim.kotlin.dimcatcamnote.databinding.CardViewBinding.bind
-import com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments.PasswordConfirmationDialogFragment
+import com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments.ConfirmPasswordDialogFragment
 import com.elliot.kim.kotlin.dimcatcamnote.item_touch_helper.ItemMovedListener
 import java.util.*
 import kotlin.collections.ArrayList
@@ -42,8 +40,6 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
     private var notesFiltered: MutableList<Note> = notes
     private lateinit var recyclerView: RecyclerView
     var selectedNote: Note? = null
-
-    private var lastPosition = -1
 
     var isFirstBinding = true
 
@@ -86,7 +82,7 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
         val editTime: Long? = note.editTime ?: creationTime
         val alarmTime: Long? = note.alarmTime
 
-        val time: String = if (editTime != null)
+        val time: String = if (editTime == creationTime)
             "${context?.getString(R.string.creation_time)}: ${MainActivity.longTimeToString(creationTime,
                 PATTERN_UP_TO_SECONDS
             )}"
@@ -94,6 +90,8 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
             "${context?.getString(R.string.edit_time)}: ${MainActivity.longTimeToString(editTime,
                 PATTERN_UP_TO_SECONDS
             )}"
+
+        holder.binding.colorContainer.setBackgroundColor(MainActivity.noteColor)
 
         holder.binding.textViewTitle.text = title
         holder.binding.textViewTime.text = time
@@ -115,13 +113,13 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
                     Paint.STRIKE_THRU_TEXT_FLAG
             holder.binding.textViewContent.paintFlags = holder.binding.textViewContent.paintFlags or
                     Paint.STRIKE_THRU_TEXT_FLAG
-            holder.binding.imageViewLogo.setImageResource(R.drawable.ic_cat_footprint)
+            //holder.binding.imageViewLogo.setImageResource(R.drawable.ic_cat_footprint)
             holder.binding.imageViewDone.visibility = View.VISIBLE
         } else {
             holder.binding.textViewTitle.paintFlags = 0
             holder.binding.textViewTime.paintFlags = 0
             holder.binding.textViewContent.paintFlags = 0
-            holder.binding.imageViewLogo.setImageResource(R.drawable.ic_cat_card_view_00)
+            //holder.binding.imageViewLogo.setImageResource(R.drawable.ic_cat_card_view_00)
             holder.binding.imageViewDone.visibility = View.INVISIBLE
         }
 
@@ -172,12 +170,8 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
     }
 
     private fun confirmPassword() {
-        PasswordConfirmationDialogFragment(this).show((context as MainActivity).fragmentManager,
+        ConfirmPasswordDialogFragment(this).show((context as MainActivity).fragmentManager,
         "")
-    }
-
-    override fun getItemId(position: Int): Long {
-        return super.getItemId(position)
     }
 
     override fun getItemCount(): Int {
@@ -223,8 +217,6 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
 
                 val filterResults = FilterResults()
                 filterResults.values = notesFiltered
-                //recyclerView.scheduleLayoutAnimation()
-                //if(isFirst) isFirst = false
                 return filterResults
             }
 
@@ -247,15 +239,6 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
         (context as MainActivity).recyclerViewScrollToTop()
 
         context.showCurrentFolderItems((context).currentFolder, false)
-
-        /*
-        val handler = Handler()
-        handler.postDelayed( {
-
-        }, 240)
-
-         */
-
 
         /** The code below controls the scrolling speed.
         val linearSmoothScroller: LinearSmoothScroller =
@@ -281,9 +264,8 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
         notesFiltered.removeAt(position)
         notes.remove(note)
         notifyItemRemoved(position)
-        //(context as MainActivity).viewModel.delete(note)
         note.isDeleted = true
-        (context as MainActivity).cancelAlarm(note, true)
+        (context as MainActivity).cancelAlarm(note, isDelete = true, isByUser = true)
         if (note.uri != null) context.deleteFileFromUri(note.uri!!)
     }
 
@@ -352,58 +334,19 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
             appWidgetManager.updateAppWidget(appWidgetId, it)
         }
 
-        val preferences = context!!.getSharedPreferences(APP_WIDGET_PREFERENCES, Context.MODE_PRIVATE)
-        val editor = preferences.edit()
-        editor.putInt(KEY_APP_WIDGET_NOTE_ID + appWidgetId, note.id)
-        editor.putString(KEY_APP_WIDGET_NOTE_TITLE + appWidgetId, note.title)
-        editor.putString(KEY_APP_WIDGET_NOTE_CONTENT + appWidgetId, note.content)
-        editor.putString(KEY_APP_WIDGET_NOTE_URI + appWidgetId, note.uri ?: "")
-        editor.putLong(KEY_APP_WIDGET_NOTE_CREATION_TIME + appWidgetId, note.creationTime)
-        editor.putLong(KEY_APP_WIDGET_NOTE_EDIT_TIME + appWidgetId, note.editTime ?: 0L)
-        editor.putLong(KEY_APP_WIDGET_NOTE_ALARM_TIME + appWidgetId, note.alarmTime ?: 0L)
-        editor.putBoolean(KEY_APP_WIDGET_NOTE_IS_DONE + appWidgetId, note.isDone)
-        editor.putBoolean(KEY_APP_WIDGET_NOTE_IS_LOCKED + appWidgetId, note.isLocked)
-        editor.putString(KEY_APP_WIDGET_NOTE_PASSWORD + appWidgetId, note.password ?: "")
-        editor.apply()
-
         val resultIntent = Intent().apply {
             putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
         }
 
         note.appWidgetIds += appWidgetId
-        //(note.appWidgetIds as MutableList<Int>).add(appWidgetId)
-        activity.viewModel.update(note, false)
+        activity.viewModel.update(note)
         activity.setResult(AppCompatActivity.RESULT_OK, resultIntent)
         activity.finish()
     }
 
-    private fun animate(view: RecyclerView, position: Int){
-        val animation = AnimationUtils.loadLayoutAnimation(context, R.anim.layout_animation)
-        view.layoutAnimation = animation
-        //view.scheduleLayoutAnimation()
-        lastPosition = position
-    }
-
-    private fun animateNewItem(view: View, position: Int) {
-        if (position == 0) {
-            val animation = AnimationUtils.loadAnimation(
-                context,
-                android.R.anim.slide_in_left
-            )
-            view.startAnimation(animation)
-        }
-    }
-
-    private fun animateSingleItem(view: View, position: Int) {
-        if (position > lastPosition) {
-            val animation = AnimationUtils.loadAnimation(
-                context,
-                android.R.anim.slide_in_left
-            )
-            view.startAnimation(animation)
-            lastPosition = position
-        }
-    }
-
     fun getAlarmedNotes() = notes.filter { it.alarmTime != null }
+
+    fun setSelectedNoteByCreationTime(creationTime: Long) {
+        selectedNote = notes.filter { it.creationTime == creationTime }[0]
+    }
 }

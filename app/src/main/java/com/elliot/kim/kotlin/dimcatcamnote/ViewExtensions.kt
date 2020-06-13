@@ -16,13 +16,16 @@
 
 package com.elliot.kim.kotlin.dimcatcamnote
 
+import android.graphics.Typeface
 import android.os.Build
 import android.view.DisplayCutout
 import android.view.View
 import android.view.WindowManager
 import android.widget.ImageButton
+import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.widget.Toolbar
 
 /** Combination of all flags required to put activity into immersive mode */
 const val FLAGS_FULLSCREEN =

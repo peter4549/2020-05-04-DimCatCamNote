@@ -3,16 +3,15 @@ package com.elliot.kim.kotlin.dimcatcamnote.activities
 import android.Manifest
 import android.app.AlarmManager
 import android.app.PendingIntent
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
+import android.content.*
 import android.content.pm.PackageManager
+import android.graphics.Typeface
 import android.media.MediaScannerConnection
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.Process
-import android.provider.CalendarContract
+import android.text.method.TextKeyListener.clear
 import android.util.Log
 import android.view.KeyEvent
 import android.view.Menu
@@ -24,6 +23,7 @@ import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.core.content.ContextCompat
+import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.GravityCompat
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
@@ -33,8 +33,8 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import androidx.recyclerview.widget.SimpleItemAnimator
 import com.elliot.kim.kotlin.dimcatcamnote.*
+import com.elliot.kim.kotlin.dimcatcamnote.adapters.AlarmedNoteAdapter
 import com.elliot.kim.kotlin.dimcatcamnote.adapters.FolderAdapter
 import com.elliot.kim.kotlin.dimcatcamnote.adapters.NoteAdapter
 import com.elliot.kim.kotlin.dimcatcamnote.broadcast_receivers.AlarmReceiver
@@ -69,10 +69,12 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         DEFAULT_FOLDER_NAME
     )
 
+    var alarmedNoteAdapter: AlarmedNoteAdapter? = null
+
     lateinit var fragmentManager: FragmentManager
 
     val alarmFragment = AlarmFragment(this)
-    val calendarFragment = CalendarFragment()
+    private val calendarFragment = CalendarFragment()
     val cameraFragment = CameraFragment()
     val editFragment = EditFragment(this)
     val writeFragment = WriteFragment()
@@ -87,12 +89,14 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
     // cancel the alarm.
     private val receiver: BroadcastReceiver = object: BroadcastReceiver(){
         override fun onReceive(context: Context?, intent: Intent?) {
-            val id = intent!!.getIntExtra(
-                KEY_NOTE_ID,
-                DEFAULT_VALUE_NOTE_ID
-            )
+            val id = intent!!.getIntExtra(KEY_NOTE_ID, DEFAULT_VALUE_NOTE_ID)
             cancelAlarm(getNoteById(id), false)
         }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        isAppRunning = true
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -108,15 +112,18 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         fragmentManager = supportFragmentManager
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
         binding.writeFloatingActionButton.setOnClickListener { startWriteFragment() }
+        binding.sortContainer.setOnClickListener {
+            dialogFragmentManager.showDialogFragment(DialogFragments.SORT)
+        }
         setSupportActionBar(binding.toolBar)
-        initializeNavigationDrawer()
+        initColor()
+        initNavigationDrawer()
 
         val viewModelFactory = ViewModelProvider.AndroidViewModelFactory.getInstance(application)
         viewModel = ViewModelProvider(this, viewModelFactory)[MainViewModel::class.java]
         viewModel.setContext(this)
 
         var notesSize = 0
-        // 데이터를 읽어오고, 그놈을 등록하고, 오브저브 설정도 하는 것으로. 이걸 통으로 이니셜라이즈로 이동하는게 맞는 모양새일듯.
         viewModel.getAll().observe(this, androidx.lifecycle.Observer { notes ->
             if (initialization) {// 초기화 로직 정리할 것.
 
@@ -126,11 +133,18 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
                 initialization = false
             } else {
                 when {
-                    notesSize < notes.size -> noteAdapter.insert(notes[notes.size - 1])
-                    notesSize == notes.size -> {
-                        noteAdapter.update(viewModel.targetNote!!)
+                    notesSize < notes.size -> {
+                        noteAdapter.insert(notes[notes.size - 1])
                     }
-                    notesSize > notes.size -> noteAdapter.delete(viewModel.targetNote!!)
+                    notesSize == notes.size ->
+                        noteAdapter.update(viewModel.targetNote!!)
+                    notesSize > notes.size -> {
+                        if (editFragment.isFromAlarmedNoteSelectionFragment)
+                            alarmedNoteAdapter!!
+                                .delete(alarmedNoteAdapter!!
+                                    .getSelectedNoteByCreationTime(viewModel.targetNote!!.creationTime))
+                        noteAdapter.delete(viewModel.targetNote!!)
+                    }
                 }
             }
             notesSize = notes.size
@@ -151,6 +165,11 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         LocalBroadcastManager.getInstance(this).unregisterReceiver(
             receiver);
         super.onPause()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        isAppRunning = false
     }
 
     private fun createUnderlayButtons() {
@@ -203,10 +222,9 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
                                     startAlarmFragment(noteAdapter.getNoteByPosition(position))
                                     noteAdapter.notifyItemChanged(position)
                                 } else {
-                                    cancelAlarm(noteAdapter.getNoteByPosition(position), false)
+                                    cancelAlarm(noteAdapter.getNoteByPosition(position),
+                                        isDelete = false, isByUser = true)
                                 }
-
-
                             }
                         })
                 )
@@ -243,12 +261,12 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
                         UnderlayButtonIds.DELETE,
                         "삭제",
                         30,
-                        R.drawable.dimcat100,
+                        R.drawable.ic_delete_white_24dp,
                         getColor(R.color.colorUnderlayButtonDelete),
                         object : UnderlayButtonClickListener {
                             override fun onClick(position: Int) {
                                 showDialogFragment(DialogFragments.CONFIRM_DELETE)
-                                //noteAdapter.notifyItemChanged(position)
+                                noteAdapter.notifyItemChanged(position)
                             }
                         })
                 )
@@ -266,6 +284,7 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
                     CurrentFragment.ALARM_FRAGMENT -> super.onBackPressed()
                     CurrentFragment.CALENDAR_FRAGMENT -> super.onBackPressed()
                     CurrentFragment.CAMERA_FRAGMENT -> super.onBackPressed()
+                    CurrentFragment.CONFIGURE_FRAGMENT -> super.onBackPressed()
                     CurrentFragment.EDIT_FRAGMENT -> editFragment.finish(EditFragment.BACK_PRESSED)
                     CurrentFragment.PHOTO_FRAGMENT -> super.onBackPressed()
                     CurrentFragment.WRITE_FRAGMENT -> writeFragment.finish(WriteFragment.BACK_PRESSED)
@@ -390,10 +409,12 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
 
     fun startEditFragment() {
         editFragment.setNote(noteAdapter.selectedNote!!)
+        editFragment.isFromAlarmedNoteSelectionFragment = false
         startFragment(editFragment)
     }
 
     private fun startWriteFragment() {
+        writeFragment.isFromAlarmedNoteSelectionFragment = false
         startFragment(writeFragment)
     }
 
@@ -417,20 +438,24 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
 
     fun getNoteById(id: Int): Note = noteAdapter.getNoteById(id)
 
-    fun cancelAlarm(note: Note, isDelete: Boolean) {
+    fun cancelAlarm(note: Note, isDelete: Boolean, isByUser: Boolean = false) {
         val id: Int = note.id
 
         val alarmManager =
             getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val intent = Intent(this, AlarmReceiver::class.java)
-        val pendingIntent = PendingIntent.getBroadcast(
-            this,
-            id,
-            intent,
-            PendingIntent.FLAG_ONE_SHOT
-        )
 
-        alarmManager.cancel(pendingIntent)
+        if (isByUser) {
+            val pendingIntent = PendingIntent.getBroadcast(
+                this,
+                id,
+                intent,
+                PendingIntent.FLAG_ONE_SHOT
+            )
+
+            alarmManager.cancel(pendingIntent)
+        }
+
         removeAlarmPreferences(id)
 
         if (!isDelete) {
@@ -440,16 +465,16 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         }
     }
 
-    private fun removeAlarmPreferences(number: Int) {
+    private fun removeAlarmPreferences(id: Int) {
         val sharedPreferences = getSharedPreferences(
-            "alarm_information",
+            PREFERENCES_NAME_ALARM,
             Context.MODE_PRIVATE
         )
         val editor = sharedPreferences.edit()
-        editor.remove(number.toString() + "0")
-        editor.remove(number.toString() + "1")
-        editor.remove(number.toString() + "2")
-        editor.remove(number.toString() + "3")
+        editor.remove(id.toString() + "0")
+        editor.remove(id.toString() + "1")
+        editor.remove(id.toString() + "2")
+        editor.remove(id.toString() + "3")
         editor.apply()
     }
 
@@ -515,12 +540,15 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
 
     }
 
+    // Must be called after folderAdapter and NoteAdapter are initialized.
     private fun initializeDialogFragmentManager() {
         dialogFragmentManager = DialogFragmentManager(this, folderAdapter, noteAdapter)
     }
 
-    private fun initializeNavigationDrawer() {
+    private fun initNavigationDrawer() {
         folderAdapter = FolderAdapter(this)
+
+        setNavigationDrawerColor()
 
         loadCurrentFolderName()
 
@@ -539,17 +567,23 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         binding.drawerLayout.addDrawerListener(toggle)
         toggle.syncState()
 
-        // Calendar
-        binding.navigationDrawerButtonCalender.setOnClickListener {
+        binding.navigationConfigureContainer.setOnClickListener {
+            startFragment(ConfigureFragment())
+        }
+
+        binding.navigationCalendarContainer.setOnClickListener {
             startCalendarFragment()
         }
 
-        binding.navigationDrawerChangeTheme.setOnClickListener {
-            dialogFragmentManager.showDialogFragment(DialogFragments.THEME_OPTIONS)
-        }
-
-        binding.buttonAddFolder.setOnClickListener {
+        binding.navigationAddFolderContainer.setOnClickListener {
             showDialogFragment(DialogFragments.ADD_FOLDER) }
+    }
+
+    fun setNavigationDrawerColor() {
+        binding.navigationConfigureContainer.setBackgroundColor(toolbarColor)
+        binding.navigationCalendarContainer.setBackgroundColor(toolbarColor)
+        binding.navigationAddFolderContainer.setBackgroundColor(toolbarColor)
+        folderAdapter.notifyDataSetChanged()
     }
 
     private fun initializeRecyclerView(notes: MutableList<Note>) {
@@ -570,8 +604,58 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
     }
 
     private fun initializeSortingCriteria() {
+        binding.sortContainer.setBackgroundColor(backgroundColor)
         val preferences = getSharedPreferences(PREFERENCES_SORTING_CRITERIA, Context.MODE_PRIVATE)
-        noteAdapter.sort(preferences.getInt(KEY_SORTING_CRITERIA, SortingCriteria.EDIT_TIME.index))
+        val sortingCriteria = preferences.getInt(KEY_SORTING_CRITERIA, SortingCriteria.EDIT_TIME.index)
+        binding.textViewSort.text = getTextByCriteria(sortingCriteria)
+        noteAdapter.sort(sortingCriteria)
+    }
+
+    private fun getTextByCriteria(sortingCriteria: Int): String {
+        return when(sortingCriteria) {
+            SortingCriteria.CREATION_TIME.index ->  "생성시간 기준으로 정렬"
+            SortingCriteria.EDIT_TIME.index -> "수정시간 기준으로 정렬"
+            SortingCriteria.NAME.index ->  "이름 기준으로 정렬"
+            else -> throw Exception("Invalid sorting criteria.")
+        }
+    }
+
+    private fun initColor() {
+
+        val defaultToolbarColor = getColor(R.color.defaultColorToolbar)
+        val defaultBackgroundColor = getColor(R.color.defaultColorBackground)
+        val defaultNoteColor = getColor(R.color.defaultColorNote)
+        val defaultInlayColor = getColor(R.color.defaultColorInlay)
+
+        val preferences = getSharedPreferences(
+            PREFERENCES_SET_COLOR,
+            Context.MODE_PRIVATE
+        )
+
+        toolbarColor = preferences.getInt(KEY_COLOR_TOOLBAR, defaultToolbarColor)
+        backgroundColor = preferences.getInt(KEY_COLOR_BACKGROUND, defaultBackgroundColor)
+        noteColor = preferences.getInt(KEY_COLOR_NOTE, defaultNoteColor)
+        inlayColor = preferences.getInt(KEY_COLOR_INLAY, defaultInlayColor)
+
+        binding.toolBar.setBackgroundColor(toolbarColor)
+    }
+
+    // 여기서 가능한 프래그먼트 디자인도 세팅하는 것으로 처리하자.
+    fun setViewDesign() {
+        // activity_main
+        binding.sortContainer.setBackgroundColor(toolbarColor)
+        binding.toolBar.setBackgroundColor(toolbarColor)
+        binding.toolBar.setTitleTextAppearance(this, fontId)
+        binding.textViewSort.typeface = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+                 resources.getFont(R.font.reko)
+            else ResourcesCompat.getFont(this, R.font.reko)
+
+        //
+    }
+
+    fun setViewColor() {
+        binding.sortContainer.setBackgroundColor(toolbarColor)
+        binding.toolBar.setBackgroundColor(toolbarColor)
     }
 
     fun showCurrentFolderItems(folder: Folder, showAnimation: Boolean = true) {
@@ -602,50 +686,40 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         binding.textViewCurrentFolderName.text = folder.name
     }
 
-    fun showDialogFragment(dialogFragment: DialogFragments) {
-        dialogFragmentManager.showDialogFragment(dialogFragment)
+    fun showDialogFragment(dialogFragment: DialogFragments, toolbar: androidx.appcompat.widget.Toolbar? = null) {
+        dialogFragmentManager.showDialogFragment(dialogFragment, toolbar)
     }
 
     fun getNoteAdapter(): NoteAdapter = noteAdapter
-
-    // 로케일에 따라서 시간은 current time을 찾도록 하고, Locale 만 건드리면 될거같음.
-    fun addToCalendar() {
-
-        // 커스텀 달력 뷰에서
-
-        val startMillis: Long = Calendar.getInstance().run {
-            set(2020, 4, 26, 8, 0)
-            timeInMillis
-        }
-        val endMillis: Long = Calendar.getInstance().run {
-            set(2020, 4, 26, 9, 0)
-            timeInMillis
-        }
-        val intent = Intent(Intent.ACTION_INSERT)
-            .setData(CalendarContract.Events.CONTENT_URI)
-            .putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, startMillis)
-            .putExtra(CalendarContract.EXTRA_EVENT_END_TIME, endMillis)
-            .putExtra(CalendarContract.Events.TITLE, "Yoga")
-            .putExtra(CalendarContract.Events.DESCRIPTION, "Group class")
-            .putExtra(CalendarContract.Events.EVENT_LOCATION, "The gym")
-            .putExtra(
-                CalendarContract.Events.AVAILABILITY,
-                CalendarContract.Events.AVAILABILITY_BUSY
-            )
-            .putExtra(Intent.EXTRA_EMAIL, "rowan@example.com,trevor@example.com")
-            // 알림은 나의앱꼐서 진행하는 걸로.
-        if (intent.resolveActivity(packageManager) != null) {
-            startActivity(intent)
-        }
-    }
 
     fun closeDrawer() {
         binding.drawerLayout.closeDrawer(GravityCompat.START, true)
     }
 
+    private fun showSortDialog() {
+        dialogFragmentManager.showDialogFragment(DialogFragments.SORT)
+    }
+
+    // Design
+    fun setFont(fontId: Int) {
+        font = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+            resources.getFont(fontId)
+        else
+            ResourcesCompat.getFont(this, fontId)
+    }
+
     companion object {
 
-        const val DATABASE_NAME = "dim_cat_cam_notes_10"
+        var font: Typeface? = null
+        var fontId = 0
+        var toolbarColor = 0
+        var backgroundColor = 0
+        var noteColor = 0
+        var inlayColor = 0
+
+        var isAppRunning = false
+
+        const val DATABASE_NAME = "dim_cat_cam_notes_11"
 
         const val PREFERENCES_CURRENT_FOLDER = "current_folder"
 
@@ -746,6 +820,4 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
             context.startActivity(chooser)
         }
     }
-
-
 }

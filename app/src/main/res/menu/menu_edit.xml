@@ -4,7 +4,7 @@
 
     <item android:id="@+id/menu_mode_icon"
         android:title="edit"
-        android:icon="@drawable/pencil"
+        android:icon="@drawable/ic_edit_white_24dp"
         app:showAsAction="ifRoom" />
 
     <item android:id="@+id/menu_change_alarm"

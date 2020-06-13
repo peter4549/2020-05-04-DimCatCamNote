@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.provider.CalendarContract
 import android.widget.Button
 import android.widget.DatePicker
+import android.widget.TextView
 import androidx.fragment.app.DialogFragment
 import com.elliot.kim.kotlin.dimcatcamnote.*
 import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity
@@ -31,10 +32,17 @@ class AddToCalendarDialogFragment(private val note: Note) : DialogFragment() {
         val dialog = Dialog(activity)
         dialog.setContentView(R.layout.dialog_fragment_add_to_calendar)
 
+        val textViewTitle = dialog.findViewById<TextView>(R.id.text_view_title)
+        val registerButton = dialog.findViewById<Button>(R.id.button_register)
         setDateButton = dialog.findViewById(R.id.button_set_date)
+
+        textViewTitle.setBackgroundColor(MainActivity.toolbarColor)
+        registerButton.setBackgroundColor(MainActivity.toolbarColor)
+        setDateButton.setBackgroundColor(MainActivity.toolbarColor)
+
         initializeButtonText(setDateButton)
 
-        dialog.findViewById<Button>(R.id.button_register).setOnClickListener {
+        registerButton.setOnClickListener {
             addToCalendar()
             dialog.dismiss()
         }

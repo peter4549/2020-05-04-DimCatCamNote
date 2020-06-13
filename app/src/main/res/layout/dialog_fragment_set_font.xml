@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="280dp"
+    android:layout_height="wrap_content">
+
+    <TextView
+        android:id="@+id/text_view"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:background="@color/defaultColorToolbar"
+        android:gravity="center"
+        android:text="폰트 선택"
+        android:textColor="@android:color/white"
+        android:textSize="@dimen/text_size_middle_large"
+        android:textStyle="bold"/>
+
+    <ScrollView
+        android:id="@+id/scroll_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fillViewport="true"
+        android:layout_below="@id/text_view">
+
+        <RadioGroup
+            android:id="@+id/radio_group"
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <RadioButton
+                android:id="@+id/radio_button_nanum_pen"
+                style="@style/ColorSelectionRadioButtonTheme"
+                android:fontFamily="@font/nanum_pen"
+                android:text="나눔펜 NunumPen"
+                android:textSize="@dimen/text_size_small_middle"/>
+
+            <RadioButton
+                android:id="@+id/radio_button_nanum_myeongjo"
+                style="@style/ColorSelectionRadioButtonTheme"
+                android:fontFamily="@font/nanum_myeongjo"
+                android:text="나눔명조 NunumMyeongjo"
+                android:textSize="@dimen/text_size_small_middle"/>
+
+            <RadioButton
+                android:id="@+id/radio_button_reko"
+                style="@style/ColorSelectionRadioButtonTheme"
+                android:fontFamily="@font/reko"
+                android:text="레코 Reko"
+                android:textSize="@dimen/text_size_small_middle"/>
+
+        </RadioGroup>
+
+    </ScrollView>
+
+</RelativeLayout>

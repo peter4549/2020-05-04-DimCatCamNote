@@ -4,6 +4,7 @@ const val KEY_NOTE_ID = "key_id"
 const val KEY_NOTE_TITLE = "key_title"
 const val KEY_NOTE_CONTENT = "key_content"
 
+const val KEY_APP_WIDGET_NOTE_EXIST = "key_app_widget_note_exist"
 const val KEY_APP_WIDGET_NOTE_ID = "key_app_widget_note_id"
 const val KEY_APP_WIDGET_NOTE_TITLE = "key_app_widget_note_title"
 const val KEY_APP_WIDGET_NOTE_CONTENT = "key_app_widget_note_content"
@@ -18,6 +19,14 @@ const val KEY_APP_WIDGET_IDS = "key_app_widget_ids"
 
 const val KEY_SORTING_CRITERIA = "key_sorting_criteria"
 
+const val KEY_COLOR_TOOLBAR = "key_color_toolbar"
+const val KEY_COLOR_BACKGROUND = "key_color_background"
+const val KEY_COLOR_NOTE = "key_color_note"
+const val KEY_COLOR_INLAY = "key_color_inlay"
+const val KEY_SET_THEME_COLOR_CHECKED_RADIO_BUTTON_ID = "key_set_theme_color_checked_radio_button_id"
+const val KEY_SET_NOTE_COLOR_CHECKED_RADIO_BUTTON_ID = "key_set_note_color_checked_radio_button_id"
+const val KEY_SET_INLAY_COLOR_CHECKED_RADIO_BUTTON_ID = "key_set_inlay_color_checked_radio_button_id"
+
 const val DEFAULT_VALUE_NOTE_ID = -1
 
 const val DEFAULT_FOLDER_ID = 0
@@ -25,6 +34,7 @@ const val DEFAULT_FOLDER_NAME = "모든 노트"
 
 const val PREFERENCES_NAME_ALARM = "preferences_name_alarm"
 const val PREFERENCES_SORTING_CRITERIA = "preference_sorting_criteria"
+const val PREFERENCES_SET_COLOR = "preferences_set_color"
 
 enum class SortingCriteria(val index: Int) {
     CREATION_TIME(0),
@@ -37,6 +47,7 @@ enum class CurrentFragment {
     ALARM_FRAGMENT,
     CALENDAR_FRAGMENT,
     CAMERA_FRAGMENT,
+    CONFIGURE_FRAGMENT,
     EDIT_FRAGMENT,
     PHOTO_FRAGMENT,
     WRITE_FRAGMENT
@@ -47,6 +58,9 @@ const val PATTERN_UP_TO_SECONDS = "yyyy-MM-dd-a-hh:mm:ss"
 
 // action widget
 const val ACTION_APP_WIDGET_ATTACHED = "action_app_widget_attached"
+
+// Alarm notification click action.
+const val ACTION_ALARM_NOTIFICATION_CLICKED = "action_alarm_notification_clicked"
 
 // 유틸리티 클래스나 파일 만들것.
 fun dateToText(year: Int, month: Int, dayOfMonth: Int) = "${year}년 ${month + 1}월 ${dayOfMonth}일"

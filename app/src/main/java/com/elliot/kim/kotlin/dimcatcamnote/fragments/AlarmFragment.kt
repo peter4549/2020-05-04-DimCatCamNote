@@ -127,7 +127,10 @@ class AlarmFragment(private val activity: AppCompatActivity) : Fragment() {
             if (isFromEditFragment) {
                 activity.editFragment.setContent(note)
                 activity.setCurrentFragment(CurrentFragment.EDIT_FRAGMENT)
-            } else activity.setCurrentFragment(null)
+            } else {
+                activity.setCurrentFragment(null)
+                activity.showFloatingActionButton()
+            }
         }
     }
 

@@ -1,61 +1,51 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="#FDFDFD">
+    android:id="@+id/move_to_folder_container"
+    android:layout_width="280dp"
+    android:layout_height="wrap_content"
+    android:background="@android:color/white">
 
     <TextView
         android:id="@+id/text_view_title"
         android:layout_width="match_parent"
-        android:layout_height="80dp"
+        android:layout_height="48dp"
         android:gravity="center"
-        android:textColor="#ffffff"
-        android:textSize="18sp"
-        android:text="폴더 이동"
-        android:background="@color/colorAccent"/>
+        android:textColor="@android:color/white"
+        android:text="이동할 폴더를 선택해주세요."
+        android:textSize="@dimen/text_size_large"
+        android:background="@android:color/white"/>
 
     <LinearLayout
-        android:id="@+id/linear_layout_folder_selection"
+        android:id="@+id/spinner_container"
         android:layout_width="match_parent"
-        android:layout_height="40dp"
+        android:layout_height="42dp"
         android:layout_below="@+id/text_view_title"
-        android:orientation="horizontal">
-
-        <TextView
-            android:layout_width="64dp"
-            android:layout_height="match_parent"
-            android:text="폴더 선택"
-            android:gravity="center" />
+        android:layout_centerHorizontal="true"
+        android:layout_margin="12dp"
+        android:orientation="vertical"
+        android:background="@android:color/white">
 
         <Spinner
             android:id="@+id/spinner"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_marginEnd="8dp"
-            android:minHeight="40dp"/>
+            android:layout_margin="8dp"
+            android:minHeight="60dp"
+            android:spinnerMode="dialog"/>
 
     </LinearLayout>
 
-    <LinearLayout
-        android:layout_width="match_parent"
+    <Button
+        android:id="@+id/button"
+        android:layout_width="160dp"
         android:layout_height="40dp"
-        android:layout_below="@+id/linear_layout_folder_selection"
-        android:orientation="horizontal">
-
-        <Button
-            android:id="@+id/button_cancel"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:text="취소"/>
-
-        <Button
-            android:id="@+id/button_move"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:text="이동"/>
-
-    </LinearLayout>
+        android:layout_below="@+id/spinner_container"
+        android:layout_centerHorizontal="true"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="12dp"
+        android:text="@string/ok"
+        android:textColor="@android:color/white"
+        android:textSize="@dimen/text_size_middle"
+        android:textStyle="bold"/>
 
 </RelativeLayout>

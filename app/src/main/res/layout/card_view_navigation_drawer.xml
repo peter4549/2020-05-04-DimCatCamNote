@@ -6,7 +6,7 @@
     <FrameLayout
         android:id="@+id/navigation_drawer_frame_layout"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="36dp"
         android:layout_marginTop="2dp"
         tools:context="com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity">
 
@@ -14,27 +14,38 @@
             android:id="@+id/card_view"
             android:layout_gravity="center"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:clickable="true"
             android:focusable="true"
             android:foreground="?attr/selectableItemBackground">
 
             <LinearLayout
+                android:id="@+id/folder_card_view_container"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:paddingEnd="12dp"
+                android:paddingStart="12dp"
                 android:orientation="horizontal"
-                android:background="@color/backgroundColorCardViewAmber">
-
-                <ImageView
-                    android:id="@+id/image_view_thumbnail"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    android:layout_margin="2dp"/>
+                android:background="@color/defaultColorBackground" >
 
                 <TextView
                     android:id="@+id/text_view"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent" />
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:gravity="center_vertical"
+                    android:textSize="@dimen/text_size_small_middle"
+                    android:textStyle="bold"
+                    android:maxEms="8"
+                    android:maxLines="1"
+                    android:ellipsize="end"/>
+
+                <ImageView
+                    android:id="@+id/image_view_thumbnail"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginStart="4dp"
+                    android:tint="@color/colorStatusIcon"/>
 
             </LinearLayout>
 

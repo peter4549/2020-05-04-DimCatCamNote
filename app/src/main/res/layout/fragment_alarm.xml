@@ -39,7 +39,7 @@
                     android:layout_width="32dp"
                     android:layout_height="32dp"
                     android:padding="4dp"
-                    android:src="@drawable/check_mark"
+                    android:src="@drawable/ic_done_white_24dp"
                     android:clickable="true"
                     android:contentDescription="Close the AlarmFragment" />
 

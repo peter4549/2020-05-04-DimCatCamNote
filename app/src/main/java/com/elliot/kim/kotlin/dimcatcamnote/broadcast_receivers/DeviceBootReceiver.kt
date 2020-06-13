@@ -23,8 +23,7 @@ class DeviceBootReceiver : BroadcastReceiver()  {
             )
             val entries = preferences.all
             val entriesSize = entries.size
-            val keySet =
-                Arrays.stream(entries.keys.toTypedArray())
+            val keySet = Arrays.stream(entries.keys.toTypedArray())
                     .mapToInt { s: String -> s.toInt() }.toArray()
             var count = 0
             var id = 0

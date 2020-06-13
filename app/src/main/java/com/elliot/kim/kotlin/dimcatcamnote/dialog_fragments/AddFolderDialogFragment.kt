@@ -12,8 +12,7 @@ import com.elliot.kim.kotlin.dimcatcamnote.adapters.FolderAdapter
 import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity
 import com.elliot.kim.kotlin.dimcatcamnote.R
 
-class AddFolderDialogFragment(private val folderAdapter: FolderAdapter,
-                              private val themeColor: Int) : DialogFragment() {
+class AddFolderDialogFragment(private val folderAdapter: FolderAdapter) : DialogFragment() {
 
     private lateinit var activity: MainActivity
 
@@ -24,17 +23,29 @@ class AddFolderDialogFragment(private val folderAdapter: FolderAdapter,
         val dialog = Dialog(activity)
         dialog.setContentView(R.layout.dialog_fragment_add_folder)
 
-        val editText = dialog.findViewById<EditText>(R.id.edit_text)
-
         val textViewTitle = dialog.findViewById<TextView>(R.id.text_view_title)
-        textViewTitle.setBackgroundColor(themeColor)
+        val editText = dialog.findViewById<EditText>(R.id.edit_text)
+        val button = dialog.findViewById<Button>(R.id.button)
+
+
         // 어캐하는 지 확인... 다듬기는 .. 시바 언제하지..
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             textViewTitle.typeface = resources.getFont(R.font.reko)
-        else textViewTitle.typeface = ResourcesCompat.getFont(activity, R.font.reko)
+            editText.typeface = resources.getFont(R.font.reko)
+            button.typeface = resources.getFont(R.font.reko)
+        }
+        else {
+            textViewTitle.typeface = ResourcesCompat.getFont(activity, R.font.reko)
+            editText.typeface = ResourcesCompat.getFont(activity, R.font.reko)
+            button.typeface = ResourcesCompat.getFont(activity, R.font.reko)
+        }
 
+        // Set color
+        textViewTitle.setBackgroundColor(MainActivity.toolbarColor)
+        editText.setBackgroundColor(MainActivity.backgroundColor)
+        button.setBackgroundColor(MainActivity.toolbarColor)
 
-        dialog.findViewById<Button>(R.id.button).setOnClickListener {
+        button.setOnClickListener {
             val folderName = editText.text.toString()
             if (folderName.isBlank())
                 activity.showToast(getString(R.string.folder_name_request))

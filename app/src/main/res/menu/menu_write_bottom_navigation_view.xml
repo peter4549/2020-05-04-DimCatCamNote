@@ -2,15 +2,17 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item android:id="@+id/camera"
-        android:title="Camera"
-        android:icon="@drawable/ic_camera" />
+        android:title="사진 촬영"
+        android:icon="@drawable/ic_photo_camera_white_24dp" />
 
     <item android:id="@+id/microphone"
-        android:title="Voice Note"
-        android:icon="@drawable/microphone" />
+        android:title="음성 노트"
+        android:icon="@drawable/ic_mic_white_24dp" />
 
+    <!--
     <item android:id="@+id/menu_location"
-        android:title="Location"
+        android:title=""
         android:icon="@drawable/ic_location_on_write_24dp" />
+        -->
 
 </menu>

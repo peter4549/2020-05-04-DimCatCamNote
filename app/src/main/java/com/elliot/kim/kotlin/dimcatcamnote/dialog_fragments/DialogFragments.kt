@@ -7,5 +7,8 @@ enum class DialogFragments {
     FOLDER_OPTIONS,
     MORE_OPTIONS,
     SORT,
-    THEME_OPTIONS
+    SET_FONT,
+    SET_INLAY_COLOR,
+    SET_NOTE_COLOR,
+    SET_THEME_COLOR
 }

@@ -55,5 +55,10 @@
     <string name="request_select_date">날짜를 선택해주세요.</string>
 
     <string name="save_complete_message">저장되었습니다.</string>
+    <string name="request_password">비밀번호를 입력해주세요.</string>
+    <string name="re_request_password">다시 한번 입력해주세요.</string>
+
+    <!-- AppWidget -->
+    <string name="no_attachment_message">삭제된 노트입니다.</string>>
 
 </resources>

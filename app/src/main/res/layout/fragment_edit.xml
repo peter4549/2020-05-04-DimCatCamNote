@@ -8,25 +8,23 @@
         android:layout_height="match_parent"
         tools:context="com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity"
         android:orientation="vertical"
-        android:background="@color/backgroundColorAddContainer"
+        android:background="@color/backgroundColorBase"
         android:focusable="true"
         android:id="@+id/edit_note_container" >
 
         <androidx.appcompat.widget.Toolbar
-            android:id="@+id/tool_bar"
+            android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:background="@color/backgroundColorToolbar"
             android:theme="@style/ToolbarTheme"
-            app:popupTheme="@style/AppTheme.PopupOverlay" >
-
-        </androidx.appcompat.widget.Toolbar>
+            app:popupTheme="@style/AppTheme.PopupOverlay" />
 
         <TextView
             android:id="@+id/text_view_time"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/tool_bar"
+            android:layout_below="@id/toolbar"
             android:padding="4dp"
             android:layout_marginBottom="2dp"
             android:background="@color/backgroundColorAddEditText"

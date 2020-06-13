@@ -12,6 +12,7 @@
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/main_container"
             android:name="androidx.navigation.fragment.NavHostFragment"
+            android:background="@color/backgroundColorBase"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:keepScreenOn="true"
@@ -21,7 +22,7 @@
                 android:id="@+id/tool_bar"
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
-                android:background="@color/colorPurplece93d8"
+                android:background="@android:color/white"
                 android:theme="@style/ToolbarTheme"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -36,7 +37,7 @@
                         android:id="@+id/image_view_logo"
                         android:layout_width="144dp"
                         android:layout_height="wrap_content"
-                        android:src="@drawable/time_8c9eff_240"
+                        android:src="@drawable/ic_cat_card_view_00"
                         android:contentDescription="Application Logo" />
 
                 </RelativeLayout>
@@ -46,10 +47,11 @@
             <TextView
                 android:id="@+id/text_view_current_folder_name"
                 android:layout_width="match_parent"
-                android:layout_height="32dp"
+                android:layout_height="36dp"
+                android:layout_marginTop="2dp"
                 android:gravity="center_vertical"
-                android:padding="2dp"
-                android:textSize="12sp"
+                android:paddingStart="12dp"
+                android:textSize="@dimen/text_size_middle"
                 android:textStyle="bold"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -58,18 +60,49 @@
                 app:layout_constraintTop_toBottomOf="@+id/tool_bar"
                 app:layout_constraintVertical_bias="0.0" />
 
+            <RelativeLayout
+                android:id="@+id/sort_container"
+                android:layout_width="match_parent"
+                android:layout_height="32dp"
+                android:background="@android:color/white"
+                android:foreground="?attr/selectableItemBackground"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="1.0"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/text_view_current_folder_name"
+                app:layout_constraintVertical_bias="0.0" >
+
+                <TextView
+                    android:id="@+id/text_view_sort"
+                    android:layout_height="match_parent"
+                    android:layout_width="wrap_content"
+                    android:layout_centerHorizontal="true"
+                    android:gravity="center_vertical"
+                    android:textStyle="bold"
+                    android:textSize="@dimen/text_size_small_middle"/>
+
+                <ImageView
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:layout_centerVertical="true"
+                    android:layout_toEndOf="@id/text_view_sort"
+                    android:src="@drawable/ic_arrow_drop_down_white_24dp"
+                    android:tint="@color/colorStatusIcon" />
+
+            </RelativeLayout>
+
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recycler_view"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:layout_marginTop="4dp"
-                android:paddingTop="4dp"
+                android:layout_marginTop="1dp"
                 android:scrollbars="vertical"
 
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/text_view_current_folder_name" />
+                app:layout_constraintTop_toBottomOf="@+id/sort_container" />
 
             <com.google.android.material.floatingactionbutton.FloatingActionButton
                 android:id="@+id/write_floating_action_button"
@@ -86,8 +119,6 @@
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <!-- Navigation Drawer -->
-
-        <!-- app:headerLayout="@layout/nav_header"-->
         <com.google.android.material.navigation.NavigationView
             android:id="@+id/nav_view"
             android:layout_width="wrap_content"
@@ -101,34 +132,107 @@
                 android:layout_height="match_parent"
                 android:orientation="vertical">
 
-                <Button
-                    android:id="@+id/navigation_drawer_change_theme"
+                <LinearLayout
+                    android:id="@+id/navigation_configure_container"
                     android:layout_width="match_parent"
-                    android:layout_height="40dp"
-                    android:text="테마 변경" />
+                    android:layout_height="64dp"
+                    android:orientation="horizontal"
+                    android:clickable="true"
+                    android:focusable="true">
 
-                <Button
-                    android:id="@+id/navigation_drawer_button_calender"
-                    android:layout_width="match_parent"
-                    android:layout_height="40dp"
-                    android:text="달력" />
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="40dp"
+                        android:layout_gravity="bottom"
+                        android:foreground="?attr/selectableItemBackground">
 
-                <Button
-                    android:id="@+id/button_trash"
-                    android:layout_width="match_parent"
-                    android:layout_height="40dp"
-                    android:text="휴지통" />
+                        <ImageView
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:layout_gravity="center_vertical"
+                            android:layout_marginStart="8dp"
+                            android:src="@drawable/ic_settings_white_24dp"/>
 
-                <Button
-                    android:id="@+id/button_add_folder"
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:gravity="center_vertical"
+                            android:layout_marginStart="8dp"
+                            android:text="환경 설정"
+                            android:textColor="@android:color/white"
+                            android:textSize="@dimen/text_size_middle_large"
+                            android:textStyle="bold" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/navigation_calendar_container"
                     android:layout_width="match_parent"
                     android:layout_height="40dp"
-                    android:text="폴더 추가"/>
+                    android:orientation="horizontal"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground">
+
+                    <ImageView
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginStart="8dp"
+                        android:src="@drawable/ic_calendar_purple_32px"
+                        android:tint="@android:color/white"/>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_marginStart="8dp"
+                        android:gravity="center_vertical"
+                        android:text="달력"
+                        android:textColor="@android:color/white"
+                        android:textSize="@dimen/text_size_middle_large"
+                        android:textStyle="bold"/>
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/navigation_add_folder_container"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:orientation="horizontal"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground">
+
+                    <ImageView
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginStart="8dp"
+                        android:src="@drawable/ic_create_new_folder_white_24dp"
+                        android:tint="@android:color/white"/>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_marginStart="8dp"
+                        android:gravity="center_vertical"
+                        android:text="폴더 추가"
+                        android:textColor="@android:color/white"
+                        android:textSize="@dimen/text_size_middle_large"
+                        android:textStyle="bold"/>
+
+                </LinearLayout>
 
                 <TextView
                     android:layout_width="match_parent"
-                    android:layout_height="40dp"
-                    android:text="폴더" />
+                    android:layout_height="36dp"
+                    android:gravity="center_vertical"
+                    android:paddingStart="12dp"
+                    android:text="폴더"
+                    android:textSize="@dimen/text_size_middle"
+                    android:textStyle="bold"/>
 
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/nav_drawer_recyclerview"

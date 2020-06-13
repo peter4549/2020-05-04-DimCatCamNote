@@ -2,7 +2,6 @@ package com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments
 
 import android.app.Dialog
 import android.os.Bundle
-import android.util.Log
 import android.widget.Button
 import android.widget.TextView
 import androidx.fragment.app.DialogFragment
@@ -10,7 +9,7 @@ import com.elliot.kim.kotlin.dimcatcamnote.CurrentFragment
 import com.elliot.kim.kotlin.dimcatcamnote.data.Note
 import com.elliot.kim.kotlin.dimcatcamnote.R
 import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity
-import com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments.DialogFragmentManager.Companion.themeColor
+import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity.Companion.toolbarColor
 
 class ConfirmDeleteDialogFragment(private val note: Note) : DialogFragment() {
 
@@ -25,7 +24,7 @@ class ConfirmDeleteDialogFragment(private val note: Note) : DialogFragment() {
 
         val textViewTitle = dialog.findViewById<TextView>(R.id.text_view_title)
         textViewTitle.text = note.title
-        textViewTitle.setBackgroundColor(themeColor)
+        textViewTitle.setBackgroundColor(toolbarColor)
 
         dialog.findViewById<Button>(R.id.button_cancel).setOnClickListener {
             dialog.dismiss()

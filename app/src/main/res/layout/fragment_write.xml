@@ -9,12 +9,12 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:background="@color/backgroundColorAddContainer"
+        android:background="@color/backgroundColorBase"
         android:clickable="true"
         android:focusable="true">
 
         <androidx.appcompat.widget.Toolbar
-            android:id="@+id/tool_bar"
+            android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:background="@color/backgroundColorToolbar"
@@ -25,7 +25,7 @@
             android:id="@+id/editTextTitle"
             android:layout_width="match_parent"
             android:layout_height="48dp"
-            android:layout_below="@id/tool_bar"
+            android:layout_below="@id/toolbar"
             android:paddingEnd="8dp"
             android:paddingStart="8dp"
             android:background="@color/backgroundColorAddEditText"
@@ -79,7 +79,7 @@
             <ImageView
                 android:layout_width="match_parent"
                 android:layout_height="32dp"
-                android:src="@drawable/microphone"
+                android:src="@drawable/ic_mic_white_24dp"
                 android:contentDescription=""/>
 
             <Button

@@ -31,6 +31,7 @@ import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity.Companion.CAM
 import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity.Companion.RECORD_AUDIO_PERMISSIONS_REQUEST_CODE
 import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity.Companion.getCurrentTime
 import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity.Companion.longTimeToString
+import com.elliot.kim.kotlin.dimcatcamnote.adapters.AlarmedNoteAdapter
 import com.elliot.kim.kotlin.dimcatcamnote.data.Note
 import com.elliot.kim.kotlin.dimcatcamnote.databinding.FragmentWriteBinding
 import kotlinx.android.synthetic.main.fragment_write.view.*
@@ -45,6 +46,7 @@ class WriteFragment : Fragment() {
     private lateinit var recognizer: SpeechRecognizer
     private lateinit var title: String
     private lateinit var content: String
+    private var alarmedNoteAdapter: AlarmedNoteAdapter? = null
     private var newNote: Note? = null
     private var originalVolume = 0
     private var previousPartialText = ""
@@ -52,7 +54,13 @@ class WriteFragment : Fragment() {
     private var isSaved = false
     private var isFirstOnResults = true
     private var isRecognizingSpeech = false
+    var isFromAlarmedNoteSelectionFragment = false
+    var dateSelectedInCalender = 0L
     var uri: String? = null
+
+    fun setAlarmedNoteAdapter(alarmedNoteAdapter: AlarmedNoteAdapter) {
+        this.alarmedNoteAdapter = alarmedNoteAdapter
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -78,6 +86,8 @@ class WriteFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
+        binding.toolbar.setBackgroundColor(MainActivity.toolbarColor)
+        binding.bottomNavigationView.setBackgroundColor(MainActivity.toolbarColor)
         clearText()
         activity.setCurrentFragment(CurrentFragment.WRITE_FRAGMENT)
         isSaved = false
@@ -88,11 +98,11 @@ class WriteFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         binding = FragmentWriteBinding.bind(view)
 
-        activity.setSupportActionBar(binding.toolBar)
+        activity.setSupportActionBar(binding.toolbar)
         activity.supportActionBar?.setDisplayHomeAsUpEnabled(true)
         setHasOptionsMenu(true)
 
-        binding.toolBar.title = TITLE_TOOLBAR
+        binding.toolbar.title = TITLE_TOOLBAR
         binding.imageView.visibility = View.GONE
         binding.imageView.setOnClickListener { startPhotoFragment() }
 
@@ -121,16 +131,18 @@ class WriteFragment : Fragment() {
                             RECORD_AUDIO_PERMISSIONS_REQUEST_CODE)
 
                 }
+                /*
                 R.id.menu_location -> {
-                    /*
+
                     if (MainActivity.hasLocationPermissions(requireContext()))
 
                     else
                         requestPermissions(MainActivity.LOCATION_PERMISSIONS_REQUESTED,
                             LOCATION_PERMISSIONS_REQUEST_CODE)
 
-                     */
+
                 }
+                 */
             }
             return@setOnNavigationItemSelectedListener true
         }
@@ -169,7 +181,6 @@ class WriteFragment : Fragment() {
             }
 
             override fun onAnimationEnd(animation: Animation?) {
-                //MainActivity.hideKeyboard(context, view)
                 if (isSaved) activity.showToast(activity.getString(R.string.save_complete_message))
             }
 
@@ -187,8 +198,14 @@ class WriteFragment : Fragment() {
 
         if (this::recognizer.isInitialized) { recognizer.destroy() }
 
-        activity.setCurrentFragment(null)
-        activity.showFloatingActionButton()
+        if (isFromAlarmedNoteSelectionFragment)
+            activity.setCurrentFragment(CurrentFragment.CALENDAR_FRAGMENT)
+        else {
+            activity.setCurrentFragment(null)
+            activity.showFloatingActionButton()
+        }
+
+        this.alarmedNoteAdapter = null
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -391,8 +408,10 @@ class WriteFragment : Fragment() {
         builder?.show()
     }
 
-    private fun save() { activity.viewModel.insert(newNote!!) }
-
+    private fun save() {
+        if (isFromAlarmedNoteSelectionFragment) alarmedNoteAdapter!!.insert(newNote!!)
+        activity.viewModel.insert(newNote!!)
+    }
 
     fun finish(save: Int) {
         if (isRecognizingSpeech) finishSpeechRecognition()
@@ -473,9 +492,15 @@ class WriteFragment : Fragment() {
             if (results != null) {
                 val text = results[0]
                 if (text != previousPartialText && text.length > previousPartialText.length) {
-                    binding.editTextContent.append(text.subSequence(previousPartialText.length,
-                        text.length))
-                    previousPartialText = text
+                    try {
+                        binding.editTextContent.append(
+                            text.subSequence(
+                                previousPartialText.length,
+                                text.length
+                            )
+                        )
+                        previousPartialText = text
+                    } catch (e: StringIndexOutOfBoundsException) { }
                 }
             }
         }
@@ -532,8 +557,12 @@ class WriteFragment : Fragment() {
                     )
 
                     val text = recognitionResults[0]
-                    binding.editTextContent.append(text
-                        .substring(previousPartialText.length, text.length))
+                    try {
+                        binding.editTextContent.append(
+                            text
+                                .substring(previousPartialText.length, text.length)
+                        )
+                    } catch (e: StringIndexOutOfBoundsException) { }
 
                     binding.editTextContent.append(" ")
                     recognizer.stopListening()
@@ -549,13 +578,16 @@ class WriteFragment : Fragment() {
         if (title.isBlank() && content.isBlank())
             title = longTimeToString(getCurrentTime(), PATTERN_YYYY_MM_dd)
         else {
-            if (title.isBlank()) title = if (content.length > 12) content.substring(0, 12)
+            if (title.isBlank()) title = if (content.length > 16) content.substring(0, 16)
             else content
         }
 
         val note = Note(title, getCurrentTime(), uri)
         note.content = content
         note.folderId = activity.currentFolder.id
+
+        if (isFromAlarmedNoteSelectionFragment)
+            note.alarmTime = dateSelectedInCalender
 
         return note
     }
@@ -586,5 +618,4 @@ class WriteFragment : Fragment() {
             }, 64)
         }
     }
-
 }
