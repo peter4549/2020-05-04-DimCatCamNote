@@ -28,40 +28,89 @@ class SetNoteColorDialogFragment : DialogFragment() {
         radioGroup.check(checkedRadioButtonId)
         radioGroup.setOnCheckedChangeListener { _, checkedId ->
             when(checkedId) {
-                R.id.radio_button_set_in_red ->
+                R.id.radio_button_set_in_red -> {
                     MainActivity.noteColor = (context as MainActivity).getColor(R.color.colorNoteRed)
-                R.id.radio_button_set_in_pink ->
+                    MainActivity.appWidgetBackgroundColor =
+                        (context as MainActivity).getColor(R.color.backgroundColorRed)
+                }
+                R.id.radio_button_set_in_pink -> {
                     MainActivity.noteColor = (context as MainActivity).getColor(R.color.colorNotePink)
-                R.id.radio_button_set_in_purple ->
+                MainActivity.appWidgetBackgroundColor =
+                    (context as MainActivity).getColor(R.color.backgroundColorPink)
+                }
+                R.id.radio_button_set_in_purple -> {
                     MainActivity.noteColor = (context as MainActivity).getColor(R.color.colorNotePurple)
-                R.id.radio_button_set_in_deep_purple ->
+                    MainActivity.appWidgetBackgroundColor =
+                        (context as MainActivity).getColor(R.color.backgroundColorPurple)
+                }
+                R.id.radio_button_set_in_deep_purple -> {
                     MainActivity.noteColor = (context as MainActivity).getColor(R.color.colorNoteDeepPurple)
-                R.id.radio_button_set_in_indigo ->
+                    MainActivity.appWidgetBackgroundColor =
+                        (context as MainActivity).getColor(R.color.backgroundColorDeepPurple)
+                }
+                R.id.radio_button_set_in_indigo -> {
                     MainActivity.noteColor = (context as MainActivity).getColor(R.color.colorNoteIndigo)
-                R.id.radio_button_set_in_blue ->
+                    MainActivity.appWidgetBackgroundColor =
+                        (context as MainActivity).getColor(R.color.backgroundColorIndigo)
+                }
+                R.id.radio_button_set_in_blue -> {
                     MainActivity.noteColor = (context as MainActivity).getColor(R.color.colorNoteBlue)
-                R.id.radio_button_set_in_light_blue ->
+                    MainActivity.appWidgetBackgroundColor =
+                        (context as MainActivity).getColor(R.color.backgroundColorBlue)
+                }
+                R.id.radio_button_set_in_light_blue -> {
                     MainActivity.noteColor = (context as MainActivity).getColor(R.color.colorNoteLightBlue)
-                R.id.radio_button_set_in_cyan ->
+                    MainActivity.appWidgetBackgroundColor =
+                        (context as MainActivity).getColor(R.color.backgroundColorLightBlue)
+                }
+                R.id.radio_button_set_in_cyan -> {
                     MainActivity.noteColor = (context as MainActivity).getColor(R.color.colorNoteCyan)
-                R.id.radio_button_set_in_teal ->
+                    MainActivity.appWidgetBackgroundColor =
+                        (context as MainActivity).getColor(R.color.backgroundColorCyan)
+                }
+                R.id.radio_button_set_in_teal -> {
                     MainActivity.noteColor = (context as MainActivity).getColor(R.color.colorNoteTeal)
-                R.id.radio_button_set_in_green ->
+                    MainActivity.appWidgetBackgroundColor =
+                        (context as MainActivity).getColor(R.color.backgroundColorTeal)
+                }
+                R.id.radio_button_set_in_green -> {
                     MainActivity.noteColor = (context as MainActivity).getColor(R.color.colorNoteGreen)
-                R.id.radio_button_set_in_light_green ->
+                    MainActivity.appWidgetBackgroundColor =
+                        (context as MainActivity).getColor(R.color.backgroundColorGreen)
+                }
+                R.id.radio_button_set_in_light_green -> {
                     MainActivity.noteColor = (context as MainActivity).getColor(R.color.colorNoteLightGreen)
-                R.id.radio_button_set_in_lime ->
+                    MainActivity.appWidgetBackgroundColor =
+                        (context as MainActivity).getColor(R.color.backgroundColorLightGreen)
+                }
+                R.id.radio_button_set_in_lime -> {
                     MainActivity.noteColor = (context as MainActivity).getColor(R.color.colorNoteLime)
-                R.id.radio_button_set_in_yellow ->
+                    MainActivity.appWidgetBackgroundColor =
+                        (context as MainActivity).getColor(R.color.backgroundColorLime)
+                }
+                R.id.radio_button_set_in_yellow -> {
                     MainActivity.noteColor = (context as MainActivity).getColor(R.color.colorNoteYellow)
-                R.id.radio_button_set_in_amber ->
+                    MainActivity.appWidgetBackgroundColor =
+                        (context as MainActivity).getColor(R.color.backgroundColorYellow)
+                }
+                R.id.radio_button_set_in_amber -> {
                     MainActivity.noteColor = (context as MainActivity).getColor(R.color.colorNoteAmber)
-                R.id.radio_button_set_in_orange ->
+                    MainActivity.appWidgetBackgroundColor =
+                        (context as MainActivity).getColor(R.color.backgroundColorAmber)
+                }
+                R.id.radio_button_set_in_orange -> {
                     MainActivity.noteColor = (context as MainActivity).getColor(R.color.colorNoteOrange)
-                R.id.radio_button_set_in_deep_orange ->
+                    MainActivity.appWidgetBackgroundColor =
+                        (context as MainActivity).getColor(R.color.backgroundColorOrange)
+                }
+                R.id.radio_button_set_in_deep_orange -> {
                     MainActivity.noteColor = (context as MainActivity).getColor(R.color.colorNoteDeepOrange)
+                    MainActivity.appWidgetBackgroundColor =
+                        (context as MainActivity).getColor(R.color.backgroundColorDeepOrange)
+                }
             }
             editor.putInt(KEY_COLOR_NOTE, MainActivity.noteColor)
+            editor.putInt(KEY_COLOR_APP_WIDGET_BACKGROUND, MainActivity.appWidgetBackgroundColor)
             editor.putInt(KEY_SET_NOTE_COLOR_CHECKED_RADIO_BUTTON_ID, radioGroup.checkedRadioButtonId)
             editor.apply()
 

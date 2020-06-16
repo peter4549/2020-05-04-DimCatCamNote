@@ -6,6 +6,7 @@ import android.appwidget.AppWidgetManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color
 import android.util.Log
 import android.view.View
 import android.widget.RemoteViews
@@ -13,7 +14,6 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.room.Room
 import com.elliot.kim.kotlin.dimcatcamnote.*
-import com.elliot.kim.kotlin.dimcatcamnote.activities.APP_WIDGET_PREFERENCES
 import com.elliot.kim.kotlin.dimcatcamnote.activities.EditActivity
 import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity
 import com.elliot.kim.kotlin.dimcatcamnote.activities.SingleNoteConfigureActivity
@@ -53,6 +53,25 @@ class MainViewModel(application: Application): AndroidViewModel(application) {
     fun update(note: Note, updateAppWidget: Boolean = true) {
         if (updateAppWidget) {
             if (note.appWidgetIds.isNotEmpty()) {
+                val colorPreferences = context.getSharedPreferences(PREFERENCES_SET_COLOR,
+                    Context.MODE_PRIVATE)
+                val opacityPreferences =
+                    context.getSharedPreferences(PREFERENCES_OPACITY, Context.MODE_PRIVATE)
+
+                // The color resource ID must be converted to a color value by the getColor method
+                // before being used.
+                // The value stored in the preference is a color value
+                // that has already been converted in SetNoteColorDialogFragment.
+                val appWidgetTitleColor = colorPreferences.getInt(KEY_COLOR_NOTE,
+                    context.getColor(R.color.defaultColorNote))
+                val appWidgetBackgroundColor = colorPreferences.getInt(KEY_COLOR_APP_WIDGET_BACKGROUND,
+                    context.getColor(R.color.defaultColorAppWidgetBackground))
+                val opacity = opacityPreferences.getString(KEY_OPACITY, DEFAULT_HEX_OPACITY.toString())
+                val argbChannelTitleColor =
+                    String.format("#${opacity}%06X", 0xFFFFFF and appWidgetTitleColor)
+                val argbChannelBackgroundColor =
+                    String.format("#${opacity}%06X", 0xFFFFFF and appWidgetBackgroundColor)
+
                 note.appWidgetIds.forEach {
                     val preferences =
                         context.getSharedPreferences(APP_WIDGET_PREFERENCES, Context.MODE_PRIVATE)
@@ -79,6 +98,8 @@ class MainViewModel(application: Application): AndroidViewModel(application) {
                         context.packageName,
                         R.layout.app_widget
                     ).apply {
+                        setInt(R.id.title_container, "setBackgroundColor", Color.parseColor(argbChannelTitleColor))
+                        setInt(R.id.content_container, "setBackgroundColor", Color.parseColor(argbChannelBackgroundColor))
                         setOnClickPendingIntent(R.id.text_view_content, pendingIntent)
                         setCharSequence(R.id.text_view_title, "setText", note.title)
                         setCharSequence(R.id.text_view_content, "setText", note.content)
@@ -89,11 +110,34 @@ class MainViewModel(application: Application): AndroidViewModel(application) {
                         if (note.isLocked) setViewVisibility(R.id.image_view_lock, View.VISIBLE)
                         else setViewVisibility(R.id.image_view_lock, View.GONE)
 
-                        if (note.alarmTime == null || note.alarmTime == 0L) setViewVisibility(R.id.image_view_alarm, View.GONE)
-                        else setViewVisibility(R.id.image_view_alarm, View.VISIBLE)
+                        if (note.alarmTime == null) {
+                            setViewVisibility(R.id.image_view_alarm, View.GONE)
+                            setViewVisibility(R.id.text_view_alarm_time, View.GONE)
+                        } else {
+                            setViewVisibility(R.id.image_view_alarm, View.VISIBLE)
+                            setViewVisibility(R.id.text_view_alarm_time, View.VISIBLE)
+                            setCharSequence(R.id.text_view_alarm_time, "setText",
+                                " " + MainActivity.longTimeToString(note.alarmTime, PATTERN_UP_TO_MINUTES))
+                        }
+
+                        if (note.editTime == null) {
+                            setViewVisibility(R.id.text_view_creation_time, View.VISIBLE)
+                            setViewVisibility(R.id.text_view_edit_time, View.GONE)
+                            setCharSequence(R.id.text_view_creation_time, "setText",
+                                " " + MainActivity.longTimeToString(note.creationTime, PATTERN_UP_TO_MINUTES))
+                        } else {
+                            setViewVisibility(R.id.text_view_edit_time, View.VISIBLE)
+                            setViewVisibility(R.id.text_view_creation_time, View.GONE)
+                            setCharSequence(R.id.text_view_edit_time, "setText",
+                                " " + MainActivity.longTimeToString(note.editTime, PATTERN_UP_TO_MINUTES))
+                        }
+
+                        if (note.uri == null) setViewVisibility(R.id.image_view_photo, View.GONE)
+                        else setViewVisibility(R.id.image_view_photo, View.VISIBLE)
                     }
+
+                    // Notify appWidgetManager of app widget updates.
                     val appWidgetManager = AppWidgetManager.getInstance(context)
-                    // Tell the AppWidgetManager to perform an update on the current app widget
                     appWidgetManager.updateAppWidget(it, views)
                 }
 
@@ -103,12 +147,6 @@ class MainViewModel(application: Application): AndroidViewModel(application) {
                     .getAppWidgetIds(ComponentName(getApplication(),
                         NoteAppWidgetProvider::class.java))
                 intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids)
-               // context.sendBroadcast(intent) 리시버 안쓰고 업데이트 되나.. 췍.
-                // 걍 여기서 호출해서 족치자.
-
-
-
-
             }
         }
         scope.launch {
@@ -119,6 +157,25 @@ class MainViewModel(application: Application): AndroidViewModel(application) {
 
     fun delete(note: Note) {
         if (note.appWidgetIds.isNotEmpty()) {
+            val colorPreferences = context.getSharedPreferences(PREFERENCES_SET_COLOR,
+                Context.MODE_PRIVATE)
+            val opacityPreferences =
+                context.getSharedPreferences(PREFERENCES_OPACITY, Context.MODE_PRIVATE)
+
+            // The color resource ID must be converted to a color value by the getColor method
+            // before being used.
+            // The value stored in the preference is a color value
+            // that has already been converted in SetNoteColorDialogFragment.
+            val appWidgetTitleColor = colorPreferences.getInt(KEY_COLOR_NOTE,
+                context.getColor(R.color.defaultColorNote))
+            val appWidgetBackgroundColor = colorPreferences.getInt(KEY_COLOR_APP_WIDGET_BACKGROUND,
+                context.getColor(R.color.defaultColorAppWidgetBackground))
+            val opacity = opacityPreferences.getString(KEY_OPACITY, DEFAULT_HEX_OPACITY.toString())
+            val argbChannelTitleColor =
+                String.format("#${opacity}%06X", 0xFFFFFF and appWidgetTitleColor)
+            val argbChannelBackgroundColor =
+                String.format("#${opacity}%06X", 0xFFFFFF and appWidgetBackgroundColor)
+
             note.appWidgetIds.forEach {
                 val preferences =
                     context.getSharedPreferences(APP_WIDGET_PREFERENCES, Context.MODE_PRIVATE)
@@ -137,7 +194,7 @@ class MainViewModel(application: Application): AndroidViewModel(application) {
                 editor.apply()
 
                 val intent = Intent(context, SingleNoteConfigureActivity::class.java)
-                // App Widget ID is sent to SingleNoteConfigureActivity through the action.
+                // App widget ID is sent to SingleNoteConfigureActivity through the action.
                 intent.action = ACTION_APP_WIDGET_ATTACHED + it
 
                 val pendingIntent = intent.let {
@@ -150,12 +207,21 @@ class MainViewModel(application: Application): AndroidViewModel(application) {
                     context.packageName,
                     R.layout.app_widget
                 ).apply {
+                    setViewVisibility(R.id.image_view_done, View.GONE)
+                    setViewVisibility(R.id.image_view_lock, View.GONE)
+                    setViewVisibility(R.id.image_view_alarm, View.GONE)
+                    setViewVisibility(R.id.text_view_creation_time, View.GONE)
+                    setViewVisibility(R.id.text_view_edit_time, View.GONE)
+                    setViewVisibility(R.id.text_view_alarm_time, View.GONE)
+                    setViewVisibility(R.id.image_view_photo, View.GONE)
+                    setInt(R.id.title_container, "setBackgroundColor", Color.parseColor(argbChannelTitleColor))
+                    setInt(R.id.text_view_content, "setBackgroundColor", Color.parseColor(argbChannelBackgroundColor))
                     setOnClickPendingIntent(R.id.text_view_content, pendingIntent)
                     setCharSequence(R.id.text_view_title, "setText", context.getString(R.string.no_attachment_message))
                     setCharSequence(R.id.text_view_content, "setText", context.getString(R.string.no_attachment_message))
                 }
 
-                // Tell the AppWidgetManager to perform an update on the current app widget
+                // Notify appWidgetManager of app widget updates.
                 val appWidgetManager = AppWidgetManager.getInstance(context)
                 appWidgetManager.updateAppWidget(it, views)
             }

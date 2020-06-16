@@ -29,9 +29,18 @@ class SortDialogFragment(noteAdapter: NoteAdapter) : DialogFragment() {
 
     private val onClickListener = View.OnClickListener { v ->
         when(v!!.id) {
-            R.id.by_edit_time -> noteAdapter.sort(SortingCriteria.EDIT_TIME.index)
-            R.id.by_creation_time -> noteAdapter.sort(SortingCriteria.CREATION_TIME.index)
-            R.id.by_name -> noteAdapter.sort(SortingCriteria.NAME.index)
+            R.id.by_edit_time -> {
+                noteAdapter.sort(SortingCriteria.EDIT_TIME.index)
+                activity.setTextViewSortText(SortingCriteria.EDIT_TIME.index)
+            }
+            R.id.by_creation_time -> {
+                noteAdapter.sort(SortingCriteria.CREATION_TIME.index)
+                activity.setTextViewSortText(SortingCriteria.CREATION_TIME.index)
+            }
+            R.id.by_name -> {
+                noteAdapter.sort(SortingCriteria.NAME.index)
+                activity.setTextViewSortText(SortingCriteria.NAME.index)
+            }
         }
 
         dialog!!.dismiss()

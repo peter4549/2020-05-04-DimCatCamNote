@@ -6,10 +6,10 @@
     android:padding="@dimen/widget_margin" >
 
     <LinearLayout
-        android:id="@+id/linear_layout_tool_bar"
+        android:id="@+id/title_container"
         android:layout_width="match_parent"
-        android:layout_height="24dp"
-        android:background="@color/colorYellowfff176"
+        android:layout_height="30dp"
+        android:background="@color/defaultColorNote"
         android:orientation="horizontal"
         android:weightSum="1">
 
@@ -18,9 +18,11 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="0.6"
+            android:layout_marginStart="6dp"
+            android:gravity="center_vertical"
             android:maxEms="10"
             android:maxLines="1"
-            android:ellipsize="end"/>
+            android:ellipsize="end" />
 
         <LinearLayout
             android:id="@+id/image_view_container"
@@ -62,13 +64,86 @@
 
     </LinearLayout>
 
-    <TextView
-        android:id="@+id/text_view_content"
+    <LinearLayout
+        android:id="@+id/content_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/linear_layout_tool_bar"
-        android:background="@color/colorAddWidgetTextViewContent"
-        android:clickable="true"
-        android:focusable="true" />
+        android:layout_below="@id/title_container"
+        android:orientation="vertical"
+        android:background="@color/colorAddWidgetTextViewContent">
+
+        <TextView
+            android:id="@+id/text_view_creation_time"
+            android:layout_width="match_parent"
+            android:layout_height="24dp"
+            android:layout_marginStart="2dp"
+            android:drawableStart="@drawable/ic_add_circle_outline_white_24dp"
+            android:drawableTint="@color/colorStatusIcon"
+            android:gravity="center_vertical"
+            android:ellipsize="end"
+            android:maxEms="10"
+            android:maxLines="1"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/text_view_edit_time"
+            android:layout_width="match_parent"
+            android:layout_height="24dp"
+            android:layout_marginStart="2dp"
+            android:drawableStart="@drawable/ic_edit_white_24dp"
+            android:drawableTint="@color/colorStatusIcon"
+            android:gravity="center_vertical"
+            android:ellipsize="end"
+            android:maxEms="10"
+            android:maxLines="1"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/text_view_alarm_time"
+            android:layout_width="match_parent"
+            android:layout_height="24dp"
+            android:layout_marginStart="2dp"
+            android:layout_marginTop="4dp"
+            android:drawableStart="@drawable/ic_alarm_on_white_24dp"
+            android:drawableTint="@color/colorStatusIcon"
+            android:ellipsize="end"
+            android:maxEms="10"
+            android:maxLines="1"
+            android:visibility="gone"/>
+
+        <TextView
+            android:id="@+id/text_view_content"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clickable="true"
+            android:focusable="true" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/bottom_container"
+        android:layout_width="60dp"
+        android:layout_height="30dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layoutDirection="rtl">
+
+        <ImageView
+            android:id="@+id/image_view_photo"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:src="@drawable/ic_photo"
+            android:tint="@color/colorStatusIcon"
+            android:visibility="gone"/>
+
+        <ImageView
+            android:id="@+id/image_view_change"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:contentDescription=""
+            android:src="@drawable/ic_loop_white_24dp"
+            android:tint="@color/colorStatusIcon"/>
+
+    </LinearLayout>
 
 </RelativeLayout>

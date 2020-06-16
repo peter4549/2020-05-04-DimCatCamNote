@@ -104,14 +104,17 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/sort_container" />
 
+            <!-- https://stackoverflow.com/questions/30969455/android-changing-floating-action-button-color -->
             <com.google.android.material.floatingactionbutton.FloatingActionButton
                 android:id="@+id/write_floating_action_button"
                 android:layout_width="60dp"
                 android:layout_height="60dp"
                 android:layout_marginBottom="30dp"
                 android:layout_marginEnd="30dp"
+                android:src="@drawable/ic_add_white_48dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
+                app:backgroundTint="@android:color/transparent"
                 app:borderWidth="0dp"
                 app:fabCustomSize="60dp"
                 app:fabSize="auto" />

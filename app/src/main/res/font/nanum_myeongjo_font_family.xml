@@ -8,4 +8,5 @@
         app:fontStyle="normal"
         app:fontWeight="400"
         app:font="@font/nanum_myeongjo"/>
+
 </font-family>

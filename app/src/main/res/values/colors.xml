@@ -29,43 +29,8 @@
     <color name="icActive">#FFFFFFFF</color>
     <color name="icFocused">#DDFFFFFF</color>
     <color name="icPressed">#AAFFFFFF</color>
-    <color name="backgroundColorCardView">#fff176</color>
-    <color name="textColorCardView">#3e2733</color>
 
-    <color name="backgroundColorToolbar">#ce93d8</color>
-
-    <color name="backgroundColorAddContainer">#f3e5f5</color>
-    <color name="backgroundColorAddEditText">#fff8e1</color>
-    <color name="textColorAddEditText">#263238</color> <!--통일하는것도  갠춘할듯!-->
-    <color name="textColorHintAddEditText">#3e2723</color>
-
-    <color name="colorLime50">#f9fbe7</color>
-    <color name="colorLightBlue50">#e1f5fe</color>
-    <color name="colorAmber50">#fff8e1</color>
-    <color name="colorJuniperAlpha20">#33689C97</color>
-    <color name="colorCeruleanAlpha10">#1A1D6A96</color>
-    <color name="colorBlueGreyDark">#263238</color>
-    <color name="colorYellowActionBar">#fff59d</color>
-
-    <color name="colorGrey606060Alpha80">#CC606060</color>
-    <color name="colorBlueGrey263238">#263238</color>
-    <color name="colorDeepPurple651fff">#651fff</color>
-    <color name="colorBlueGrey37464f">#37464f</color>
-    <color name="colorAmberfff8e1">#fff8e1</color>
-    <color name="colorYellowfff176">#fff176</color>
-    <color name="colorPurplece93d8">#ce93d8</color>
-    <color name="colorPurple4a148c">#4a148c</color>
-    <color name="colorPurplef3e5f5">#f3e5f5</color>
-    <color name="colorIndigo1a237e">#1a237e</color>
-    <color name="colorBrown3e2723">#3e2733</color>
-    <color name="colorYellowfffde7">#fffde7</color>
-
-    <color name="backgroundColorCardViewAmber">#ffe082</color>
-
-
-
-    <!--color name="colorUnderlayButtonShare">#26a69a</color> -->
-
+    <!-- Underlay Button -->
     <color name="colorUnderlayButtonDelete">#ef5350</color>
     <color name="colorUnderlayButtonDone">#90caf9</color>
     <color name="colorUnderlayButtonAlarm">#81d4fa</color>
@@ -74,6 +39,13 @@
 
     <color name="colorAddWidgetTextViewContent">#80fffde7</color>
     <color name="backgroundColorPhotoFragment">#263238</color>
+
+    <!-- Alarm -->
+    <color name="colorGrey606060Alpha80">#80606060</color>
+    <color name="colorBlueGrey263238">#263238</color>
+
+    <!-- Card View -->
+    <color name="textColorCardView">#263238</color>
 
     <!-- More Options -->
     <color name="colorMoreOptionsMenuItemIcon">#ce93d8</color>
@@ -138,11 +110,12 @@
     <color name="colorNoteOrange">#ffe0b2</color>
     <color name="colorNoteDeepOrange">#ffccbc</color>
 
-    <!-- Default Values -->
-    <color name="defaultColorToolbar">#90caf9</color>
-    <color name="defaultColorBackground">#bbdefb</color>
-    <color name="defaultColorNote">#fff9c4</color>
-    <color name="defaultColorInlay">#fff8e1</color>
+    <!-- Default Colors -->
+    <color name="defaultColorToolbar">#ce93d8</color> <!-- Purple -->
+    <color name="defaultColorBackground">#f3e5f5</color> <!-- Purple -->
+    <color name="defaultColorNote">#fff9c4</color>  <!-- Yellow -->
+    <color name="defaultColorInlay">#fff8e1</color> <!-- Amber -->
+    <color name="defaultColorAppWidgetBackground">#fffde7</color>  <!-- Yellow -->
 
     <!-- Status Icon -->
     <color name="colorStatusIcon">#546e7a</color>

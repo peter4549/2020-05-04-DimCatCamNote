@@ -40,6 +40,7 @@ class FolderOptionsDialogFragment(private val folderAdapter: FolderAdapter,
             val folder = folderAdapter.getFolderByName(spinner.selectedItem as String)
             folderAdapter.moveNoteToFolder(noteAdapter.selectedNote, folder)
             activity.showToast(getString(R.string.folder_moved_notification))
+            noteAdapter.notifyDataSetChanged()
             dialog.dismiss()
         }
 

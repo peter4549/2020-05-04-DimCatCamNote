@@ -35,13 +35,25 @@ class SetPasswordDialogFragment(private val adapter: Any) : DialogFragment() {
         val dialog = Dialog(activity)
         dialog.setContentView(R.layout.dialog_fragment_set_password)
 
-        val editText = dialog.findViewById<EditText>(R.id.edit_text_password)
         val textView = dialog.findViewById<TextView>(R.id.text_view_title)
+        val editText = dialog.findViewById<EditText>(R.id.edit_text_password)
         val button = dialog.findViewById<Button>(R.id.button_enter_password)
 
-        textView.setBackgroundColor(MainActivity.toolbarColor)
-        editText.setBackgroundColor(MainActivity.backgroundColor)
-        button.setBackgroundColor(MainActivity.toolbarColor)
+        // Apply design
+        if (activity is MainActivity) {
+            textView.setBackgroundColor(MainActivity.toolbarColor)
+            editText.setBackgroundColor(MainActivity.backgroundColor)
+            button.setBackgroundColor(MainActivity.toolbarColor)
+        } else {
+            val preferences =
+                activity.getSharedPreferences(PREFERENCES_SET_COLOR, Context.MODE_PRIVATE)
+            textView.setBackgroundColor(preferences.getInt(KEY_COLOR_TOOLBAR,
+                activity.getColor(R.color.defaultColorToolbar)))
+            editText.setBackgroundColor(preferences.getInt(KEY_COLOR_BACKGROUND,
+                activity.getColor(R.color.defaultColorBackground)))
+            button.setBackgroundColor(preferences.getInt(KEY_COLOR_TOOLBAR,
+                activity.getColor(R.color.defaultColorToolbar)))
+        }
 
         button.setOnClickListener {
             if (isPasswordEntered) reconfirmPassword(dialog, editText)

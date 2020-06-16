@@ -28,8 +28,7 @@
             android:layout_below="@id/tool_bar"
             android:padding="4dp"
             android:layout_marginBottom="2dp"
-            android:background="@color/defaultColorBackground"
-            android:textColor="@color/textColorHintAddEditText"/>
+            android:background="@color/defaultColorInlay" />
 
         <RelativeLayout
             android:id="@+id/edit_text_container"
@@ -51,6 +50,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_below="@id/imageView"
+                android:background="@color/defaultColorInlay"
                 android:paddingStart="8dp"
                 android:paddingEnd="8dp"
                 android:textSize="20sp"
@@ -65,6 +65,15 @@
                 android:focusable="true"/>
 
         </RelativeLayout>
+
+        <View
+            android:id="@+id/view_lock"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/defaultColorBackground"
+            android:visibility="visible"
+            android:clickable="true"
+            android:focusable="true"/>
 
     </RelativeLayout>
 

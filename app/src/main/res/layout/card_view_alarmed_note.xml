@@ -22,7 +22,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="horizontal"
-                android:background="@color/backgroundColorCardViewAmber">
+                android:background="@color/defaultColorBackground">
 
                 <ImageView
                     android:id="@+id/image_view_thumbnail"

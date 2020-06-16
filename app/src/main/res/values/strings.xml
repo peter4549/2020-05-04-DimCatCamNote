@@ -59,6 +59,7 @@
     <string name="re_request_password">다시 한번 입력해주세요.</string>
 
     <!-- AppWidget -->
-    <string name="no_attachment_message">삭제된 노트입니다.</string>>
+    <string name="no_attachment_message">삭제된 노트입니다.</string>
+    <string name="request_title_message">제목을 입력해주세요.</string>>
 
 </resources>

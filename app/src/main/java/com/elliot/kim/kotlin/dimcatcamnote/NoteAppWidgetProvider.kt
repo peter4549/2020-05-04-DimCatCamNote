@@ -5,11 +5,11 @@ import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.Context
 import android.content.Intent
-import android.util.Log
+import android.graphics.Color
 import android.view.View
 import android.widget.RemoteViews
-import com.elliot.kim.kotlin.dimcatcamnote.activities.APP_WIDGET_PREFERENCES
 import com.elliot.kim.kotlin.dimcatcamnote.activities.EditActivity
+import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity
 import com.elliot.kim.kotlin.dimcatcamnote.activities.SingleNoteConfigureActivity
 
 
@@ -20,9 +20,27 @@ class NoteAppWidgetProvider: AppWidgetProvider() {
         appWidgetManager: AppWidgetManager,
         appWidgetIds: IntArray
     ) {
+        val colorPreferences = context.getSharedPreferences(PREFERENCES_SET_COLOR,
+            Context.MODE_PRIVATE)
+        val opacityPreferences =
+            context.getSharedPreferences(PREFERENCES_OPACITY, Context.MODE_PRIVATE)
         val preferences =
             context.getSharedPreferences(APP_WIDGET_PREFERENCES, Context.MODE_PRIVATE)
         val noAttachmentMessage = context.getString(R.string.no_attachment_message)
+
+        // The color resource ID must be converted to a color value by the getColor method
+        // before being used.
+        // The value stored in the preference is a color value
+        // that has already been converted in SetNoteColorDialogFragment.
+        val appWidgetTitleColor = colorPreferences.getInt(KEY_COLOR_NOTE,
+            context.getColor(R.color.defaultColorNote))
+        val appWidgetBackgroundColor = colorPreferences.getInt(KEY_COLOR_APP_WIDGET_BACKGROUND,
+            context.getColor(R.color.defaultColorAppWidgetBackground))
+        val opacity = opacityPreferences.getString(KEY_OPACITY, DEFAULT_HEX_OPACITY.toString())
+        val argbChannelTitleColor =
+            String.format("#${opacity}%06X", 0xFFFFFF and appWidgetTitleColor)
+        val argbChannelBackgroundColor =
+            String.format("#${opacity}%06X", 0xFFFFFF and appWidgetBackgroundColor)
 
         // Perform this loop procedure for each App Widget that belongs to this provider
         appWidgetIds.forEach { appWidgetId ->
@@ -58,13 +76,15 @@ class NoteAppWidgetProvider: AppWidgetProvider() {
                 val intent = Intent(context, EditActivity::class.java)
                 intent.action = ACTION_APP_WIDGET_ATTACHED + noteId
                 val pendingIntent: PendingIntent = intent.let {
-                    PendingIntent.getActivity(context, 0, it, PendingIntent.FLAG_UPDATE_CURRENT)
+                    PendingIntent.getActivity(context, 0, it, 0)
                 }
 
                 val views: RemoteViews = RemoteViews(
                     context.packageName,
                     R.layout.app_widget
                 ).apply {
+                    setInt(R.id.title_container, "setBackgroundColor", Color.parseColor(argbChannelTitleColor))
+                    setInt(R.id.content_container, "setBackgroundColor", Color.parseColor(argbChannelBackgroundColor))
                     setOnClickPendingIntent(R.id.text_view_content, pendingIntent)
                     setCharSequence(R.id.text_view_title, "setText", title)
                     setCharSequence(R.id.text_view_content, "setText", content)
@@ -75,11 +95,33 @@ class NoteAppWidgetProvider: AppWidgetProvider() {
                     if (isLocked) setViewVisibility(R.id.image_view_lock, View.VISIBLE)
                     else setViewVisibility(R.id.image_view_lock, View.GONE)
 
-                    if (alarmTime != 0L) setViewVisibility(R.id.image_view_alarm, View.VISIBLE)
-                    else setViewVisibility(R.id.image_view_alarm, View.GONE)
+                    if (alarmTime == 0L) {
+                        setViewVisibility(R.id.image_view_alarm, View.GONE)
+                        setViewVisibility(R.id.text_view_alarm_time, View.GONE)
+                    } else {
+                        setViewVisibility(R.id.image_view_alarm, View.VISIBLE)
+                        setViewVisibility(R.id.text_view_alarm_time, View.VISIBLE)
+                        setCharSequence(R.id.text_view_alarm_time, "setText",
+                            " " + MainActivity.longTimeToString(alarmTime, PATTERN_UP_TO_MINUTES))
+                    }
+
+                    if (editTime == 0L) {
+                        setViewVisibility(R.id.text_view_creation_time, View.VISIBLE)
+                        setViewVisibility(R.id.text_view_edit_time, View.GONE)
+                        setCharSequence(R.id.text_view_creation_time, "setText",
+                            " " + MainActivity.longTimeToString(creationTime, PATTERN_UP_TO_MINUTES))
+                    } else {
+                        setViewVisibility(R.id.text_view_edit_time, View.VISIBLE)
+                        setViewVisibility(R.id.text_view_creation_time, View.GONE)
+                        setCharSequence(R.id.text_view_edit_time, "setText",
+                            " " + MainActivity.longTimeToString(editTime, PATTERN_UP_TO_MINUTES))
+                    }
+
+                    if (uri == "") setViewVisibility(R.id.image_view_photo, View.GONE)
+                    else setViewVisibility(R.id.image_view_photo, View.VISIBLE)
                 }
 
-                // Tell the AppWidgetManager to perform an update on the current app widget
+                // Notify appWidgetManager of app widget updates.
                 appWidgetManager.updateAppWidget(appWidgetId, views)
             } else {
                 // Run when a note is deleted.
@@ -91,7 +133,6 @@ class NoteAppWidgetProvider: AppWidgetProvider() {
                 editor.remove(KEY_APP_WIDGET_NOTE_ID + appWidgetId)
                 editor.apply()
 
-
                 val pendingIntent = intent.let {
                     PendingIntent.getActivity(context, 0, it, 0)
                 }
@@ -101,12 +142,21 @@ class NoteAppWidgetProvider: AppWidgetProvider() {
                     context.packageName,
                     R.layout.app_widget
                 ).apply {
+                    setViewVisibility(R.id.image_view_done, View.GONE)
+                    setViewVisibility(R.id.image_view_lock, View.GONE)
+                    setViewVisibility(R.id.image_view_alarm, View.GONE)
+                    setViewVisibility(R.id.text_view_creation_time, View.GONE)
+                    setViewVisibility(R.id.text_view_edit_time, View.GONE)
+                    setViewVisibility(R.id.text_view_alarm_time, View.GONE)
+                    setViewVisibility(R.id.image_view_photo, View.GONE)
+                    setInt(R.id.title_container, "setBackgroundColor", Color.parseColor(argbChannelTitleColor))
+                    setInt(R.id.content_container, "setBackgroundColor", Color.parseColor(argbChannelBackgroundColor))
                     setOnClickPendingIntent(R.id.text_view_content, pendingIntent)
                     setCharSequence(R.id.text_view_title, "setText", noAttachmentMessage)
                     setCharSequence(R.id.text_view_content, "setText", noAttachmentMessage)
                 }
 
-                // Tell the AppWidgetManager to perform an update on the current app widget
+                // Notify appWidgetManager of app widget updates.
                 appWidgetManager.updateAppWidget(appWidgetId, views)
             }
             super.onUpdate(context, appWidgetManager, appWidgetIds)

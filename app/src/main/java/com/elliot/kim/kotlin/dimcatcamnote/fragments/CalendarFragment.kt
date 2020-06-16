@@ -49,6 +49,9 @@ class CalendarFragment : Fragment() {
         val todayDate = SimpleDateFormat("dd",
             Locale.getDefault()).format(currentTime).toInt()
 
+        thisYear = currentYear
+        thisMonth = currentMonth + 1
+
         var currentYearMonthText = "${currentYear}년 ${currentMonth + 1}월"
         setYearMonthText(currentYearMonthText)
 
@@ -146,5 +149,10 @@ class CalendarFragment : Fragment() {
     private fun setYearMonthText(text: String) {
         binding.toolbar.title = text
         binding.calendarHeader.text = text
+    }
+
+    companion object {
+        var thisYear = 0
+        var thisMonth = 0
     }
 }

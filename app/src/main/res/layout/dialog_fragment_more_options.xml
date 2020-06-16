@@ -5,12 +5,13 @@
     android:layout_width="180dp"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:background="@color/colorAmberfff8e1">
+    android:background="@color/defaultColorBackground">
 
     <TextView
         android:id="@+id/text_view_title"
         android:layout_width="match_parent"
         android:layout_height="40dp"
+        android:background="@color/defaultColorToolbar"
         android:gravity="center"
         android:textSize="@dimen/text_size_middle_large"
         android:textStyle="bold"

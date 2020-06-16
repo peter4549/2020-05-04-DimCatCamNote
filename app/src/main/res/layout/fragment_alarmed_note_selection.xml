@@ -17,7 +17,7 @@
             android:layout_height="512dp"
             android:layout_gravity="center"
             android:orientation="vertical"
-            android:background="@color/backgroundColorAddContainer">
+            android:background="@color/defaultColorBackground">
 
         <RelativeLayout
             android:layout_width="match_parent"
@@ -76,7 +76,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_below="@id/add_container"
-                android:background="@color/colorLime50"
+                android:background="@color/defaultColorInlay"
                 android:scrollbars="vertical" />
 
         </RelativeLayout>

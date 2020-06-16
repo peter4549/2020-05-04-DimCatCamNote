@@ -5,12 +5,13 @@ import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color
 import android.graphics.Paint
 import android.net.Uri
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.animation.AnimationUtils
 import android.widget.Filter
 import android.widget.RemoteViews
 import androidx.appcompat.app.AppCompatActivity
@@ -18,7 +19,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CircleCrop
 import com.elliot.kim.kotlin.dimcatcamnote.*
-import com.elliot.kim.kotlin.dimcatcamnote.activities.APP_WIDGET_PREFERENCES
 import com.elliot.kim.kotlin.dimcatcamnote.activities.EditActivity
 import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity
 import com.elliot.kim.kotlin.dimcatcamnote.activities.SingleNoteConfigureActivity
@@ -37,6 +37,7 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
     RecyclerView.Adapter<NoteAdapter.ViewHolder>(),
     ItemMovedListener {
 
+    private val tag = "NoteAdapter"
     private var notesFiltered: MutableList<Note> = notes
     private lateinit var recyclerView: RecyclerView
     var selectedNote: Note? = null
@@ -91,7 +92,12 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
                 PATTERN_UP_TO_SECONDS
             )}"
 
+        // Set color.
         holder.binding.colorContainer.setBackgroundColor(MainActivity.noteColor)
+        holder.binding.textViewTitle.typeface = MainActivity.font
+        holder.binding.textViewTime.typeface = MainActivity.font
+        holder.binding.textViewAlarmTime.typeface = MainActivity.font
+        holder.binding.textViewContent.typeface = MainActivity.font
 
         holder.binding.textViewTitle.text = title
         holder.binding.textViewTime.text = time
@@ -163,15 +169,11 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
                 // Instantiated from the MainActivity.
 
                 if (note.isLocked)
-                    confirmPassword()
+                    ConfirmPasswordDialogFragment(this).show((context as MainActivity)
+                        .fragmentManager, tag)
                 else (context as MainActivity).startEditFragment()
             }
         }
-    }
-
-    private fun confirmPassword() {
-        ConfirmPasswordDialogFragment(this).show((context as MainActivity).fragmentManager,
-        "")
     }
 
     override fun getItemCount(): Int {
@@ -183,18 +185,30 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
             override fun performFiltering(constraint: CharSequence): FilterResults {
                 val currentFolderId = (context as MainActivity).currentFolder.id
                 val searchWord = constraint.toString()
-                if (searchWord.isEmpty() && currentFolderId == DEFAULT_FOLDER_ID)  notesFiltered = notes
+                if (searchWord.isEmpty() && currentFolderId == DEFAULT_FOLDER_ID) {
+                    // Show all notes.
+                    val noteListFiltering: MutableList<Note> = ArrayList()
+                    for (note in notes) {
+                        // Exclude note in the locked folder.
+                        if (!context.getFolderAdapter().isLockedFolder(note.folderId))
+                            noteListFiltering.add(note)
+                    }
+                    notesFiltered = noteListFiltering
+                }
                 else if (searchWord.isNotEmpty() && currentFolderId == DEFAULT_FOLDER_ID){
-                    val noteListFiltering: MutableList<Note> =
-                        ArrayList()
+                    // Show notes that contain search word in the title.
+                    val noteListFiltering: MutableList<Note> = ArrayList()
                     for (note in notes) {
                         if (note.title.toLowerCase(Locale.ROOT)
                                 .contains(searchWord.toLowerCase(Locale.ROOT))) {
-                            noteListFiltering.add(note)
+                            // Exclude note in the locked folder.
+                            if (!context.getFolderAdapter().isLockedFolder(note.folderId))
+                                noteListFiltering.add(note)
                         }
                     }
                     notesFiltered = noteListFiltering
                 } else if (searchWord.isEmpty() && currentFolderId != DEFAULT_FOLDER_ID){
+                    // Show notes contained in a specific folder.
                     val noteListFiltering: MutableList<Note> = ArrayList()
                     for (note in notes) {
                         if (note.folderId == currentFolderId) {
@@ -203,6 +217,8 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
                     }
                     notesFiltered = noteListFiltering
                 } else {
+                    // Shows notes that are included in a specific folder
+                    // and contain search word in the title.
                     val noteListFiltering: MutableList<Note> =
                         ArrayList()
                     for (note in notes) {
@@ -310,13 +326,30 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
         val note = selectedNote!!
         val appWidgetManager = AppWidgetManager.getInstance(activity)
 
+        /*
+        // Create an Intent to launch EditActivity.
         val intent = Intent(activity, EditActivity::class.java)
         intent.action = ACTION_APP_WIDGET_ATTACHED + note.id
         val pendingIntent = PendingIntent.getActivity(activity, 0, intent, 0)
 
+        val opacityPreferences =
+            context!!.getSharedPreferences(PREFERENCES_OPACITY, Context.MODE_PRIVATE)
+        val preferences = context.getSharedPreferences(PREFERENCES_SET_COLOR,
+            Context.MODE_PRIVATE)
+        val appWidgetTitleColor = preferences.getInt(KEY_COLOR_NOTE, context.getColor(R.color.defaultColorNote))
+        val appWidgetBackgroundColor = preferences.getInt(KEY_COLOR_APP_WIDGET_BACKGROUND,
+            context.getColor(R.color.defaultColorAppWidgetBackground))
+        val opacity = opacityPreferences.getString(KEY_OPACITY, "80")
+        val argbChannelTitleColor =
+            String.format("#${opacity}%06X", 0xFFFFFF and appWidgetTitleColor)
+        val argbChannelBackgroundColor =
+            String.format("#${opacity}%06X", 0xFFFFFF and appWidgetBackgroundColor)
+
         RemoteViews(activity.packageName,
             R.layout.app_widget
         ).apply {
+            setInt(R.id.title_container, "setBackgroundColor", Color.parseColor(argbChannelTitleColor))
+            setInt(R.id.content_container, "setBackgroundColor", Color.parseColor(argbChannelBackgroundColor))
             setOnClickPendingIntent(R.id.text_view_content, pendingIntent)
             setCharSequence(R.id.text_view_title, "setText", note.title)
             setCharSequence(R.id.text_view_content, "setText", note.content)
@@ -327,16 +360,38 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
             if (note.isLocked) setViewVisibility(R.id.image_view_lock, View.VISIBLE)
             else setViewVisibility(R.id.image_view_lock, View.GONE)
 
-            if (note.alarmTime != null) setViewVisibility(R.id.image_view_alarm, View.VISIBLE)
-            else setViewVisibility(R.id.image_view_alarm, View.GONE)
+            if (note.alarmTime == null) {
+                setViewVisibility(R.id.image_view_alarm, View.GONE)
+                setViewVisibility(R.id.text_view_alarm_time, View.GONE)
+            } else {
+                setViewVisibility(R.id.image_view_alarm, View.VISIBLE)
+                setViewVisibility(R.id.text_view_alarm_time, View.VISIBLE)
+                setCharSequence(R.id.text_view_alarm_time, "setText",
+                    " " + MainActivity.longTimeToString(note.alarmTime, PATTERN_UP_TO_MINUTES))
+            }
+
+            if (note.editTime == null) {
+                setViewVisibility(R.id.text_view_creation_time, View.VISIBLE)
+                setViewVisibility(R.id.text_view_edit_time, View.GONE)
+                setCharSequence(R.id.text_view_creation_time, "setText",
+                    " " + MainActivity.longTimeToString(note.creationTime, PATTERN_UP_TO_MINUTES))
+            } else {
+                setViewVisibility(R.id.text_view_edit_time, View.VISIBLE)
+                setViewVisibility(R.id.text_view_creation_time, View.GONE)
+                setCharSequence(R.id.text_view_edit_time, "setText",
+                    " " + MainActivity.longTimeToString(note.editTime, PATTERN_UP_TO_MINUTES))
+            }
 
         }.also {
             appWidgetManager.updateAppWidget(appWidgetId, it)
         }
+         */
 
         val resultIntent = Intent().apply {
             putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
         }
+
+
 
         note.appWidgetIds += appWidgetId
         activity.viewModel.update(note)

@@ -102,10 +102,17 @@ class WriteFragment : Fragment() {
         activity.supportActionBar?.setDisplayHomeAsUpEnabled(true)
         setHasOptionsMenu(true)
 
+        // Apply the design.
+        binding.toolbar.setTitleTextAppearance(activity, MainActivity.fontStyleId)
+        binding.toolbar.invalidate()
+        binding.editTextTitle.typeface = MainActivity.font
+        binding.editTextContent.typeface = MainActivity.font
+
         binding.toolbar.title = TITLE_TOOLBAR
         binding.imageView.visibility = View.GONE
         binding.imageView.setOnClickListener { startPhotoFragment() }
 
+        // binding.bottomNavigationView.itemIconTintList = null
         binding.bottomNavigationView.setOnNavigationItemSelectedListener {
             when (it.itemId) {
                 R.id.camera -> {

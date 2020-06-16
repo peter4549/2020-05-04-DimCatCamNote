@@ -227,7 +227,7 @@ class AlarmFragment(private val activity: AppCompatActivity) : Fragment() {
 
     private fun setTimePickerTextColor(timePicker: TimePicker) {
         val color = ContextCompat.getColor(requireContext(),
-            R.color.colorYellowfffde7
+            R.color.backgroundColorYellow
         )
         val system = Resources.getSystem()
         val hourNumberPickerId = system.getIdentifier("hour",

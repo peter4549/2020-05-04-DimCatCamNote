@@ -1,56 +1,74 @@
 package com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments
 
 import android.app.Dialog
+import android.content.Context
 import android.os.Build
 import android.os.Bundle
 import android.widget.RadioGroup
 import androidx.appcompat.widget.Toolbar
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.DialogFragment
-import com.elliot.kim.kotlin.dimcatcamnote.R
+import com.elliot.kim.kotlin.dimcatcamnote.*
 import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity
 
 class SetFontDialogFragment(private val toolbar: Toolbar?) : DialogFragment() {
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
 
-        // 폰트 설정
         val dialog = Dialog(requireContext())
         dialog.setContentView(R.layout.dialog_fragment_set_font) // 이거 디자인..
-        dialog.findViewById<RadioGroup>(R.id.radio_group).setOnCheckedChangeListener { _, checkedId ->
+
+        val preferences = requireContext().getSharedPreferences(
+            PREFERENCES_FONT,
+            Context.MODE_PRIVATE
+        )
+        val editor = preferences.edit()
+
+        val checkedRadioButtonId =
+            preferences.getInt(KEY_SET_FONT_CHECKED_RADIO_BUTTON_ID, defaultCheckedRadioButtonId)
+
+        val radioGroup = dialog.findViewById<RadioGroup>(R.id.radio_group)
+        radioGroup.check(checkedRadioButtonId)
+        radioGroup.setOnCheckedChangeListener { _, checkedId ->
             when(checkedId) {
                 R.id.radio_button_nanum_myeongjo -> {
-                    MainActivity.fontId = R.style.FontNanumMyeongjo
-                    MainActivity.font = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-                          resources.getFont(R.font.nanum_myeongjo_font_family)
-                    else ResourcesCompat.getFont(requireContext(), R.font.nanum_myeongjo_font_family)
+                    MainActivity.fontStyleId = R.style.FontNanumMyeongjo
+                    MainActivity.fontId = R.font.nanum_myeongjo_font_family
                 }
                 R.id.radio_button_nanum_pen -> {
-                    MainActivity.fontId = R.style.FontNanumPen
-                    MainActivity.font = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-                        resources.getFont(R.font.nanum_pen_font_family)
-                    else ResourcesCompat.getFont(requireContext(), R.font.nanum_pen_font_family)
+                    MainActivity.fontStyleId = R.style.FontNanumPen
+                    MainActivity.fontId = R.font.nanum_pen_font_family
                 }
                 R.id.radio_button_reko -> {
-                    MainActivity.fontId = R.style.FontReko
-                    MainActivity.font = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-                        resources.getFont(R.font.nanum_pen_font_family)
-                    else ResourcesCompat.getFont(requireContext(), R.font.nanum_pen_font_family)
+                    MainActivity.fontStyleId = R.style.FontReko
+                    MainActivity.fontId = R.font.reko_font_family
                 }
             }
-            toolbar!!.setTitleTextAppearance(context, MainActivity.fontId)
+            MainActivity.font = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+                resources.getFont(MainActivity.fontId)
+            else ResourcesCompat.getFont(requireContext(), MainActivity.fontId)
+
+            editor.putInt(KEY_FONT_ID, MainActivity.fontId)
+            editor.putInt(KEY_FONT_STYLE_ID, MainActivity.fontStyleId)
+            editor.putInt(KEY_SET_FONT_CHECKED_RADIO_BUTTON_ID, radioGroup.checkedRadioButtonId)
+            editor.apply()
+
+            // fragment_configure toolbar
+            toolbar!!.setTitleTextAppearance(context, MainActivity.fontStyleId)
             toolbar.invalidate()
 
+            // Note
+            (requireActivity() as MainActivity).getNoteAdapter().notifyDataSetChanged()
+
+            // activity_main
+            (requireActivity() as MainActivity).setFont()
         }
 
-        /*
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-            textViewTitle.typeface = resources.getFont(R.font.reko)
-        else textViewTitle.typeface = ResourcesCompat.getFont(activity, R.font.reko)
-
-         */
-
         return dialog
+    }
+
+    companion object {
+        const val defaultCheckedRadioButtonId = R.id.radio_button_nanum_pen
     }
 
 

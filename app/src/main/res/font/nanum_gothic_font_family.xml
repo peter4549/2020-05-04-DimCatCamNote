@@ -3,9 +3,10 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <font
         android:fontStyle="normal"
-        android:fontWeight="300"
-        android:font="@font/reko"
+        android:fontWeight="400"
+        android:font="@font/nanum_gothic"
         app:fontStyle="normal"
-        app:fontWeight="300"
-        app:font="@font/reko"/>
+        app:fontWeight="400"
+        app:font="@font/nanum_gothic"/>
+
 </font-family>

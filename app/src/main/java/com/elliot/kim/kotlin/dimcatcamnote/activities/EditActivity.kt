@@ -5,13 +5,12 @@ import android.animation.AnimatorListenerAdapter
 import android.annotation.SuppressLint
 import android.app.AlarmManager
 import android.app.PendingIntent
-import android.content.Context
-import android.content.DialogInterface
-import android.content.Intent
+import android.content.*
 import android.graphics.Rect
 import android.net.Uri
 import android.os.Bundle
 import android.view.*
+import android.view.animation.Animation
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -19,15 +18,16 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModelProvider
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.bumptech.glide.Glide
 import com.elliot.kim.kotlin.dimcatcamnote.*
 import com.elliot.kim.kotlin.dimcatcamnote.adapters.NoteAdapter
 import com.elliot.kim.kotlin.dimcatcamnote.broadcast_receivers.AlarmReceiver
 import com.elliot.kim.kotlin.dimcatcamnote.data.Note
 import com.elliot.kim.kotlin.dimcatcamnote.databinding.ActivityEditBinding
+import com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments.ConfirmPasswordDialogFragment
 import com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments.SetPasswordDialogFragment
 import com.elliot.kim.kotlin.dimcatcamnote.fragments.AlarmFragment
-import com.elliot.kim.kotlin.dimcatcamnote.fragments.EditFragment
 import com.elliot.kim.kotlin.dimcatcamnote.fragments.PhotoFragment
 import com.elliot.kim.kotlin.dimcatcamnote.view_model.MainViewModel
 
@@ -47,20 +47,35 @@ class EditActivity: AppCompatActivity() {
     private var initialized = false
     private var originAlarmTime: Long? = null
     private var dataLoadingComplete = false
+    private var passwordConfirmationResult = false
     private var shortAnimationDuration = 0
+
+    private val receiver: BroadcastReceiver = object: BroadcastReceiver(){
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent!!.action == ACTION_PASSWORD_CONFIRMED) {
+                passwordConfirmationResult = intent.getBooleanExtra(KEY_PASSWORD_CONFIRMED, false)
+                if(passwordConfirmationResult) {
+                    crossFadeLockView(false)
+                }
+            }
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // 패스워드 체크 로직. 필요하면 여기서 추가..
-        // 화면을 가렸다가 해제하는 식으로..
+        LocalBroadcastManager.getInstance(this).registerReceiver(receiver,
+            IntentFilter(ACTION_PASSWORD_CONFIRMED)
+        )
 
         fragmentManager = supportFragmentManager
         binding = DataBindingUtil.setContentView(this, R.layout.activity_edit)
         textViewTime = binding.textViewTime
         setSupportActionBar(binding.toolBar)
 
-        val intent = intent!!
+        setViewDesign()
+
+        val intent = intent!!  // Get intent
         var id = 0
         shortAnimationDuration = resources.getInteger(android.R.integer.config_shortAnimTime)
 
@@ -83,17 +98,32 @@ class EditActivity: AppCompatActivity() {
                         notes
                     )
                 note = noteAdapter.getNoteById(id)
+                noteAdapter.selectedNote = note
+
+                // Password confirmation
+                if (note.isLocked) {
+                        ConfirmPasswordDialogFragment(noteAdapter, false, this)
+                            .show(fragmentManager, tag)
+                } else {
+                    crossFadeLockView(false)
+                }
+
                 binding.editTextContent.setText(note.content)
                 originAlarmTime = note.alarmTime
                 originContent = note.content
-                setContent(note)
+                setText(note)
                 showImage()
 
-                binding.editTextContent.viewTreeObserver.addOnGlobalLayoutListener {
-                    if (keyboardShown(binding.editTextContent.rootView) && isEditMode) crossFadeImageView(false)
-                    else showImage()
+                if (note.uri == null) {
+                    binding.imageView.visibility = View.GONE
+                } else {
+                    binding.editTextContent.viewTreeObserver.addOnGlobalLayoutListener {
+                        if (keyboardShown(binding.editTextContent.rootView) && isEditMode)
+                            crossFadeImageView(false)
+                        else if (binding.imageView.visibility != View.VISIBLE)
+                                showImage()
+                    }
                 }
-
 
                 dataLoadingComplete = true
                 initialized = true
@@ -124,8 +154,15 @@ class EditActivity: AppCompatActivity() {
                 return true
             }
         })
+    }
 
+    override fun onStop() {
+        super.onStop()
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver)
+    }
 
+    override fun onBackPressed() {
+        super.onBackPressed()
     }
 
     private fun keyboardShown(rootView: View): Boolean {
@@ -176,7 +213,7 @@ class EditActivity: AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             android.R.id.home -> {
-                MainActivity.hideKeyboard(this, rootView)
+                MainActivity.hideKeyboard(this, binding.editTextContent)
                 finish()
             }
             R.id.menu_mode_icon -> {
@@ -184,10 +221,11 @@ class EditActivity: AppCompatActivity() {
                     item.setIcon(R.drawable.ic_edit_white_24dp)
 
                     binding.focusBlock.visibility = View.VISIBLE
-                    binding.editTextContent.isFocusable = false
+                    binding.editTextContent.isEnabled = false
 
                     if (isContentChanged()) finishWithSaving()
                     else showToast("변경사항이 없습니다.")
+                    MainActivity.hideKeyboard(this, binding.editTextContent)
                 } else getFocus()
 
                 isEditMode = !isEditMode
@@ -196,8 +234,9 @@ class EditActivity: AppCompatActivity() {
                 if (note.alarmTime == null)
                     startAlarmFragment(note)
                 else {
-                    cancelAlarm(note, false)
-                    EditFragment.setTimeText(note)
+                    cancelAlarm(note)
+                    // Not required for EditActivity
+                    // EditFragment.setTimeText(note)
                 }
             }
             R.id.menu_change_alarm -> startAlarmFragment(note)
@@ -232,23 +271,12 @@ class EditActivity: AppCompatActivity() {
         showToast("잠금이 해제되었습니다.")
     }
 
-    fun setContent(note: Note) {
-        setText(note)
-        if (note.uri != null) {
-            binding.imageView.visibility = View.VISIBLE
-            Glide.with(this)
-                .load(Uri.parse(note.uri))
-                .into(binding.imageView)
-        } else binding.imageView.visibility = View.GONE
-    }
-
     private fun setText(note: Note) {
         binding.toolBar.title = note.title
         binding.editTextContent.setText(note.content)
         binding.editTextContent.isEnabled = false
         setTimeText(note)
     }
-
 
     private fun startAlarmFragment(note: Note) {
         alarmFragment.isFromEditFragment = false
@@ -325,7 +353,7 @@ class EditActivity: AppCompatActivity() {
 
     private fun isContentChanged() = originContent != binding.editTextContent.text.toString()
 
-    private fun cancelAlarm(note: Note, isDelete: Boolean) {
+    private fun cancelAlarm(note: Note) {
         val id: Int = note.id
 
         val alarmManager =
@@ -341,12 +369,10 @@ class EditActivity: AppCompatActivity() {
         alarmManager.cancel(pendingIntent)
         removeAlarmPreferences(id)
 
-        if (!isDelete) {
-            note.alarmTime = null
-            viewModel.update(note)
+        note.alarmTime = null
+        viewModel.update(note)
 
-            Toast.makeText(this, "알림이 해제되었습니다.", Toast.LENGTH_SHORT).show()
-        }
+        Toast.makeText(this, "알림이 해제되었습니다.", Toast.LENGTH_SHORT).show()
     }
 
     private fun removeAlarmPreferences(number: Int) {
@@ -368,10 +394,7 @@ class EditActivity: AppCompatActivity() {
 
     private fun showImage() {
         if(note.uri == null) return
-        crossFadeImageView(true)
-        Glide.with(binding.imageView.context)
-            .load(Uri.parse(note.uri))
-            .into(binding.imageView)
+        else crossFadeImageView(true)
     }
 
     private fun crossFadeImageView(fadeIn: Boolean) {
@@ -383,7 +406,13 @@ class EditActivity: AppCompatActivity() {
                 animate()
                     .alpha(1F)
                     .setDuration(shortAnimationDuration.toLong())
-                    .setListener(null)
+                    .setListener(object : AnimatorListenerAdapter() {
+                        override fun onAnimationStart(animation: Animator) {
+                            Glide.with(binding.imageView.context)
+                                .load(Uri.parse(note.uri))
+                                .into(binding.imageView)
+                        }
+                    })
             }
         } else {
             binding.imageView.animate()
@@ -409,12 +438,39 @@ class EditActivity: AppCompatActivity() {
             getColor(R.color.defaultColorBackground)))
         binding.editTextContainer.setBackgroundColor(preferences.getInt(KEY_COLOR_BACKGROUND,
             getColor(R.color.defaultColorBackground)))
+        binding.viewLock.setBackgroundColor(preferences.getInt(KEY_COLOR_BACKGROUND,
+            getColor(R.color.defaultColorBackground)))
+    }
+
+    private fun crossFadeLockView(fadeIn: Boolean) {
+        if (fadeIn) {
+            binding.viewLock.apply {
+                alpha = 0F
+                visibility = View.VISIBLE
+
+                animate()
+                    .alpha(1F)
+                    .setDuration(shortAnimationDuration.toLong())
+                    .setListener(null)
+            }
+        } else {
+            binding.viewLock.animate()
+                .alpha(0F)
+                .setDuration(shortAnimationDuration.toLong())
+                .setListener(object : AnimatorListenerAdapter() {
+                    override fun onAnimationEnd(animation: Animator) {
+                        binding.viewLock.visibility = View.GONE
+                    }
+                })
+        }
     }
 
 
     companion object {
         const val SAVE = 0
         const val BACK_PRESSED = 1
+
+        const val ACTION_PASSWORD_CONFIRMED = "action_password_confirmed"
 
         lateinit var textViewTime: TextView
 
@@ -434,7 +490,4 @@ class EditActivity: AppCompatActivity() {
             textViewTime.text = timeText
         }
     }
-
-
-
 }

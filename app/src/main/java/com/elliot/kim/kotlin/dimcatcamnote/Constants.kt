@@ -16,25 +16,39 @@ const val KEY_APP_WIDGET_NOTE_IS_DONE = "key_app_widget_note_is_done"
 const val KEY_APP_WIDGET_NOTE_IS_LOCKED = "key_app_widget_note_is_locked"
 const val KEY_APP_WIDGET_NOTE_PASSWORD = "key_app_widget_note_password"
 const val KEY_APP_WIDGET_IDS = "key_app_widget_ids"
+const val KEY_PASSWORD_CONFIRMED = "key_password_confirmed"
 
 const val KEY_SORTING_CRITERIA = "key_sorting_criteria"
 
 const val KEY_COLOR_TOOLBAR = "key_color_toolbar"
 const val KEY_COLOR_BACKGROUND = "key_color_background"
-const val KEY_COLOR_NOTE = "key_color_note"
+const val KEY_COLOR_NOTE = "key_color_note_v2"
+const val KEY_COLOR_APP_WIDGET_BACKGROUND = "key_color_app_widget_background"
 const val KEY_COLOR_INLAY = "key_color_inlay"
 const val KEY_SET_THEME_COLOR_CHECKED_RADIO_BUTTON_ID = "key_set_theme_color_checked_radio_button_id"
 const val KEY_SET_NOTE_COLOR_CHECKED_RADIO_BUTTON_ID = "key_set_note_color_checked_radio_button_id"
 const val KEY_SET_INLAY_COLOR_CHECKED_RADIO_BUTTON_ID = "key_set_inlay_color_checked_radio_button_id"
+const val KEY_SET_FONT_CHECKED_RADIO_BUTTON_ID = "key_set_font_checked_radio_button_id"
+const val KEY_FONT_ID = "key_font_id"
+const val KEY_FONT_STYLE_ID = "key_font_style_id"
+const val KEY_OPACITY = "key_opacity"
+const val KEY_OPACITY_SEEK_BAR_PROGRESS = "key_opacity_seek_bar_progress"
 
 const val DEFAULT_VALUE_NOTE_ID = -1
 
 const val DEFAULT_FOLDER_ID = 0
 const val DEFAULT_FOLDER_NAME = "모든 노트"
 
+const val DEFAULT_HEX_OPACITY = 80
+const val DEFAULT_SEEK_BAR_PROGRESS = 50
+
+// Preferences
 const val PREFERENCES_NAME_ALARM = "preferences_name_alarm"
 const val PREFERENCES_SORTING_CRITERIA = "preference_sorting_criteria"
 const val PREFERENCES_SET_COLOR = "preferences_set_color"
+const val PREFERENCES_FONT = "preferences_font"
+const val PREFERENCES_OPACITY = "preferences_opacity"
+const val APP_WIDGET_PREFERENCES = "app_widget_preferences"
 
 enum class SortingCriteria(val index: Int) {
     CREATION_TIME(0),
@@ -53,8 +67,9 @@ enum class CurrentFragment {
     WRITE_FRAGMENT
 }
 
-const val PATTERN_YYYY_MM_dd = "yyyy년 MM월 dd일"
+const val PATTERN_YYYY_MM_dd = "yyyy년 M월 d일"
 const val PATTERN_UP_TO_SECONDS = "yyyy-MM-dd-a-hh:mm:ss"
+const val PATTERN_UP_TO_MINUTES = "M월 d일 a h시 m분"
 
 // action widget
 const val ACTION_APP_WIDGET_ATTACHED = "action_app_widget_attached"

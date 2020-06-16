@@ -58,11 +58,11 @@ class AlarmedNoteAdapter(private val activity: MainActivity,
         val alarmTime: Long? = note.alarmTime
 
         val time: String = if (editTime != null)
-            "${activity?.getString(R.string.creation_time)}: ${MainActivity.longTimeToString(creationTime,
+            "${activity.getString(R.string.creation_time)}: ${MainActivity.longTimeToString(creationTime,
                 PATTERN_UP_TO_SECONDS
             )}"
         else
-            "${activity?.getString(R.string.edit_time)}: ${MainActivity.longTimeToString(editTime,
+            "${activity.getString(R.string.edit_time)}: ${MainActivity.longTimeToString(editTime,
                 PATTERN_UP_TO_SECONDS
             )}"
 
@@ -101,7 +101,7 @@ class AlarmedNoteAdapter(private val activity: MainActivity,
             holder.binding.imageViewAlarm.visibility = View.GONE
         } else {
             val alarmTimeText =
-                "${activity?.getString(R.string.alarm_time)}: ${MainActivity.longTimeToString(alarmTime,
+                "${activity.getString(R.string.alarm_time)}: ${MainActivity.longTimeToString(alarmTime,
                     PATTERN_UP_TO_SECONDS
                 )}"
             holder.binding.textViewAlarmTime.visibility = View.VISIBLE

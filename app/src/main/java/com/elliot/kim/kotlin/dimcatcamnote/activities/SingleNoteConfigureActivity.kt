@@ -12,11 +12,10 @@ import com.elliot.kim.kotlin.dimcatcamnote.adapters.NoteAdapter
 import com.elliot.kim.kotlin.dimcatcamnote.databinding.ActivitySingleNoteConfigureBinding
 import com.elliot.kim.kotlin.dimcatcamnote.view_model.MainViewModel
 
-const val APP_WIDGET_PREFERENCES = "app_widget_preferences"
-
 class SingleNoteConfigureActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivitySingleNoteConfigureBinding
+    lateinit var viewModel: MainViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,7 +40,7 @@ class SingleNoteConfigureActivity : AppCompatActivity() {
         }
 
         val viewModelFactory = ViewModelProvider.AndroidViewModelFactory.getInstance(application)
-        val viewModel = ViewModelProvider(this, viewModelFactory)[MainViewModel::class.java]
+        viewModel = ViewModelProvider(this, viewModelFactory)[MainViewModel::class.java]
 
         viewModel.setContext(this)
         viewModel.getAll().observe(this, androidx.lifecycle.Observer { notes ->

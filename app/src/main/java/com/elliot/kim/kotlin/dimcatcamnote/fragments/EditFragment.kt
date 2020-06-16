@@ -27,7 +27,6 @@ import com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments.DialogFragments
 import com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments.SetPasswordDialogFragment
 import com.elliot.kim.kotlin.dimcatcamnote.view_model.MainViewModel
 
-// 등록 해제하는 방식으로 변경할 것.
 class EditFragment(private val activity: MainActivity) : Fragment() {
 
     private lateinit var binding: FragmentEditBinding
@@ -73,8 +72,10 @@ class EditFragment(private val activity: MainActivity) : Fragment() {
         activity.supportActionBar?.setDisplayHomeAsUpEnabled(true)
         setHasOptionsMenu(true)
 
-        binding.toolbar.setTitleTextAppearance(activity, R.style.FontNanumPen)
-
+        // Apply the design.
+        binding.toolbar.setTitleTextAppearance(activity, MainActivity.fontStyleId)
+        binding.textViewTime.typeface = MainActivity.font
+        binding.editTextContent.typeface = MainActivity.font
 
         showImage()
 
@@ -103,7 +104,8 @@ class EditFragment(private val activity: MainActivity) : Fragment() {
 
         binding.editTextContent.viewTreeObserver.addOnGlobalLayoutListener {
             if (keyboardShown(binding.editTextContent.rootView) && isEditMode) crossFadeImageView(false)
-            else showImage()
+            else if (binding.imageView.visibility != View.VISIBLE)
+                showImage()
         }
     }
 
@@ -130,7 +132,7 @@ class EditFragment(private val activity: MainActivity) : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        binding.toolbar.setBackgroundColor(MainActivity.toolbarColor)
+        setViewDesign()
         uri = note.uri
         setContent(note)
         activity.setCurrentFragment(CurrentFragment.EDIT_FRAGMENT)
@@ -177,7 +179,6 @@ class EditFragment(private val activity: MainActivity) : Fragment() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             android.R.id.home -> {
-
                 finish(BACK_PRESSED)
             }
             R.id.menu_mode_icon -> {
@@ -239,6 +240,13 @@ class EditFragment(private val activity: MainActivity) : Fragment() {
         binding.editTextContent.setText(note.content)
         binding.editTextContent.isEnabled = false
         setTimeText(note)
+    }
+
+    private fun setViewDesign() {
+        binding.toolbar.setBackgroundColor(MainActivity.toolbarColor)
+        binding.editNoteContainer.setBackgroundColor(MainActivity.backgroundColor)
+        binding.textViewTime.setBackgroundColor(MainActivity.inlayColor)
+        binding.editTextContent.setBackgroundColor(MainActivity.inlayColor)
     }
 
     private fun startAlarmFragment(note: Note) {
@@ -323,7 +331,13 @@ class EditFragment(private val activity: MainActivity) : Fragment() {
                 animate()
                     .alpha(1F)
                     .setDuration(shortAnimationDuration.toLong())
-                    .setListener(null)
+                    .setListener(object : AnimatorListenerAdapter() {
+                        override fun onAnimationStart(animation: Animator) {
+                            Glide.with(binding.imageView.context)
+                                .load(Uri.parse(note.uri))
+                                .into(binding.imageView)
+                        }
+                    })
             }
         } else {
             binding.imageView.animate()
@@ -350,12 +364,7 @@ class EditFragment(private val activity: MainActivity) : Fragment() {
 
     private fun showImage() {
         if(uri == null) return
-        else {
-            crossFadeImageView(true)
-            Glide.with(binding.imageView.context)
-                .load(Uri.parse(uri))
-                .into(binding.imageView)
-        }
+        else crossFadeImageView(true)
     }
 
     companion object {

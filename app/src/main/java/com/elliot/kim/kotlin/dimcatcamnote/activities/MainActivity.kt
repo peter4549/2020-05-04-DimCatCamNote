@@ -5,6 +5,7 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.*
 import android.content.pm.PackageManager
+import android.content.res.ColorStateList
 import android.graphics.Typeface
 import android.media.MediaScannerConnection
 import android.net.Uri
@@ -117,6 +118,7 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         }
         setSupportActionBar(binding.toolBar)
         initColor()
+        initFont()
         initNavigationDrawer()
 
         val viewModelFactory = ViewModelProvider.AndroidViewModelFactory.getInstance(application)
@@ -162,8 +164,7 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
     }
 
     override fun onPause() {
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(
-            receiver);
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver)
         super.onPause()
     }
 
@@ -611,6 +612,10 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         noteAdapter.sort(sortingCriteria)
     }
 
+    fun setTextViewSortText(sortingCriteria: Int) {
+        binding.textViewSort.text = getTextByCriteria(sortingCriteria)
+    }
+
     private fun getTextByCriteria(sortingCriteria: Int): String {
         return when(sortingCriteria) {
             SortingCriteria.CREATION_TIME.index ->  "생성시간 기준으로 정렬"
@@ -626,6 +631,7 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         val defaultBackgroundColor = getColor(R.color.defaultColorBackground)
         val defaultNoteColor = getColor(R.color.defaultColorNote)
         val defaultInlayColor = getColor(R.color.defaultColorInlay)
+        val defaultAppWidgetBackgroundColor = getColor(R.color.defaultColorAppWidgetBackground)
 
         val preferences = getSharedPreferences(
             PREFERENCES_SET_COLOR,
@@ -636,26 +642,18 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         backgroundColor = preferences.getInt(KEY_COLOR_BACKGROUND, defaultBackgroundColor)
         noteColor = preferences.getInt(KEY_COLOR_NOTE, defaultNoteColor)
         inlayColor = preferences.getInt(KEY_COLOR_INLAY, defaultInlayColor)
+        appWidgetBackgroundColor =
+            preferences.getInt(KEY_COLOR_APP_WIDGET_BACKGROUND, defaultAppWidgetBackgroundColor)
 
-        binding.toolBar.setBackgroundColor(toolbarColor)
-    }
-
-    // 여기서 가능한 프래그먼트 디자인도 세팅하는 것으로 처리하자.
-    fun setViewDesign() {
-        // activity_main
         binding.sortContainer.setBackgroundColor(toolbarColor)
         binding.toolBar.setBackgroundColor(toolbarColor)
-        binding.toolBar.setTitleTextAppearance(this, fontId)
-        binding.textViewSort.typeface = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-                 resources.getFont(R.font.reko)
-            else ResourcesCompat.getFont(this, R.font.reko)
-
-        //
+        binding.writeFloatingActionButton.backgroundTintList = ColorStateList.valueOf(toolbarColor)
     }
 
     fun setViewColor() {
         binding.sortContainer.setBackgroundColor(toolbarColor)
         binding.toolBar.setBackgroundColor(toolbarColor)
+        binding.writeFloatingActionButton.backgroundTintList = ColorStateList.valueOf(toolbarColor)
     }
 
     fun showCurrentFolderItems(folder: Folder, showAnimation: Boolean = true) {
@@ -690,36 +688,45 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         dialogFragmentManager.showDialogFragment(dialogFragment, toolbar)
     }
 
+    fun getFolderAdapter(): FolderAdapter = folderAdapter
     fun getNoteAdapter(): NoteAdapter = noteAdapter
 
     fun closeDrawer() {
         binding.drawerLayout.closeDrawer(GravityCompat.START, true)
     }
 
-    private fun showSortDialog() {
-        dialogFragmentManager.showDialogFragment(DialogFragments.SORT)
-    }
-
-    // Design
-    fun setFont(fontId: Int) {
+    private fun initFont() {
+        val preferences = getSharedPreferences(PREFERENCES_FONT,
+            Context.MODE_PRIVATE)
+        fontId = preferences.getInt(KEY_FONT_ID, R.font.nanum_gothic_font_family)
+        fontStyleId = preferences.getInt(KEY_FONT_STYLE_ID, R.style.FontNanumGothic)
         font = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
             resources.getFont(fontId)
-        else
-            ResourcesCompat.getFont(this, fontId)
+        else ResourcesCompat.getFont(this, fontId)
+
+        setFont()
+    }
+
+    fun setFont() {
+        binding.toolBar.setTitleTextAppearance(this, fontStyleId)
+        binding.textViewCurrentFolderName.typeface = font
+        binding.textViewSort.typeface = font
     }
 
     companion object {
 
         var font: Typeface? = null
         var fontId = 0
+        var fontStyleId = 0
         var toolbarColor = 0
         var backgroundColor = 0
         var noteColor = 0
         var inlayColor = 0
+        var appWidgetBackgroundColor = 0
 
         var isAppRunning = false
 
-        const val DATABASE_NAME = "dim_cat_cam_notes_11"
+        const val DATABASE_NAME = "dim_cat_cam_notes_12"
 
         const val PREFERENCES_CURRENT_FOLDER = "current_folder"
 
@@ -730,27 +737,25 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         const val PERMISSIONS_REQUEST_CODE = 10
         const val CAMERA_PERMISSIONS_REQUEST_CODE = 11
         const val RECORD_AUDIO_PERMISSIONS_REQUEST_CODE = 12
-        const val LOCATION_PERMISSIONS_REQUEST_CODE = 13
+        // const val LOCATION_PERMISSIONS_REQUEST_CODE = 13
 
         val CAMERA_PERMISSIONS_REQUIRED = arrayOf(Manifest.permission.CAMERA)
         val RECORD_AUDIO_PERMISSIONS_REQUESTED = arrayOf(Manifest.permission.RECORD_AUDIO)
+        /*
         val LOCATION_PERMISSIONS_REQUESTED = arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION,
             Manifest.permission.ACCESS_FINE_LOCATION)
+         */
 
         var currentFragment: CurrentFragment? = null
 
         enum class UnderlayButtonIds {
             DONE,
             ALARM,
-            SHARE,
             EDIT,
             DELETE,
             MORE
         }
 
-        private const val pattern = "yyyy-MM-dd-a-hh:mm:ss"
-
-        // 권한 관련해서 클래스 하나 만들어야될듯.
         fun getPermissionsRequired(context: Context): Array<String> {
             var permissionsRequired = arrayOf<String>()
             if (!hasCameraPermissions(
@@ -761,10 +766,12 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
                     context
                 )
             ) permissionsRequired += RECORD_AUDIO_PERMISSIONS_REQUESTED
+            /*
             if (!hasLocationPermissions(
                     context
                 )
             ) permissionsRequired += LOCATION_PERMISSIONS_REQUESTED
+             */
             return permissionsRequired
         }
 
@@ -776,9 +783,11 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
             ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
         }
 
+        /*
         fun hasLocationPermissions(context: Context) = LOCATION_PERMISSIONS_REQUESTED.all {
             ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
         }
+         */
 
         /** Use external media if it is available, our app's file directory otherwise */
         fun getOutputDirectory(context: Context): File {

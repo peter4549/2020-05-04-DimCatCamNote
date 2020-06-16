@@ -1,5 +1,6 @@
 package com.elliot.kim.kotlin.dimcatcamnote.adapters
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.util.Log
 import android.view.LayoutInflater
@@ -13,6 +14,7 @@ import com.elliot.kim.kotlin.dimcatcamnote.R
 import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity
 import com.elliot.kim.kotlin.dimcatcamnote.data.Note
 import com.elliot.kim.kotlin.dimcatcamnote.fragments.AlarmedNoteSelectionFragment
+import com.elliot.kim.kotlin.dimcatcamnote.fragments.CalendarFragment
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -25,7 +27,7 @@ class CalendarAdapter(private val activity: MainActivity, private val rowViewId:
 
     private var noteIdAlarmDatePairs = arrayListOf<Pair<Int, Long>>()
 
-    private var res = 0
+    private var lastDay = 0
 
     private var dateArray = arrayOfNulls<Number>(itemCount)
 
@@ -39,12 +41,13 @@ class CalendarAdapter(private val activity: MainActivity, private val rowViewId:
         getAlarmTimeFromNotes()
     }
 
+    @SuppressLint("ViewHolder")
     override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
         val currentYear = calendar.get(Calendar.YEAR)
         val currentMonth = calendar.get(Calendar.MONTH) + 1
 
 
-        res = calendar.getActualMaximum(Calendar.DAY_OF_MONTH)
+        lastDay = calendar.getActualMaximum(Calendar.DAY_OF_MONTH)
 
 
         inflater = activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
@@ -54,9 +57,8 @@ class CalendarAdapter(private val activity: MainActivity, private val rowViewId:
         val textView = rowView.findViewById<TextView>(R.id.text_view)
         val imageView = rowView.findViewById<ImageView>(R.id.image_view)
         imageView.visibility = View.INVISIBLE
-        // 표시하고 처리하는 부분...
-        //if dateArray[position] == null
-        if (dateArray[position] == null || dateArray[position]!!.toInt() > res)
+
+        if (dateArray[position] == null || dateArray[position]!!.toInt() > lastDay)
         {
             textView.text = null
             rowView.foreground = null
@@ -65,9 +67,11 @@ class CalendarAdapter(private val activity: MainActivity, private val rowViewId:
 
             // Date displayed
             val currentDate = convertDateIntToLong(currentYear, currentMonth, dateArray[position] as Int)
+            val today = convertDateIntToLong(currentYear, currentMonth, todayDate)
 
-            if (dateArray[position] == todayDate)
-                rowView.setBackgroundColor(activity.getColor(R.color.colorLightBlue50))
+            if (currentYear == CalendarFragment.thisYear
+                && currentMonth == CalendarFragment.thisMonth && currentDate == today)
+                rowView.setBackgroundColor(activity.getColor(R.color.backgroundColorLightBlue))
 
             for (idAlarmDatePair in noteIdAlarmDatePairs) {
                 if(currentDate == idAlarmDatePair.second) {

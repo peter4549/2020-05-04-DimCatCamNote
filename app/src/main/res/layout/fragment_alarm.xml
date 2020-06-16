@@ -27,10 +27,10 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="32dp"
-                    android:background="@color/colorLime50"
+                    android:background="@color/backgroundColorLime"
                     android:text="알림 설정"
                     android:textStyle="bold"
-                    android:textColor="@color/colorBlueGreyDark"
+                    android:textColor="@color/textColorCardView"
                     android:textSize="18sp"
                     android:gravity="center" />
 
@@ -49,19 +49,19 @@
                 android:id="@+id/text_view_current_time_set"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@color/colorYellowActionBar"
+                android:background="@color/colorNoteYellow"
                 android:text="현재 설정된 알림시간"
                 android:textStyle="bold"
-                android:textColor="@color/colorBlueGreyDark"
+                android:textColor="@color/textColorCardView"
                 android:textAlignment="center" />
 
             <TextView
                 android:id="@+id/text_view_current_time"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@color/colorYellowActionBar"
+                android:background="@color/colorNoteYellow"
                 android:textStyle="bold"
-                android:textColor="@color/colorBlueGrey263238"
+                android:textColor="@color/textColorCardView"
                 android:textAlignment="center" />
 
             <LinearLayout
@@ -76,9 +76,9 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:padding="1dp"
-                    android:background="@color/colorYellowActionBar"
+                    android:background="@color/colorNoteYellow"
                     android:textAlignment="center"
-                    android:textColor="@color/colorBrown3e2723"
+                    android:textColor="@color/textColorCardView"
                     android:textSize="12sp"
                     android:textStyle="bold"
                     android:text="날짜 선택"/>
@@ -89,8 +89,8 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal"
                     android:foreground="?attr/selectableItemBackground"
-                    android:background="@color/colorLime50"
-                    android:textColor="@color/colorBlueGreyDark"
+                    android:background="@color/backgroundColorLime"
+                    android:textColor="@color/textColorCardView"
                     android:textSize="16sp"
                     android:textStyle="bold" />
 
@@ -110,8 +110,8 @@
                 android:layout_gravity="center_horizontal"
                 android:layout_margin="12dp"
                 android:foreground="?attr/selectableItemBackground"
-                android:background="@color/colorLime50"
-                android:textColor="@color/colorBlueGreyDark"
+                android:background="@color/backgroundColorLime"
+                android:textColor="@color/textColorCardView"
                 android:textSize="16sp"
                 android:textStyle="bold"
                 android:text="알림 등록" />

@@ -17,7 +17,7 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="@color/backgroundColorToolbar"
+            android:background="@color/defaultColorToolbar"
             android:theme="@style/ToolbarTheme"
             app:popupTheme="@style/AppTheme.PopupOverlay" />
 
@@ -28,10 +28,8 @@
             android:layout_below="@id/toolbar"
             android:paddingEnd="8dp"
             android:paddingStart="8dp"
-            android:background="@color/backgroundColorAddEditText"
-            android:textColor="@color/textColorAddEditText"
-            android:textColorHint="@color/textColorHintAddEditText"
-            android:hint="제목을 입력해주세요."/>
+            android:background="@color/defaultColorInlay"
+            android:hint="@string/request_title_message" />
 
 
         <ImageView
@@ -53,9 +51,7 @@
             android:paddingEnd="8dp"
             android:paddingStart="8dp"
             android:paddingTop="8dp"
-            android:background="@color/backgroundColorAddEditText"
-            android:textColor="@color/textColorAddEditText"
-            android:textColorHint="@color/textColorHintAddEditText"
+            android:background="@color/defaultColorInlay"
             android:hint="여기에 노트를 작성해주세요."/>
 
         <LinearLayout
@@ -64,7 +60,7 @@
             android:layout_height="88dp"
             android:layout_above="@+id/bottomNavigationView"
             android:layout_centerHorizontal="true"
-            android:background="@color/colorPurplef3e5f5"
+            android:background="@color/defaultColorBackground"
             android:orientation="vertical"
             android:visibility="gone">
 
@@ -79,14 +75,14 @@
             <ImageView
                 android:layout_width="match_parent"
                 android:layout_height="32dp"
-                android:src="@drawable/ic_mic_white_24dp"
+                android:src="@drawable/ic_mic_grey_24dp"
                 android:contentDescription=""/>
 
             <Button
                 android:id="@+id/button_complete_speech_recognition"
                 android:layout_width="match_parent"
                 android:layout_height="32dp"
-                android:background="@color/colorYellowActionBar"
+                android:background="@color/colorToolbarYellow"
                 android:text="완료"/>
 
         </LinearLayout>
@@ -96,8 +92,11 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
-            android:background="@color/backgroundColorToolbar"
-            app:menu="@menu/menu_write_bottom_navigation_view"/>
+            android:background="@color/defaultColorToolbar"
+            app:menu="@menu/menu_write_bottom_navigation_view"
+            app:itemIconTint="@color/selector_bottom_navigation_view"
+            app:itemTextAppearanceActive="@style/BottomNavigationViewItemTextActiveStyle"
+            app:itemTextAppearanceInactive="@style/BottomNavigationViewItemTextInactiveStyle"/>
 
     </RelativeLayout>
 

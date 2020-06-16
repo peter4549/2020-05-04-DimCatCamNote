@@ -2,6 +2,7 @@ package com.elliot.kim.kotlin.dimcatcamnote.adapters
 
 import android.annotation.SuppressLint
 import android.content.Context
+
 import android.view.*
 import androidx.recyclerview.widget.RecyclerView
 import com.elliot.kim.kotlin.dimcatcamnote.DEFAULT_FOLDER_NAME
@@ -54,7 +55,8 @@ class FolderAdapter(private val context: Context?):
                 menu.add(Menu.NONE, MenuItemId.LOCK.id, 2, menuItemTitle)
                     .setOnMenuItemClickListener(menuItemClickListener)
 
-                if (!folders[adapterPosition].isLocked)
+                if (!folders[adapterPosition].isLocked &&
+                    folders[adapterPosition].id != DEFAULT_FOLDER_ID)
                     menu.add(Menu.NONE, MenuItemId.REMOVE.id, 3, "폴더 제거")
                         .setOnMenuItemClickListener(menuItemClickListener)
             }
@@ -149,12 +151,14 @@ class FolderAdapter(private val context: Context?):
 
         Arrays.sort(keySet)
 
+        // Add default folder.
         folders.add(
             Folder(
-                0,
+                DEFAULT_FOLDER_ID,
                 DEFAULT_FOLDER_NAME
             )
         )
+
         for (i in 0 until entriesSize) {
             val key = keySet[i].toString()
 
@@ -211,7 +215,8 @@ class FolderAdapter(private val context: Context?):
             Context.MODE_PRIVATE
         )
         val editor = preferences.edit()
-        editor.remove("${folder.id}")
+        for (i in 0..3)
+            editor.remove("${folder.id}$i")
         editor.apply()
 
         return folders.remove(folder)
@@ -227,6 +232,7 @@ class FolderAdapter(private val context: Context?):
 
     companion object {
         const val PREFERENCES_NAME = "folder_preferences"
+        const val DEFAULT_FOLDER_ID = 0
     }
 
     fun lock() {
@@ -243,6 +249,8 @@ class FolderAdapter(private val context: Context?):
         saveFolder(folder)
         notifyItemChanged(getPositionByFolder(folder))
     }
+
+    fun isLockedFolder(id: Int) = folders.filter { it.id == id }[0].isLocked
 
     private fun getPositionByFolder(folder: Folder): Int = folders.indexOf(folder)
 }

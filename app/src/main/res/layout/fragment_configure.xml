@@ -15,7 +15,7 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="@color/backgroundColorToolbar"
+            android:background="@color/defaultColorToolbar"
             android:theme="@style/ToolbarTheme"
             app:popupTheme="@style/AppTheme.PopupOverlay" />
 
@@ -87,6 +87,55 @@
                 android:textStyle="bold"/>
 
         </RelativeLayout>
+
+        <LinearLayout
+            android:id="@+id/set_app_widget_opacity_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:clickable="true"
+            android:focusable="true">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:gravity="center_vertical"
+                    android:paddingEnd="8dp"
+                    android:paddingStart="8dp"
+                    android:text="앱 위젯 불투명도 설정"
+                    android:textSize="@dimen/text_size_middle"
+                    android:textStyle="bold"/>
+
+                <TextView
+                    android:id="@+id/text_view_opacity"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:layout_marginStart="12dp"
+                    android:gravity="center_vertical"
+                    android:paddingEnd="8dp"
+                    android:paddingStart="8dp"
+                    android:text="10%"
+                    android:textSize="@dimen/text_size_small_middle"
+                    android:textStyle="bold"/>
+
+            </LinearLayout>
+
+            <SeekBar
+                android:id="@+id/seek_bar"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:layout_marginEnd="16dp"
+                android:layout_marginStart="16dp"
+                android:max="100"
+                android:min="10"
+                android:progress="10" />
+
+        </LinearLayout>
 
         <TextView
             android:layout_width="match_parent"
