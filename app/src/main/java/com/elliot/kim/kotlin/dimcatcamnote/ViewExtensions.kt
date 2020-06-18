@@ -21,9 +21,12 @@ import android.content.res.TypedArray
 import android.os.Build
 import android.text.Spannable
 import android.util.AttributeSet
+import android.util.TypedValue
 import android.view.DisplayCutout
 import android.view.View
 import android.view.WindowManager
+import android.widget.Button
+import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.TextView
 import androidx.annotation.RequiresApi
@@ -94,4 +97,57 @@ fun AlertDialog.showImmersive() {
 
     // Set the dialog to focusable again
     window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE)
+}
+
+val smallFontFamilies = listOf(R.font.nanum_brush_font_family, R.font.nanum_pen_font_family)
+val middleFontFamilies = listOf(R.font.bmyeonsung_font_family)
+
+fun TextView.adjustDialogTitleTextSize(fontId: Int) {
+    when(fontId) {
+        in smallFontFamilies ->
+            this.setTextSize(TypedValue.COMPLEX_UNIT_SP, BASIC_DIALOG_TITLE_TEXT_SIZE + 6)
+        in middleFontFamilies ->
+            this.setTextSize(TypedValue.COMPLEX_UNIT_SP, BASIC_DIALOG_TITLE_TEXT_SIZE + 2)
+        else -> this.setTextSize(TypedValue.COMPLEX_UNIT_SP, BASIC_DIALOG_TITLE_TEXT_SIZE)
+    }
+}
+
+fun TextView.adjustSpinnerItemTextSize(fontId: Int) {
+    when(fontId) {
+        in smallFontFamilies ->
+            this.setTextSize(TypedValue.COMPLEX_UNIT_SP, BASIC_SPINNER_ITEM_TEXT_SIZE + 6)
+        in middleFontFamilies ->
+            this.setTextSize(TypedValue.COMPLEX_UNIT_SP, BASIC_SPINNER_ITEM_TEXT_SIZE + 2)
+        else -> this.setTextSize(TypedValue.COMPLEX_UNIT_SP, BASIC_SPINNER_ITEM_TEXT_SIZE)
+    }
+}
+
+fun TextView.adjustDialogItemTextSize(fontId: Int) {
+    when(fontId) {
+        in smallFontFamilies ->
+            this.setTextSize(TypedValue.COMPLEX_UNIT_SP, BASIC_DIALOG_ITEM_TEXT_SIZE + 6)
+        in middleFontFamilies ->
+            this.setTextSize(TypedValue.COMPLEX_UNIT_SP, BASIC_DIALOG_ITEM_TEXT_SIZE + 2)
+        else -> this.setTextSize(TypedValue.COMPLEX_UNIT_SP, BASIC_DIALOG_ITEM_TEXT_SIZE)
+    }
+}
+
+fun EditText.adjustDialogInputTextSize(fontId: Int) {
+    when(fontId) {
+        in smallFontFamilies ->
+            this.setTextSize(TypedValue.COMPLEX_UNIT_SP, BASIC_DIALOG_INPUT_TEXT_SIZE + 6)
+        in middleFontFamilies ->
+            this.setTextSize(TypedValue.COMPLEX_UNIT_SP, BASIC_DIALOG_INPUT_TEXT_SIZE + 2)
+        else -> this.setTextSize(TypedValue.COMPLEX_UNIT_SP, BASIC_DIALOG_INPUT_TEXT_SIZE)
+    }
+}
+
+fun Button.adjustDialogButtonTextSize(fontId: Int) {
+    when(fontId) {
+        in smallFontFamilies ->
+            this.setTextSize(TypedValue.COMPLEX_UNIT_SP, BASIC_DIALOG_BUTTON_TEXT_SIZE + 6)
+        in middleFontFamilies ->
+            this.setTextSize(TypedValue.COMPLEX_UNIT_SP, BASIC_DIALOG_BUTTON_TEXT_SIZE + 2)
+        else -> this.setTextSize(TypedValue.COMPLEX_UNIT_SP, BASIC_DIALOG_BUTTON_TEXT_SIZE)
+    }
 }

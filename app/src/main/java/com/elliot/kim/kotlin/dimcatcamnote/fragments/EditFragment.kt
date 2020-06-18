@@ -244,7 +244,6 @@ class EditFragment(private val activity: MainActivity) : Fragment() {
 
     private fun setViewDesign() {
         binding.toolbar.setBackgroundColor(MainActivity.toolbarColor)
-        binding.editNoteContainer.setBackgroundColor(MainActivity.backgroundColor)
         binding.textViewTime.setBackgroundColor(MainActivity.inlayColor)
         binding.editTextContent.setBackgroundColor(MainActivity.inlayColor)
     }

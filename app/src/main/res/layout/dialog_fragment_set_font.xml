@@ -29,10 +29,10 @@
             android:layout_height="wrap_content">
 
             <RadioButton
-                android:id="@+id/radio_button_nanum_pen"
+                android:id="@+id/radio_button_nanum_gothic"
                 style="@style/ColorSelectionRadioButtonTheme"
-                android:fontFamily="@font/nanum_pen"
-                android:text="나눔펜 NunumPen"
+                android:fontFamily="@font/nanum_gothic_font_family"
+                android:text="나눔고딕 NunumGothic"
                 android:textSize="@dimen/text_size_small_middle"/>
 
             <RadioButton
@@ -43,10 +43,66 @@
                 android:textSize="@dimen/text_size_small_middle"/>
 
             <RadioButton
+                android:id="@+id/radio_button_nanum_barun_gothic"
+                style="@style/ColorSelectionRadioButtonTheme"
+                android:fontFamily="@font/nanum_barun_gothic_font_family"
+                android:text="나눔바른고딕 NunumBarunGothic"
+                android:textSize="@dimen/text_size_small_middle"/>
+
+            <RadioButton
+                android:id="@+id/radio_button_nanum_brush"
+                style="@style/ColorSelectionRadioButtonTheme"
+                android:fontFamily="@font/nanum_brush_font_family"
+                android:text="나눔브러시 NanumBrush"
+                android:textSize="@dimen/text_size_small_middle"/>
+
+            <RadioButton
+                android:id="@+id/radio_button_nanum_pen"
+                style="@style/ColorSelectionRadioButtonTheme"
+                android:fontFamily="@font/nanum_pen"
+                android:text="나눔펜 NunumPen"
+                android:textSize="@dimen/text_size_small_middle"/>
+
+            <RadioButton
                 android:id="@+id/radio_button_reko"
                 style="@style/ColorSelectionRadioButtonTheme"
                 android:fontFamily="@font/reko"
                 android:text="레코 Reko"
+                android:textSize="@dimen/text_size_small_middle"/>
+
+            <RadioButton
+                android:id="@+id/radio_button_bmdohyeon"
+                style="@style/ColorSelectionRadioButtonTheme"
+                android:fontFamily="@font/bmdohyeon_font_family"
+                android:text="배민도현 BmDohyeon"
+                android:textSize="@dimen/text_size_small_middle"/>
+
+            <RadioButton
+                android:id="@+id/radio_button_bmyeonsung"
+                style="@style/ColorSelectionRadioButtonTheme"
+                android:fontFamily="@font/bmyeonsung_font_family"
+                android:text="배민연성 BmYeonsung"
+                android:textSize="@dimen/text_size_small_middle"/>
+
+            <RadioButton
+                android:id="@+id/radio_button_bmeuljiro"
+                style="@style/ColorSelectionRadioButtonTheme"
+                android:fontFamily="@font/bmeuljiro_font_family"
+                android:text="배민을지로 BmEuljiro"
+                android:textSize="@dimen/text_size_small_middle"/>
+
+            <RadioButton
+                android:id="@+id/radio_button_bmjua"
+                style="@style/ColorSelectionRadioButtonTheme"
+                android:fontFamily="@font/bmjua_font_family"
+                android:text="배민주아 BmJua"
+                android:textSize="@dimen/text_size_small_middle"/>
+
+            <RadioButton
+                android:id="@+id/radio_button_bmhanna"
+                style="@style/ColorSelectionRadioButtonTheme"
+                android:fontFamily="@font/bmhanna_font_family"
+                android:text="배민한나 BmHanna"
                 android:textSize="@dimen/text_size_small_middle"/>
 
         </RadioGroup>

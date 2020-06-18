@@ -46,9 +46,7 @@ class CalendarAdapter(private val activity: MainActivity, private val rowViewId:
         val currentYear = calendar.get(Calendar.YEAR)
         val currentMonth = calendar.get(Calendar.MONTH) + 1
 
-
         lastDay = calendar.getActualMaximum(Calendar.DAY_OF_MONTH)
-
 
         inflater = activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
 
@@ -107,7 +105,7 @@ class CalendarAdapter(private val activity: MainActivity, private val rowViewId:
 
     override fun getCount(): Int = itemCount
 
-    fun getAlarmTimeFromNotes() {
+    private fun getAlarmTimeFromNotes() {
         // year, month랑 date 추출하여... 튜플에 저장???
         // 알람 기능부에 전부 알림 어레이에 더할 수 있도록..
         // 키 데이트 얻으면,, 키로 접근 삽 가능.

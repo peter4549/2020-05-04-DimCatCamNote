@@ -131,7 +131,7 @@ class AlarmedNoteAdapter(private val activity: MainActivity,
     }
 
     private fun confirmPassword() {
-        ConfirmPasswordDialogFragment(this).show(activity.fragmentManager,
+        ConfirmPasswordDialogFragment(this, activity).show(activity.fragmentManager,
             "")
     }
 

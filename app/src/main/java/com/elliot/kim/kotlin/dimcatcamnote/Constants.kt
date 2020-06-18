@@ -56,6 +56,13 @@ enum class SortingCriteria(val index: Int) {
     NAME(2)
 }
 
+// Text Size
+// sp
+const val BASIC_DIALOG_TITLE_TEXT_SIZE = 20.0f
+const val BASIC_DIALOG_BUTTON_TEXT_SIZE = 16.0f
+const val BASIC_DIALOG_INPUT_TEXT_SIZE = 14.0f
+const val BASIC_SPINNER_ITEM_TEXT_SIZE = 16.0f
+const val BASIC_DIALOG_ITEM_TEXT_SIZE = 16.0f
 
 enum class CurrentFragment {
     ALARM_FRAGMENT,
@@ -68,7 +75,7 @@ enum class CurrentFragment {
 }
 
 const val PATTERN_YYYY_MM_dd = "yyyy년 M월 d일"
-const val PATTERN_UP_TO_SECONDS = "yyyy-MM-dd-a-hh:mm:ss"
+const val PATTERN_UP_TO_SECONDS = "yyyy년 M월 d일 a hh:mm:ss"
 const val PATTERN_UP_TO_MINUTES = "M월 d일 a h시 m분"
 
 // action widget

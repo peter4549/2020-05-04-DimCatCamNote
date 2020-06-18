@@ -14,6 +14,7 @@ import android.os.Bundle
 import android.os.Process
 import android.text.method.TextKeyListener.clear
 import android.util.Log
+import android.util.TypedValue
 import android.view.KeyEvent
 import android.view.Menu
 import android.view.MenuItem
@@ -71,6 +72,7 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
     )
 
     var alarmedNoteAdapter: AlarmedNoteAdapter? = null
+    var sortingCriteria = SortingCriteria.EDIT_TIME.index
 
     lateinit var fragmentManager: FragmentManager
 
@@ -117,6 +119,8 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
             dialogFragmentManager.showDialogFragment(DialogFragments.SORT)
         }
         setSupportActionBar(binding.toolBar)
+
+        initSortingCriteria()
         initColor()
         initFont()
         initNavigationDrawer()
@@ -535,14 +539,14 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
 
     private fun initialize(notes: MutableList<Note>) {
 
-        initializeRecyclerView(notes)
-        initializeDialogFragmentManager()
-        initializeSortingCriteria()
+        initRecyclerView(notes)
+        initDialogFragmentManager()
+        // initializeSortingCriteria()
 
     }
 
     // Must be called after folderAdapter and NoteAdapter are initialized.
-    private fun initializeDialogFragmentManager() {
+    private fun initDialogFragmentManager() {
         dialogFragmentManager = DialogFragmentManager(this, folderAdapter, noteAdapter)
     }
 
@@ -587,8 +591,10 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         folderAdapter.notifyDataSetChanged()
     }
 
-    private fun initializeRecyclerView(notes: MutableList<Note>) {
+    private fun initRecyclerView(notes: MutableList<Note>) {
         noteAdapter = NoteAdapter(this, notes)
+        noteAdapter.sortingCriteria = sortingCriteria
+
         val layoutAnimationController = android.view.animation.AnimationUtils
             .loadLayoutAnimation(this,
                 R.anim.layout_animation
@@ -604,12 +610,10 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         showCurrentFolderItems(currentFolder)
     }
 
-    private fun initializeSortingCriteria() {
-        binding.sortContainer.setBackgroundColor(backgroundColor)
+    private fun initSortingCriteria() {
         val preferences = getSharedPreferences(PREFERENCES_SORTING_CRITERIA, Context.MODE_PRIVATE)
-        val sortingCriteria = preferences.getInt(KEY_SORTING_CRITERIA, SortingCriteria.EDIT_TIME.index)
+        sortingCriteria = preferences.getInt(KEY_SORTING_CRITERIA, SortingCriteria.EDIT_TIME.index)
         binding.textViewSort.text = getTextByCriteria(sortingCriteria)
-        noteAdapter.sort(sortingCriteria)
     }
 
     fun setTextViewSortText(sortingCriteria: Int) {
@@ -645,12 +649,14 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         appWidgetBackgroundColor =
             preferences.getInt(KEY_COLOR_APP_WIDGET_BACKGROUND, defaultAppWidgetBackgroundColor)
 
+        binding.mainContainer.setBackgroundColor(backgroundColor)
         binding.sortContainer.setBackgroundColor(toolbarColor)
         binding.toolBar.setBackgroundColor(toolbarColor)
         binding.writeFloatingActionButton.backgroundTintList = ColorStateList.valueOf(toolbarColor)
     }
 
     fun setViewColor() {
+        binding.mainContainer.setBackgroundColor(backgroundColor)
         binding.sortContainer.setBackgroundColor(toolbarColor)
         binding.toolBar.setBackgroundColor(toolbarColor)
         binding.writeFloatingActionButton.backgroundTintList = ColorStateList.valueOf(toolbarColor)
@@ -708,6 +714,18 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
     }
 
     fun setFont() {
+        if (fontId == R.font.nanum_brush_font_family ||
+            fontId == R.font.nanum_pen_font_family) {
+            binding.textViewCurrentFolderName.setTextSize(TypedValue.COMPLEX_UNIT_SP, BASIC_DIALOG_TITLE_TEXT_SIZE + 6)
+            binding.textViewSort.setTextSize(TypedValue.COMPLEX_UNIT_SP, BASIC_DIALOG_INPUT_TEXT_SIZE + 6)
+        } else if (fontId == R.font.bmyeonsung_font_family) {
+            binding.textViewCurrentFolderName.setTextSize(TypedValue.COMPLEX_UNIT_SP, BASIC_DIALOG_TITLE_TEXT_SIZE + 2)
+            binding.textViewSort.setTextSize(TypedValue.COMPLEX_UNIT_SP, BASIC_DIALOG_INPUT_TEXT_SIZE + 2)
+        } else {
+            binding.textViewCurrentFolderName.setTextSize(TypedValue.COMPLEX_UNIT_SP, BASIC_DIALOG_TITLE_TEXT_SIZE)
+            binding.textViewSort.setTextSize(TypedValue.COMPLEX_UNIT_SP, BASIC_DIALOG_INPUT_TEXT_SIZE)
+        }
+
         binding.toolBar.setTitleTextAppearance(this, fontStyleId)
         binding.textViewCurrentFolderName.typeface = font
         binding.textViewSort.typeface = font

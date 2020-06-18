@@ -51,6 +51,11 @@ class MainViewModel(application: Application): AndroidViewModel(application) {
     }
 
     fun update(note: Note, updateAppWidget: Boolean = true) {
+        scope.launch {
+            targetNote = note
+            database.dao().update(note)
+        }
+
         if (updateAppWidget) {
             if (note.appWidgetIds.isNotEmpty()) {
                 val colorPreferences = context.getSharedPreferences(PREFERENCES_SET_COLOR,
@@ -94,6 +99,15 @@ class MainViewModel(application: Application): AndroidViewModel(application) {
                     val pendingIntent: PendingIntent = intent.let {
                         PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
                     }
+
+                    val noteConfigureIntent = Intent(context, SingleNoteConfigureActivity::class.java)
+                    // App widget ID is sent to SingleNoteConfigureActivity through the action.
+                    noteConfigureIntent.action = ACTION_APP_WIDGET_ATTACHED + it
+
+                    val noteConfigurePendingIntent = noteConfigureIntent.let {
+                        PendingIntent.getActivity(context, 0, noteConfigureIntent, 0)
+                    }
+
                     val views: RemoteViews = RemoteViews(
                         context.packageName,
                         R.layout.app_widget
@@ -101,6 +115,7 @@ class MainViewModel(application: Application): AndroidViewModel(application) {
                         setInt(R.id.title_container, "setBackgroundColor", Color.parseColor(argbChannelTitleColor))
                         setInt(R.id.content_container, "setBackgroundColor", Color.parseColor(argbChannelBackgroundColor))
                         setOnClickPendingIntent(R.id.text_view_content, pendingIntent)
+                        setOnClickPendingIntent(R.id.image_button_change, noteConfigurePendingIntent)
                         setCharSequence(R.id.text_view_title, "setText", note.title)
                         setCharSequence(R.id.text_view_content, "setText", note.content)
 
@@ -148,10 +163,6 @@ class MainViewModel(application: Application): AndroidViewModel(application) {
                         NoteAppWidgetProvider::class.java))
                 intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids)
             }
-        }
-        scope.launch {
-            targetNote = note
-            database.dao().update(note)
         }
     }
 
@@ -217,6 +228,7 @@ class MainViewModel(application: Application): AndroidViewModel(application) {
                     setInt(R.id.title_container, "setBackgroundColor", Color.parseColor(argbChannelTitleColor))
                     setInt(R.id.text_view_content, "setBackgroundColor", Color.parseColor(argbChannelBackgroundColor))
                     setOnClickPendingIntent(R.id.text_view_content, pendingIntent)
+                    setOnClickPendingIntent(R.id.image_button_change, pendingIntent)
                     setCharSequence(R.id.text_view_title, "setText", context.getString(R.string.no_attachment_message))
                     setCharSequence(R.id.text_view_content, "setText", context.getString(R.string.no_attachment_message))
                 }

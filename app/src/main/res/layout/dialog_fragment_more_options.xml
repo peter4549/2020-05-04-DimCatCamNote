@@ -10,115 +10,76 @@
     <TextView
         android:id="@+id/text_view_title"
         android:layout_width="match_parent"
-        android:layout_height="40dp"
+        android:layout_height="48dp"
         android:background="@color/defaultColorToolbar"
         android:gravity="center"
-        android:textSize="@dimen/text_size_middle_large"
+        android:paddingEnd="8dp"
+        android:paddingStart="8dp"
+        android:textSize="@dimen/text_size_large"
         android:textStyle="bold"
-        android:textColor="@android:color/white"/>
+        android:textColor="@android:color/white"
+        android:ellipsize="end"
+        android:maxEms="8"
+        android:maxLines="1" />
 
-    <LinearLayout
-        android:id="@+id/linear_layout_add_to_calendar"
+    <TextView
+        android:id="@+id/text_view_add_to_calendar"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/more_options_menu_item_height"
-        android:orientation="horizontal"
+        android:layout_height="48dp"
+        android:layout_marginStart="4dp"
         android:clickable="true"
         android:focusable="true"
-        android:foreground="?attr/selectableItemBackground">
+        android:gravity="center"
+        android:text="캘린더에 등록"
+        android:textSize="@dimen/text_size_middle"
+        android:textStyle="bold"
+        android:drawableStart="@drawable/ic_today_white_24dp"
+        android:drawableTint="@color/colorStatusIcon"
+        android:foreground="?attr/selectableItemBackground"/>
 
-        <ImageView
-            android:id="@+id/image_view_add_to_calendar"
-            style="@style/ImageViewStyleSmallSize"
-            android:layout_marginStart="8dp"
-            android:src="@drawable/ic_calendar_purple_32px"
-            android:tint="@color/colorStatusIcon"/>
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:gravity="center"
-            android:text="캘린더에 등록"
-            android:textSize="@dimen/text_size_middle"
-            android:textStyle="bold"/>
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/linear_layout_move_to_folder"
+    <TextView
+        android:id="@+id/text_view_move_to_folder"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/more_options_menu_item_height"
-        android:orientation="horizontal"
+        android:layout_height="48dp"
+        android:layout_marginStart="4dp"
         android:clickable="true"
         android:focusable="true"
-        android:foreground="?attr/selectableItemBackground">
+        android:gravity="center"
+        android:text="폴더로 이동"
+        android:textSize="@dimen/text_size_middle"
+        android:textStyle="bold"
+        android:drawableStart="@drawable/ic_folder_white_24dp"
+        android:drawableTint="@color/colorStatusIcon"
+        android:foreground="?attr/selectableItemBackground"/>
 
-        <ImageView
-            android:id="@+id/image_view_move_to_folder"
-            style="@style/ImageViewStyleSmallSize"
-            android:layout_marginStart="8dp"
-            android:src="@drawable/ic_folder"
-            android:tint="@color/colorStatusIcon"/>
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:gravity="center"
-            android:text="폴더로 이동"
-            android:textSize="@dimen/text_size_middle"
-            android:textStyle="bold"/>
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/linear_layout_lock"
+    <TextView
+        android:id="@+id/text_view_lock"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/more_options_menu_item_height"
-        android:orientation="horizontal"
+        android:layout_height="48dp"
+        android:layout_marginStart="4dp"
         android:clickable="true"
         android:focusable="true"
-        android:foreground="?attr/selectableItemBackground">
+        android:gravity="center"
+        android:text="노트 잠금"
+        android:textSize="@dimen/text_size_middle"
+        android:textStyle="bold"
+        android:drawableStart="@drawable/ic_lock_outline_black_24dp"
+        android:drawableTint="@color/colorStatusIcon"
+        android:foreground="?attr/selectableItemBackground"/>
 
-        <ImageView
-            android:id="@+id/image_view_lock"
-            style="@style/ImageViewStyleSmallSize"
-            android:layout_marginStart="8dp"
-            android:src="@drawable/ic_lock_outline_black_24dp"
-            android:tint="@color/colorStatusIcon"/>
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:gravity="center"
-            android:textSize="@dimen/text_size_middle"
-            android:textStyle="bold"
-            android:text="노트 잠금" />
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/linear_layout_share"
+    <TextView
+        android:id="@+id/text_view_share"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/more_options_menu_item_height"
-        android:orientation="horizontal"
+        android:layout_height="48dp"
+        android:layout_marginStart="4dp"
         android:clickable="true"
         android:focusable="true"
-        android:foreground="?attr/selectableItemBackground">
-
-        <ImageView
-            android:id="@+id/image_view_share"
-            style="@style/ImageViewStyleSmallSize"
-            android:layout_marginStart="8dp"
-            android:src="@drawable/ic_share_24dp"
-            android:tint="@color/colorStatusIcon"/>
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:gravity="center"
-            android:text="공유하기"
-            android:textSize="@dimen/text_size_middle"
-            android:textStyle="bold" />
-
-    </LinearLayout>
+        android:gravity="center"
+        android:text="공유하기"
+        android:textSize="@dimen/text_size_middle"
+        android:textStyle="bold"
+        android:drawableStart="@drawable/ic_share_24dp"
+        android:drawableTint="@color/colorStatusIcon"
+        android:foreground="?attr/selectableItemBackground"/>
 
 </LinearLayout>

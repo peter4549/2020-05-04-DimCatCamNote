@@ -3,11 +3,11 @@ package com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments
 import android.app.Activity
 import android.app.Dialog
 import android.content.Context
+import android.os.Build
 import android.os.Bundle
-import android.widget.Button
-import android.widget.EditText
-import android.widget.TextView
-import android.widget.Toast
+import android.util.TypedValue
+import android.widget.*
+import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.DialogFragment
 import com.elliot.kim.kotlin.dimcatcamnote.*
 import com.elliot.kim.kotlin.dimcatcamnote.activities.EditActivity
@@ -35,24 +35,48 @@ class SetPasswordDialogFragment(private val adapter: Any) : DialogFragment() {
         val dialog = Dialog(activity)
         dialog.setContentView(R.layout.dialog_fragment_set_password)
 
+        val setPasswordContainer = dialog.findViewById<RelativeLayout>(R.id.set_password_container)
         val textView = dialog.findViewById<TextView>(R.id.text_view_title)
         val editText = dialog.findViewById<EditText>(R.id.edit_text_password)
         val button = dialog.findViewById<Button>(R.id.button_enter_password)
 
         // Apply design
         if (activity is MainActivity) {
+            setPasswordContainer.setBackgroundColor(MainActivity.backgroundColor)
             textView.setBackgroundColor(MainActivity.toolbarColor)
-            editText.setBackgroundColor(MainActivity.backgroundColor)
             button.setBackgroundColor(MainActivity.toolbarColor)
+
+            textView.adjustDialogTitleTextSize(MainActivity.fontId)
+            editText.adjustDialogInputTextSize(MainActivity.fontId)
+            button.adjustDialogButtonTextSize(MainActivity.fontId)
+
+            textView.typeface = MainActivity.font
+            editText.typeface = MainActivity.font
+            button.typeface = MainActivity.font
         } else {
-            val preferences =
+            val colorPreferences =
                 activity.getSharedPreferences(PREFERENCES_SET_COLOR, Context.MODE_PRIVATE)
-            textView.setBackgroundColor(preferences.getInt(KEY_COLOR_TOOLBAR,
-                activity.getColor(R.color.defaultColorToolbar)))
-            editText.setBackgroundColor(preferences.getInt(KEY_COLOR_BACKGROUND,
+            setPasswordContainer.setBackgroundColor(colorPreferences.getInt(KEY_COLOR_BACKGROUND,
                 activity.getColor(R.color.defaultColorBackground)))
-            button.setBackgroundColor(preferences.getInt(KEY_COLOR_TOOLBAR,
+            textView.setBackgroundColor(colorPreferences.getInt(KEY_COLOR_TOOLBAR,
                 activity.getColor(R.color.defaultColorToolbar)))
+            button.setBackgroundColor(colorPreferences.getInt(KEY_COLOR_TOOLBAR,
+                activity.getColor(R.color.defaultColorToolbar)))
+
+            val fontPreferences =
+                activity.getSharedPreferences(PREFERENCES_FONT, Context.MODE_PRIVATE)
+            val fontId = fontPreferences.getInt(KEY_FONT_ID, DEFAULT_FOLDER_ID)
+            val font = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+                resources.getFont(fontId)
+            else ResourcesCompat.getFont(requireContext(), fontId)
+
+            textView.adjustDialogTitleTextSize(fontId)
+            editText.adjustDialogInputTextSize(fontId)
+            button.adjustDialogButtonTextSize(fontId)
+
+            textView.typeface = font
+            editText.typeface = font
+            button.typeface = font
         }
 
         button.setOnClickListener {

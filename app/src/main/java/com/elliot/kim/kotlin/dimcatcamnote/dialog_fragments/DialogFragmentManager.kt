@@ -26,7 +26,7 @@ class DialogFragmentManager(private val activity: MainActivity,
                 .show(activity.fragmentManager, tag)
             DialogFragments.CONFIRM_DELETE -> ConfirmDeleteDialogFragment(noteAdapter.selectedNote!!)
                 .show(activity.fragmentManager, tag)
-            DialogFragments.FOLDER_OPTIONS -> FolderOptionsDialogFragment(folderAdapter, noteAdapter)
+            DialogFragments.MOVE_TO_FOLDER -> MoveToFolderDialogFragment(folderAdapter, noteAdapter)
                 .show(activity.fragmentManager, tag)
             DialogFragments.MORE_OPTIONS -> MoreOptionsDialogFragment(noteAdapter)
                 .show(activity.fragmentManager, tag)

@@ -102,7 +102,7 @@ class EditActivity: AppCompatActivity() {
 
                 // Password confirmation
                 if (note.isLocked) {
-                        ConfirmPasswordDialogFragment(noteAdapter, false, this)
+                        ConfirmPasswordDialogFragment(noteAdapter, this)
                             .show(fragmentManager, tag)
                 } else {
                     crossFadeLockView(false)
@@ -436,8 +436,10 @@ class EditActivity: AppCompatActivity() {
             getColor(R.color.defaultColorToolbar)))
         binding.textViewTime.setBackgroundColor(preferences.getInt(KEY_COLOR_BACKGROUND,
             getColor(R.color.defaultColorBackground)))
+        /*
         binding.editTextContainer.setBackgroundColor(preferences.getInt(KEY_COLOR_BACKGROUND,
             getColor(R.color.defaultColorBackground)))
+         */
         binding.viewLock.setBackgroundColor(preferences.getInt(KEY_COLOR_BACKGROUND,
             getColor(R.color.defaultColorBackground)))
     }

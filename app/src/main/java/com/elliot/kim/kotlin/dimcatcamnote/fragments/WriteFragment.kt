@@ -188,11 +188,12 @@ class WriteFragment : Fragment() {
             }
 
             override fun onAnimationEnd(animation: Animation?) {
+                MainActivity.hideKeyboard(context, view)
                 if (isSaved) activity.showToast(activity.getString(R.string.save_complete_message))
             }
 
             override fun onAnimationStart(animation: Animation?) {
-                MainActivity.hideKeyboard(context, view)
+
             }
         })
 

@@ -79,6 +79,13 @@ class NoteAppWidgetProvider: AppWidgetProvider() {
                     PendingIntent.getActivity(context, 0, it, 0)
                 }
 
+                val noteConfigureIntent = Intent(context, SingleNoteConfigureActivity::class.java)
+                // App widget ID is sent to SingleNoteConfigureActivity through the action.
+                noteConfigureIntent.action = ACTION_APP_WIDGET_ATTACHED + appWidgetId
+                val noteConfigurePendingIntent = noteConfigureIntent.let {
+                    PendingIntent.getActivity(context, 0, noteConfigureIntent, 0)
+                }
+
                 val views: RemoteViews = RemoteViews(
                     context.packageName,
                     R.layout.app_widget
@@ -86,6 +93,7 @@ class NoteAppWidgetProvider: AppWidgetProvider() {
                     setInt(R.id.title_container, "setBackgroundColor", Color.parseColor(argbChannelTitleColor))
                     setInt(R.id.content_container, "setBackgroundColor", Color.parseColor(argbChannelBackgroundColor))
                     setOnClickPendingIntent(R.id.text_view_content, pendingIntent)
+                    setOnClickPendingIntent(R.id.image_button_change, noteConfigurePendingIntent)
                     setCharSequence(R.id.text_view_title, "setText", title)
                     setCharSequence(R.id.text_view_content, "setText", content)
 
@@ -152,6 +160,7 @@ class NoteAppWidgetProvider: AppWidgetProvider() {
                     setInt(R.id.title_container, "setBackgroundColor", Color.parseColor(argbChannelTitleColor))
                     setInt(R.id.content_container, "setBackgroundColor", Color.parseColor(argbChannelBackgroundColor))
                     setOnClickPendingIntent(R.id.text_view_content, pendingIntent)
+                    setOnClickPendingIntent(R.id.image_button_change, pendingIntent)
                     setCharSequence(R.id.text_view_title, "setText", noAttachmentMessage)
                     setCharSequence(R.id.text_view_content, "setText", noAttachmentMessage)
                 }

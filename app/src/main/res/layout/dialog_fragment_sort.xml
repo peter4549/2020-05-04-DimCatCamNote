@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/sort_container"
     android:layout_width="200dp"
     android:layout_height="wrap_content"
     android:background="@color/defaultColorBackground">
@@ -8,89 +9,60 @@
     <TextView
         android:id="@+id/text_view_title"
         android:layout_width="match_parent"
-        android:layout_height="40dp"
+        android:layout_height="48dp"
         android:background="@color/defaultColorToolbar"
-        android:text="정렬"
-        android:textSize="@dimen/text_size_middle_large"
+        android:text="노트 정렬"
+        android:textColor="@android:color/white"
+        android:textSize="@dimen/text_size_large"
         android:textStyle="bold"
         android:gravity="center"/>
 
-    <LinearLayout
+    <TextView
         android:id="@+id/by_edit_time"
         android:layout_width="match_parent"
         android:layout_height="48dp"
         android:layout_below="@id/text_view_title"
-        android:orientation="horizontal"
+        android:layout_marginStart="4dp"
         android:clickable="true"
-        android:focusable="true">
+        android:focusable="true"
+        android:gravity="center"
+        android:text="수정시간 순으로 정렬"
+        android:textSize="@dimen/text_size_middle"
+        android:textStyle="bold"
+        android:drawableStart="@drawable/ic_edit_white_24dp"
+        android:drawableTint="@color/colorStatusIcon"
+        android:foreground="?attr/selectableItemBackground"/>
 
-        <ImageView
-            style="@style/ImageViewStyleSmallSize"
-            android:layout_marginStart="8dp"
-            android:src="@drawable/ic_edit_white_24dp"
-            android:tint="@color/colorStatusIcon"/>
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginStart="4dp"
-            android:gravity="center_vertical"
-            android:text="수정시간 순으로 정렬"
-            android:textSize="@dimen/text_size_middle"/>
-
-    </LinearLayout>
-
-    <LinearLayout
+    <TextView
         android:id="@+id/by_creation_time"
         android:layout_width="match_parent"
         android:layout_height="48dp"
-        android:layout_below="@+id/by_edit_time"
-        android:orientation="horizontal"
+        android:layout_below="@id/by_edit_time"
+        android:layout_marginStart="4dp"
         android:clickable="true"
-        android:focusable="true">
+        android:focusable="true"
+        android:gravity="center"
+        android:text="생성시간 순으로 정렬"
+        android:textSize="@dimen/text_size_middle"
+        android:textStyle="bold"
+        android:drawableStart="@drawable/ic_access_time_white_24dp"
+        android:drawableTint="@color/colorStatusIcon"
+        android:foreground="?attr/selectableItemBackground"/>
 
-        <ImageView
-            android:id="@+id/image_view_lock"
-            style="@style/ImageViewStyleSmallSize"
-            android:layout_marginStart="8dp"
-            android:src="@drawable/ic_access_time_white_24dp"
-            android:tint="@color/colorStatusIcon"/>
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginStart="4dp"
-            android:gravity="center_vertical"
-            android:text="생성시간 순으로 정렬"
-            android:textSize="@dimen/text_size_middle"/>
-
-    </LinearLayout>
-
-
-
-    <LinearLayout
+    <TextView
         android:id="@+id/by_name"
         android:layout_width="match_parent"
         android:layout_height="48dp"
-        android:orientation="horizontal"
         android:layout_below="@id/by_creation_time"
+        android:layout_marginStart="4dp"
         android:clickable="true"
-        android:focusable="true">
-
-        <ImageView
-            style="@style/ImageViewStyleSmallSize"
-            android:layout_marginStart="8dp"
-            android:src="@drawable/ic_sort_by_alpha_24dp"
-            android:tint="@color/colorStatusIcon"/>
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginStart="4dp"
-            android:gravity="center_vertical"
-            android:text="이름 순으로 정렬"
-            android:textSize="@dimen/text_size_middle"/>
-
-    </LinearLayout>
+        android:focusable="true"
+        android:gravity="center"
+        android:text="이름 순으로 정렬"
+        android:textSize="@dimen/text_size_middle"
+        android:textStyle="bold"
+        android:drawableStart="@drawable/ic_sort_by_alpha_24dp"
+        android:drawableTint="@color/colorStatusIcon"
+        android:foreground="?attr/selectableItemBackground"/>
 
 </RelativeLayout>

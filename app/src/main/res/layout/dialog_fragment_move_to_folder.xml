@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/move_to_folder_container"
+    android:layout_width="280dp"
+    android:layout_height="wrap_content"
+    android:background="@color/defaultColorBackground">
+
+    <TextView
+        android:id="@+id/text_view_title"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:gravity="center"
+        android:textColor="@android:color/white"
+        android:text="이동할 폴더를 선택해주세요."
+        android:textSize="@dimen/text_size_large"
+        android:background="@color/defaultColorToolbar"/>
+
+    <LinearLayout
+        android:id="@+id/spinner_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/text_view_title"
+        android:layout_centerHorizontal="true"
+        android:layout_margin="12dp"
+        android:orientation="vertical"
+        android:background="@android:color/white">
+
+        <Spinner
+            android:id="@+id/spinner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="44dp"
+            android:paddingEnd="8dp"
+            android:paddingStart="8dp"
+            android:theme="@style/SpinnerTheme"/>
+
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/button"
+        android:layout_width="160dp"
+        android:layout_height="40dp"
+        android:layout_below="@+id/spinner_container"
+        android:layout_centerHorizontal="true"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="12dp"
+        android:background="@color/defaultColorToolbar"
+        android:text="@string/ok"
+        android:textColor="@android:color/white"
+        android:textSize="@dimen/text_size_middle"
+        android:textStyle="bold"/>
+
+</RelativeLayout>

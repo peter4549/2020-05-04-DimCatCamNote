@@ -3,12 +3,12 @@ package com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments
 import android.app.Dialog
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
-import android.widget.Button
-import android.widget.EditText
-import android.widget.TextView
-import android.widget.Toast
+import android.util.TypedValue
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.DialogFragment
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.elliot.kim.kotlin.dimcatcamnote.*
@@ -18,8 +18,8 @@ import com.elliot.kim.kotlin.dimcatcamnote.adapters.FolderAdapter
 import com.elliot.kim.kotlin.dimcatcamnote.adapters.NoteAdapter
 
 class ConfirmPasswordDialogFragment(private val adapter: Any,
-                                    private val forUnlocking: Boolean = false,
-                                    private var activity: AppCompatActivity? = null)
+                                    private var activity: AppCompatActivity,
+                                    private val forUnlocking: Boolean = false)
     : DialogFragment() {
 
     private lateinit var editText: EditText
@@ -29,7 +29,7 @@ class ConfirmPasswordDialogFragment(private val adapter: Any,
         val dialog = object : Dialog(requireContext(), theme) {
             override fun onBackPressed() {
                 if (requireActivity() is EditActivity)
-                    activity!!.finish()
+                    activity.finish()
                 else super.onBackPressed()
             }
         }
@@ -39,26 +39,52 @@ class ConfirmPasswordDialogFragment(private val adapter: Any,
         if (activity is EditActivity)
             dialog.setCanceledOnTouchOutside(false)
 
+        val setPasswordContainer = dialog.findViewById<RelativeLayout>(R.id.set_password_container)
         val textView = dialog.findViewById<TextView>(R.id.text_view_title)
         editText = dialog.findViewById(R.id.edit_text_password)
         val button = dialog.findViewById<Button>(R.id.button_enter_password)
 
+        // Apply design
         if (activity is MainActivity) {
+            setPasswordContainer.setBackgroundColor(MainActivity.backgroundColor)
             textView.setBackgroundColor(MainActivity.toolbarColor)
-            editText.setBackgroundColor(MainActivity.backgroundColor)
             button.setBackgroundColor(MainActivity.toolbarColor)
+
+            textView.adjustDialogTitleTextSize(MainActivity.fontId)
+            editText.adjustDialogInputTextSize(MainActivity.fontId)
+            button.adjustDialogButtonTextSize(MainActivity.fontId)
+
+            textView.typeface = MainActivity.font
+            editText.typeface = MainActivity.font
+            button.typeface = MainActivity.font
         } else {
             val preferences =
-                requireContext().getSharedPreferences(PREFERENCES_SET_COLOR, Context.MODE_PRIVATE)
+                activity.getSharedPreferences(PREFERENCES_SET_COLOR, Context.MODE_PRIVATE)
+            setPasswordContainer.setBackgroundColor(preferences.getInt(KEY_COLOR_BACKGROUND,
+                activity.getColor(R.color.defaultColorBackground)))
             textView.setBackgroundColor(preferences.getInt(KEY_COLOR_TOOLBAR,
-                requireContext().getColor(R.color.defaultColorToolbar)))
-            editText.setBackgroundColor(preferences.getInt(KEY_COLOR_BACKGROUND,
-                requireContext().getColor(R.color.defaultColorBackground)))
+                activity.getColor(R.color.defaultColorToolbar)))
             button.setBackgroundColor(preferences.getInt(KEY_COLOR_TOOLBAR,
-                requireContext().getColor(R.color.defaultColorToolbar)))
+                activity.getColor(R.color.defaultColorToolbar)))
+
+            val fontPreferences =
+                activity.getSharedPreferences(PREFERENCES_FONT, Context.MODE_PRIVATE)
+            val fontId = fontPreferences.getInt(KEY_FONT_ID, DEFAULT_FOLDER_ID)
+
+            val font = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+                resources.getFont(fontId)
+            else ResourcesCompat.getFont(requireContext(), fontId)
+
+            textView.adjustDialogTitleTextSize(fontId)
+            editText.adjustDialogInputTextSize(fontId)
+            button.adjustDialogButtonTextSize(fontId)
+
+            textView.typeface = font
+            editText.typeface = font
+            button.typeface = font
         }
 
-        dialog.findViewById<Button>(R.id.button_enter_password).setOnClickListener {
+        button.setOnClickListener {
             val password = editText.text.toString()
             if (password.isBlank()) showToast(getString(R.string.password_request))
             else confirmPassword(dialog, password)

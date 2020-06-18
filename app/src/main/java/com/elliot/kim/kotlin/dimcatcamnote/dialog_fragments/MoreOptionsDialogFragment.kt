@@ -8,6 +8,8 @@ import androidx.fragment.app.DialogFragment
 import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity
 import com.elliot.kim.kotlin.dimcatcamnote.adapters.NoteAdapter
 import com.elliot.kim.kotlin.dimcatcamnote.R
+import com.elliot.kim.kotlin.dimcatcamnote.adjustDialogItemTextSize
+import com.elliot.kim.kotlin.dimcatcamnote.adjustDialogTitleTextSize
 
 class MoreOptionsDialogFragment(private val noteAdapter: NoteAdapter) : DialogFragment() {
 
@@ -22,29 +24,49 @@ class MoreOptionsDialogFragment(private val noteAdapter: NoteAdapter) : DialogFr
 
         val textView = dialog.findViewById<TextView>(R.id.text_view_title)
         textView.text = noteAdapter.selectedNote!!.title
-        textView.setBackgroundColor(MainActivity.toolbarColor)
+        val textViewAddToCalendar =
+            dialog.findViewById<TextView>(R.id.text_view_add_to_calendar)
+        val textViewMoveToFolder =
+            dialog.findViewById<TextView>(R.id.text_view_move_to_folder)
+        val textViewLock =
+            dialog.findViewById<TextView>(R.id.text_view_lock)
+        val textViewShare =
+            dialog.findViewById<TextView>(R.id.text_view_share)
 
+        textView.setBackgroundColor(MainActivity.toolbarColor)
         dialog.findViewById<LinearLayout>(R.id.more_options_container)
             .setBackgroundColor(MainActivity.backgroundColor)
-        dialog.findViewById<LinearLayout>(R.id.linear_layout_add_to_calendar).setOnClickListener {
+
+        textView.adjustDialogTitleTextSize(MainActivity.fontId)
+        textViewAddToCalendar.adjustDialogItemTextSize(MainActivity.fontId)
+        textViewMoveToFolder.adjustDialogItemTextSize(MainActivity.fontId)
+        textViewLock.adjustDialogItemTextSize(MainActivity.fontId)
+        textViewShare.adjustDialogItemTextSize(MainActivity.fontId)
+
+        textView.typeface = MainActivity.font
+        textViewAddToCalendar.typeface = MainActivity.font
+        textViewMoveToFolder.typeface = MainActivity.font
+        textViewLock.typeface = MainActivity.font
+        textViewShare.typeface = MainActivity.font
+
+        textViewAddToCalendar.setOnClickListener {
             AddToCalendarDialogFragment(noteAdapter.selectedNote!!)
                 .show(activity.fragmentManager, tag)
             dialog.dismiss()
         }
 
-        dialog.findViewById<LinearLayout>(R.id.linear_layout_move_to_folder).setOnClickListener {
-            activity.showDialogFragment(DialogFragments.FOLDER_OPTIONS)
+        textViewMoveToFolder.setOnClickListener {
+            activity.showDialogFragment(DialogFragments.MOVE_TO_FOLDER)
             dialog.dismiss()
         }
 
-        dialog.findViewById<LinearLayout>(R.id.linear_layout_lock).setOnClickListener {
+        textViewLock.setOnClickListener {
             SetPasswordDialogFragment(noteAdapter).show(activity.fragmentManager, tag)
             dialog.dismiss()
         }
 
-        dialog.findViewById<LinearLayout>(R.id.linear_layout_share).setOnClickListener {
+        textViewShare.setOnClickListener {
             MainActivity.share(activity, noteAdapter.selectedNote!!)
-
             dialog.dismiss()
         }
 

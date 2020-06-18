@@ -47,10 +47,8 @@
             android:layout_height="match_parent"
             android:layout_below="@id/imageView"
             android:gravity="top"
-            android:layout_marginTop="6dp"
-            android:paddingEnd="8dp"
-            android:paddingStart="8dp"
-            android:paddingTop="8dp"
+            android:layout_marginTop="4dp"
+            android:padding="8dp"
             android:background="@color/defaultColorInlay"
             android:hint="여기에 노트를 작성해주세요."/>
 
@@ -93,10 +91,12 @@
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
             android:background="@color/defaultColorToolbar"
+            app:itemIconSize="36dp"
             app:menu="@menu/menu_write_bottom_navigation_view"
             app:itemIconTint="@color/selector_bottom_navigation_view"
             app:itemTextAppearanceActive="@style/BottomNavigationViewItemTextActiveStyle"
-            app:itemTextAppearanceInactive="@style/BottomNavigationViewItemTextInactiveStyle"/>
+            app:itemTextAppearanceInactive="@style/BottomNavigationViewItemTextInactiveStyle"
+            app:labelVisibilityMode="unlabeled"/>
 
     </RelativeLayout>
 

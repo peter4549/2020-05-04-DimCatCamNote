@@ -2,11 +2,11 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item android:id="@+id/camera"
-        android:title="사진 촬영"
+        android:title="camera"
         android:icon="@drawable/ic_photo_camera_grey_24dp" />
 
     <item android:id="@+id/microphone"
-        android:title="음성 노트"
+        android:title="mic"
         android:icon="@drawable/ic_mic_grey_24dp" />
 
     <!--

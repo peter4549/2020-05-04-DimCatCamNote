@@ -2,6 +2,7 @@ package com.elliot.kim.kotlin.dimcatcamnote.adapters
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.util.Log
 
 import android.view.*
 import androidx.recyclerview.widget.RecyclerView
@@ -50,10 +51,12 @@ class FolderAdapter(private val context: Context?):
                 menu.add(Menu.NONE, MenuItemId.OPEN.id, 1, "폴더 열기")
                     .setOnMenuItemClickListener(menuItemClickListener)
 
-                val menuItemTitle = if (folders[adapterPosition].isLocked) "잠금 해제"
-                else "폴더 잠금"
-                menu.add(Menu.NONE, MenuItemId.LOCK.id, 2, menuItemTitle)
-                    .setOnMenuItemClickListener(menuItemClickListener)
+                if(folders[adapterPosition].id != DEFAULT_FOLDER_ID) {
+                    val menuItemTitle = if (folders[adapterPosition].isLocked) "잠금 해제"
+                    else "폴더 잠금"
+                    menu.add(Menu.NONE, MenuItemId.LOCK.id, 2, menuItemTitle)
+                        .setOnMenuItemClickListener(menuItemClickListener)
+                }
 
                 if (!folders[adapterPosition].isLocked &&
                     folders[adapterPosition].id != DEFAULT_FOLDER_ID)
@@ -85,8 +88,8 @@ class FolderAdapter(private val context: Context?):
     }
 
     private fun confirmPassword() {
-        ConfirmPasswordDialogFragment(this)
-            .show((context as MainActivity).fragmentManager, tag)
+        ConfirmPasswordDialogFragment(this, (context as MainActivity))
+            .show(context.fragmentManager, tag)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -225,6 +228,10 @@ class FolderAdapter(private val context: Context?):
     fun moveNoteToFolder(note: Note?, folder: Folder) {
         note!!.folderId = folder.id
         (context as MainActivity).viewModel.update(note)
+        if (context.currentFolder.name != folder.name &&
+                context.currentFolder.name != DEFAULT_FOLDER_NAME) {
+            context.getNoteAdapter().removeFromNotesFiltered(note)
+        }
     }
 
     fun getFolderById(id: Int): Folder = folders.filter { it.id == id }[0]
@@ -241,8 +248,8 @@ class FolderAdapter(private val context: Context?):
     }
 
     fun unlock() {
-        ConfirmPasswordDialogFragment(this, true)
-            .show((context as MainActivity).fragmentManager, tag)
+        ConfirmPasswordDialogFragment(this, context as MainActivity, true)
+            .show(context.fragmentManager, tag)
     }
 
     fun update(folder: Folder) {
@@ -251,6 +258,16 @@ class FolderAdapter(private val context: Context?):
     }
 
     fun isLockedFolder(id: Int) = folders.filter { it.id == id }[0].isLocked
+
+    fun getAllFolderNames(): Array<String> {
+        var folderNames = arrayOf<String>()
+
+        for (folder in folders) {
+            folderNames += folder.name
+        }
+
+        return folderNames
+    }
 
     private fun getPositionByFolder(folder: Folder): Int = folders.indexOf(folder)
 }

@@ -8,6 +8,7 @@ import android.content.Intent
 import android.graphics.Color
 import android.graphics.Paint
 import android.net.Uri
+import android.os.Build
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -15,6 +16,7 @@ import android.view.ViewGroup
 import android.widget.Filter
 import android.widget.RemoteViews
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.res.ResourcesCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CircleCrop
@@ -41,7 +43,7 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
     private var notesFiltered: MutableList<Note> = notes
     private lateinit var recyclerView: RecyclerView
     var selectedNote: Note? = null
-
+    var sortingCriteria = SortingCriteria.EDIT_TIME.index
     var isFirstBinding = true
 
     class ViewHolder(v: View) : RecyclerView.ViewHolder(v) {
@@ -85,19 +87,39 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
 
         val time: String = if (editTime == creationTime)
             "${context?.getString(R.string.creation_time)}: ${MainActivity.longTimeToString(creationTime,
-                PATTERN_UP_TO_SECONDS
+                PATTERN_UP_TO_MINUTES
             )}"
         else
             "${context?.getString(R.string.edit_time)}: ${MainActivity.longTimeToString(editTime,
-                PATTERN_UP_TO_SECONDS
+                PATTERN_UP_TO_MINUTES
             )}"
 
-        // Set color.
-        holder.binding.colorContainer.setBackgroundColor(MainActivity.noteColor)
-        holder.binding.textViewTitle.typeface = MainActivity.font
-        holder.binding.textViewTime.typeface = MainActivity.font
-        holder.binding.textViewAlarmTime.typeface = MainActivity.font
-        holder.binding.textViewContent.typeface = MainActivity.font
+        // Apply design
+        if (context is MainActivity) {
+            holder.binding.colorContainer.setBackgroundColor(MainActivity.noteColor)
+            holder.binding.textViewTitle.typeface = MainActivity.font
+            holder.binding.textViewTime.typeface = MainActivity.font
+            holder.binding.textViewAlarmTime.typeface = MainActivity.font
+            holder.binding.textViewContent.typeface = MainActivity.font
+        } else if (context is SingleNoteConfigureActivity) {
+            val colorPreferences =
+                context.getSharedPreferences(PREFERENCES_SET_COLOR, Context.MODE_PRIVATE)
+            holder.binding.colorContainer
+                .setBackgroundColor(colorPreferences.getInt(KEY_COLOR_NOTE,
+                    context.getColor(R.color.defaultColorNote)))
+
+            val fontPreferences =
+                context.getSharedPreferences(PREFERENCES_FONT, Context.MODE_PRIVATE)
+            val fontId = fontPreferences.getInt(KEY_FONT_ID, R.font.nanum_gothic_font_family)
+            val font = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+                context.resources.getFont(fontId)
+            else ResourcesCompat.getFont(context, fontId)
+
+            holder.binding.textViewTitle.typeface = font
+            holder.binding.textViewTime.typeface = font
+            holder.binding.textViewAlarmTime.typeface = font
+            holder.binding.textViewContent.typeface = font
+        }
 
         holder.binding.textViewTitle.text = title
         holder.binding.textViewTime.text = time
@@ -169,7 +191,7 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
                 // Instantiated from the MainActivity.
 
                 if (note.isLocked)
-                    ConfirmPasswordDialogFragment(this).show((context as MainActivity)
+                    ConfirmPasswordDialogFragment(this, (context as MainActivity)).show(context
                         .fragmentManager, tag)
                 else (context as MainActivity).startEditFragment()
             }
@@ -183,6 +205,7 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
     fun getFilter(): Filter {
         return object : Filter() {
             override fun performFiltering(constraint: CharSequence): FilterResults {
+
                 val currentFolderId = (context as MainActivity).currentFolder.id
                 val searchWord = constraint.toString()
                 if (searchWord.isEmpty() && currentFolderId == DEFAULT_FOLDER_ID) {
@@ -242,6 +265,20 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
                 results: FilterResults
             ) {
                 notesFiltered = results.values as MutableList<Note>
+
+                Collections.sort(notesFiltered,
+                    Comparator { o1: Note, o2: Note ->
+                        when (sortingCriteria) {
+                            SortingCriteria.CREATION_TIME.index->
+                                return@Comparator (o2.creationTime - o1.creationTime).toInt()
+                            SortingCriteria.EDIT_TIME.index ->
+                                return@Comparator ((o2.editTime ?: o2.creationTime) - (o1.editTime ?: o1.creationTime)).toInt()
+                            SortingCriteria.NAME.index -> return@Comparator o1.title.compareTo(o2.title)
+                            else -> return@Comparator 0
+                        }
+                    }
+                )
+
                 notifyDataSetChanged()
             }
         }
@@ -290,11 +327,14 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
     }
 
     fun sort(sortingCriteria: Int): Long {
-        Collections.sort(notes,
+        this.sortingCriteria = sortingCriteria
+        Collections.sort(notesFiltered,
             Comparator { o1: Note, o2: Note ->
                 when (sortingCriteria) {
-                    SortingCriteria.CREATION_TIME.index-> return@Comparator (o2.creationTime - o1.creationTime).toInt()
-                    SortingCriteria.EDIT_TIME.index -> return@Comparator ((o2.editTime ?: 0L) - (o1.editTime ?: 0L)).toInt()
+                    SortingCriteria.CREATION_TIME.index->
+                        return@Comparator (o2.creationTime - o1.creationTime).toInt()
+                    SortingCriteria.EDIT_TIME.index ->
+                        return@Comparator ((o2.editTime ?: o2.creationTime) - (o1.editTime ?: o1.creationTime)).toInt()
                     SortingCriteria.NAME.index -> return@Comparator o1.title.compareTo(o2.title)
                     else -> return@Comparator 0
                 }
@@ -315,83 +355,27 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
 
     private fun getPosition(note: Note?): Int = notesFiltered.indexOf(note)
 
+    fun getSelectedNotePosition(): Int = notesFiltered.indexOf(selectedNote)
+
     fun getNoteByPosition(position: Int): Note = notesFiltered[position]
 
     fun getNoteById(id: Int): Note {
         return notes.filter{ it.id == id }[0]
     }
 
+    fun removeFromNotesFiltered(note: Note) {
+        val position: Int = notesFiltered.indexOf(note)
+        notesFiltered.removeAt(position)
+        notifyItemRemoved(position)
+    }
+
     private fun confirmConfiguration(activity: SingleNoteConfigureActivity, appWidgetId: Int) {
 
         val note = selectedNote!!
-        val appWidgetManager = AppWidgetManager.getInstance(activity)
-
-        /*
-        // Create an Intent to launch EditActivity.
-        val intent = Intent(activity, EditActivity::class.java)
-        intent.action = ACTION_APP_WIDGET_ATTACHED + note.id
-        val pendingIntent = PendingIntent.getActivity(activity, 0, intent, 0)
-
-        val opacityPreferences =
-            context!!.getSharedPreferences(PREFERENCES_OPACITY, Context.MODE_PRIVATE)
-        val preferences = context.getSharedPreferences(PREFERENCES_SET_COLOR,
-            Context.MODE_PRIVATE)
-        val appWidgetTitleColor = preferences.getInt(KEY_COLOR_NOTE, context.getColor(R.color.defaultColorNote))
-        val appWidgetBackgroundColor = preferences.getInt(KEY_COLOR_APP_WIDGET_BACKGROUND,
-            context.getColor(R.color.defaultColorAppWidgetBackground))
-        val opacity = opacityPreferences.getString(KEY_OPACITY, "80")
-        val argbChannelTitleColor =
-            String.format("#${opacity}%06X", 0xFFFFFF and appWidgetTitleColor)
-        val argbChannelBackgroundColor =
-            String.format("#${opacity}%06X", 0xFFFFFF and appWidgetBackgroundColor)
-
-        RemoteViews(activity.packageName,
-            R.layout.app_widget
-        ).apply {
-            setInt(R.id.title_container, "setBackgroundColor", Color.parseColor(argbChannelTitleColor))
-            setInt(R.id.content_container, "setBackgroundColor", Color.parseColor(argbChannelBackgroundColor))
-            setOnClickPendingIntent(R.id.text_view_content, pendingIntent)
-            setCharSequence(R.id.text_view_title, "setText", note.title)
-            setCharSequence(R.id.text_view_content, "setText", note.content)
-
-            if (note.isDone) setViewVisibility(R.id.image_view_done, View.VISIBLE)
-            else setViewVisibility(R.id.image_view_done, View.GONE)
-
-            if (note.isLocked) setViewVisibility(R.id.image_view_lock, View.VISIBLE)
-            else setViewVisibility(R.id.image_view_lock, View.GONE)
-
-            if (note.alarmTime == null) {
-                setViewVisibility(R.id.image_view_alarm, View.GONE)
-                setViewVisibility(R.id.text_view_alarm_time, View.GONE)
-            } else {
-                setViewVisibility(R.id.image_view_alarm, View.VISIBLE)
-                setViewVisibility(R.id.text_view_alarm_time, View.VISIBLE)
-                setCharSequence(R.id.text_view_alarm_time, "setText",
-                    " " + MainActivity.longTimeToString(note.alarmTime, PATTERN_UP_TO_MINUTES))
-            }
-
-            if (note.editTime == null) {
-                setViewVisibility(R.id.text_view_creation_time, View.VISIBLE)
-                setViewVisibility(R.id.text_view_edit_time, View.GONE)
-                setCharSequence(R.id.text_view_creation_time, "setText",
-                    " " + MainActivity.longTimeToString(note.creationTime, PATTERN_UP_TO_MINUTES))
-            } else {
-                setViewVisibility(R.id.text_view_edit_time, View.VISIBLE)
-                setViewVisibility(R.id.text_view_creation_time, View.GONE)
-                setCharSequence(R.id.text_view_edit_time, "setText",
-                    " " + MainActivity.longTimeToString(note.editTime, PATTERN_UP_TO_MINUTES))
-            }
-
-        }.also {
-            appWidgetManager.updateAppWidget(appWidgetId, it)
-        }
-         */
 
         val resultIntent = Intent().apply {
             putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
         }
-
-
 
         note.appWidgetIds += appWidgetId
         activity.viewModel.update(note)

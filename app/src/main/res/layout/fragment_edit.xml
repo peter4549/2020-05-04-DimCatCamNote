@@ -48,9 +48,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_below="@id/imageView"
-                android:paddingStart="8dp"
-                android:paddingEnd="8dp"
-                android:textSize="20sp"
+                android:layout_marginTop="2dp"
+                android:padding="8dp"
                 android:gravity="top"
                 android:background="@color/defaultColorInlay"
                 android:autofillHints="" />

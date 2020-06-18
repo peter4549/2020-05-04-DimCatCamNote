@@ -50,8 +50,9 @@
                 android:layout_height="36dp"
                 android:layout_marginTop="2dp"
                 android:gravity="center_vertical"
+                android:paddingEnd="12dp"
                 android:paddingStart="12dp"
-                android:textSize="@dimen/text_size_middle"
+                android:textSize="@dimen/text_size_middle_large"
                 android:textStyle="bold"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -79,16 +80,17 @@
                     android:layout_width="wrap_content"
                     android:layout_centerHorizontal="true"
                     android:gravity="center_vertical"
+                    android:text="수정시간 기준으로 정렬"
+                    android:textColor="@android:color/white"
                     android:textStyle="bold"
-                    android:textSize="@dimen/text_size_small_middle"/>
+                    android:textSize="@dimen/text_size_small_middle" />
 
                 <ImageView
                     android:layout_width="28dp"
                     android:layout_height="28dp"
                     android:layout_centerVertical="true"
                     android:layout_toEndOf="@id/text_view_sort"
-                    android:src="@drawable/ic_arrow_drop_down_white_24dp"
-                    android:tint="@color/colorStatusIcon" />
+                    android:src="@drawable/ic_arrow_drop_down_white_24dp" />
 
             </RelativeLayout>
 

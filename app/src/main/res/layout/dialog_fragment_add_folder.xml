@@ -1,14 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/add_folder_container"
     android:layout_width="280dp"
     android:layout_height="wrap_content"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:background="@color/defaultColorBackground">
 
     <TextView
         android:id="@+id/text_view_title"
         android:layout_width="match_parent"
         android:layout_height="48dp"
+        android:background="@color/defaultColorToolbar"
         android:text="@string/title_add_folder_dialog_fragment"
         android:textColor="@android:color/white"
         android:textSize="@dimen/text_size_large"
@@ -23,6 +26,7 @@
         android:layout_marginEnd="8dp"
         android:layout_marginStart="12dp"
         android:layout_marginTop="12dp"
+        android:background="@android:color/white"
         android:paddingEnd="4dp"
         android:paddingStart="4dp"
         android:hint="@string/hint_add_folder_dialog_fragment"
@@ -33,9 +37,11 @@
         android:id="@+id/button"
         android:layout_width="160dp"
         android:layout_height="40dp"
-        android:layout_gravity="center"
+        android:layout_gravity="center_horizontal"
         android:layout_marginBottom="12dp"
         android:layout_marginTop="12dp"
+        android:background="@color/defaultColorToolbar"
+        android:gravity="center"
         android:text="@string/ok"
         android:textColor="@android:color/white"
         android:textSize="@dimen/text_size_middle"
