@@ -19,10 +19,7 @@ import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity
 import com.elliot.kim.kotlin.dimcatcamnote.activities.SingleNoteConfigureActivity
 import com.elliot.kim.kotlin.dimcatcamnote.data.Note
 import com.elliot.kim.kotlin.dimcatcamnote.database.AppDatabase
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 
 
 class MainViewModel(application: Application): AndroidViewModel(application) {
@@ -36,7 +33,7 @@ class MainViewModel(application: Application): AndroidViewModel(application) {
     private lateinit var context: Context
     private val job = Job()
     private val scope = CoroutineScope(Dispatchers.IO + job)
-
+    var itemCount = -1
     var targetNote: Note? = null
 
     fun setContext(context: Context) { this.context = context }
@@ -47,6 +44,7 @@ class MainViewModel(application: Application): AndroidViewModel(application) {
         scope.launch {
             targetNote = note
             database.dao().insert(note)
+            itemCount = getItemCount()
         }
     }
 
@@ -54,6 +52,7 @@ class MainViewModel(application: Application): AndroidViewModel(application) {
         scope.launch {
             targetNote = note
             database.dao().update(note)
+            itemCount = getItemCount()
         }
 
         if (updateAppWidget) {
@@ -67,8 +66,8 @@ class MainViewModel(application: Application): AndroidViewModel(application) {
                 // before being used.
                 // The value stored in the preference is a color value
                 // that has already been converted in SetNoteColorDialogFragment.
-                val appWidgetTitleColor = colorPreferences.getInt(KEY_COLOR_NOTE,
-                    context.getColor(R.color.defaultColorNote))
+                val appWidgetTitleColor = colorPreferences.getInt(KEY_COLOR_APP_WIDGET_TITLE,
+                    context.getColor(R.color.defaultColorAppWidgetTitle))
                 val appWidgetBackgroundColor = colorPreferences.getInt(KEY_COLOR_APP_WIDGET_BACKGROUND,
                     context.getColor(R.color.defaultColorAppWidgetBackground))
                 val opacity = opacityPreferences.getString(KEY_OPACITY, DEFAULT_HEX_OPACITY.toString())
@@ -247,18 +246,17 @@ class MainViewModel(application: Application): AndroidViewModel(application) {
             intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids)
             context.sendBroadcast(intent)
         }
+
         scope.launch {
             targetNote = note
             database.dao().delete(note)
+            itemCount = getItemCount()
         }
     }
 
-    fun delete(id: Int) {
-        scope.launch {
-            targetNote = database.dao().findNoteById(id)
-            database.dao().delete(database.dao().findNoteById(id))
-        }
-    }
+    private suspend fun getItemCount(): Int = scope.async {
+        return@async database.dao().getItemCount()
+    }.await()
 
     override fun onCleared() {
         super.onCleared()

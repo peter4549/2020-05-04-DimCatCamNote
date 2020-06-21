@@ -116,6 +116,7 @@
     <color name="defaultColorBackground">#f3e5f5</color> <!-- Purple -->
     <color name="defaultColorNote">#fff9c4</color>  <!-- Yellow -->
     <color name="defaultColorInlay">#fff8e1</color> <!-- Amber -->
+    <color name="defaultColorAppWidgetTitle">#fff9c4</color>  <!-- Yellow -->
     <color name="defaultColorAppWidgetBackground">#fffde7</color>  <!-- Yellow -->
 
     <!-- Status Icon -->

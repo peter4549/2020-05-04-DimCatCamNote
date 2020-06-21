@@ -6,20 +6,21 @@ import android.widget.Button
 import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.fragment.app.DialogFragment
-import com.elliot.kim.kotlin.dimcatcamnote.*
-import com.elliot.kim.kotlin.dimcatcamnote.data.Note
+import com.elliot.kim.kotlin.dimcatcamnote.R
 import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity
+import com.elliot.kim.kotlin.dimcatcamnote.adjustDialogButtonTextSize
+import com.elliot.kim.kotlin.dimcatcamnote.adjustDialogItemTextSize
+import com.elliot.kim.kotlin.dimcatcamnote.adjustDialogTitleTextSize
 
-class ConfirmDeleteDialogFragment(private val note: Note) : DialogFragment() {
+class ConfirmClearDialogFragment : DialogFragment() {
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
 
         val dialog = Dialog(requireContext())
-        dialog.setContentView(R.layout.dialog_fragment_confirm_delete)
+        dialog.setContentView(R.layout.dialog_fragment_confirm_clear)
 
         val container = dialog.findViewById<RelativeLayout>(R.id.dialog_fragment_container)
         val textViewTitle = dialog.findViewById<TextView>(R.id.text_view_title)
-        textViewTitle.text = note.title
         val textViewMessage = dialog.findViewById<TextView>(R.id.text_view_message)
         val buttonCancel = dialog.findViewById<Button>(R.id.button_cancel)
         val buttonOk = dialog.findViewById<Button>(R.id.button_ok)
@@ -44,11 +45,7 @@ class ConfirmDeleteDialogFragment(private val note: Note) : DialogFragment() {
         }
 
         dialog.findViewById<Button>(R.id.button_ok).setOnClickListener {
-            (activity as MainActivity).viewModel.delete(note)
-
-            if (MainActivity.currentFragment == CurrentFragment.EDIT_FRAGMENT)
-                (activity as MainActivity).backPressed()
-
+            (requireActivity() as MainActivity).clear()
             dialog.dismiss()
         }
 

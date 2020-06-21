@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.room.*
 import com.elliot.kim.kotlin.dimcatcamnote.data.Note
 
+
 @Dao
 interface NoteDao {
 
@@ -21,4 +22,7 @@ interface NoteDao {
 
     @Query("SELECT * FROM note WHERE id LIKE :id")
     fun findNoteById(id: Int): Note
+
+    @Query("SELECT COUNT(id) FROM note")
+    fun getItemCount(): Int
 }

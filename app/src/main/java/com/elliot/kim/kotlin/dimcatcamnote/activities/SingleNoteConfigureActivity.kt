@@ -1,9 +1,13 @@
 package com.elliot.kim.kotlin.dimcatcamnote.activities
 
 import android.appwidget.AppWidgetManager
+import android.content.Context
 import android.content.Intent
+import android.graphics.Typeface
+import android.os.Build
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.res.ResourcesCompat
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -39,6 +43,8 @@ class SingleNoteConfigureActivity : AppCompatActivity() {
             )
         }
 
+        initDesignOptions()
+
         val viewModelFactory = ViewModelProvider.AndroidViewModelFactory.getInstance(application)
         viewModel = ViewModelProvider(this, viewModelFactory)[MainViewModel::class.java]
 
@@ -51,7 +57,8 @@ class SingleNoteConfigureActivity : AppCompatActivity() {
                         this@SingleNoteConfigureActivity, notes,
                         true, appWidgetId
                     )
-                layoutManager = LinearLayoutManager(context)
+                // Replaced from LinearLayoutManager to LinearLayoutManagerWrapper
+                layoutManager = LinearLayoutManagerWrapper(context)
             }
         })
 
@@ -60,5 +67,24 @@ class SingleNoteConfigureActivity : AppCompatActivity() {
         setResult(RESULT_CANCELED, resultIntent)
 
         if (appWidgetId == AppWidgetManager.INVALID_APPWIDGET_ID) finish()
+    }
+
+    private fun initDesignOptions() {
+        val colorPreferences =
+            getSharedPreferences(PREFERENCES_SET_COLOR, Context.MODE_PRIVATE)
+        val fontPreferences =
+            getSharedPreferences(PREFERENCES_FONT, Context.MODE_PRIVATE)
+
+        noteColor = colorPreferences.getInt(KEY_COLOR_NOTE, getColor(R.color.defaultColorNote))
+        fontId = fontPreferences.getInt(KEY_FONT_ID, R.font.nanum_gothic_font_family)
+        font = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+            resources.getFont(fontId)
+        else ResourcesCompat.getFont(this, fontId)
+    }
+
+    companion object {
+        var noteColor = 0
+        var font: Typeface? = null
+        var fontId = 0
     }
 }

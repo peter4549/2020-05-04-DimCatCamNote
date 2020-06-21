@@ -17,9 +17,7 @@
 package com.elliot.kim.kotlin.dimcatcamnote
 
 import android.content.Context
-import android.content.res.TypedArray
 import android.os.Build
-import android.text.Spannable
 import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.DisplayCutout
@@ -31,7 +29,7 @@ import android.widget.ImageButton
 import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
-import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity
+import androidx.recyclerview.widget.LinearLayoutManager
 
 
 /** Combination of all flags required to put activity into immersive mode */
@@ -122,13 +120,34 @@ fun TextView.adjustSpinnerItemTextSize(fontId: Int) {
     }
 }
 
-fun TextView.adjustDialogItemTextSize(fontId: Int) {
+fun TextView.adjustDialogItemTextSize(fontId: Int, smallText: Boolean = false) {
+    var itemTextSize = BASIC_DIALOG_ITEM_TEXT_SIZE
+    if (smallText)
+        itemTextSize = SMALL_DIALOG_ITEM_TEXT_SIZE
+
     when(fontId) {
         in smallFontFamilies ->
-            this.setTextSize(TypedValue.COMPLEX_UNIT_SP, BASIC_DIALOG_ITEM_TEXT_SIZE + 6)
+            this.setTextSize(TypedValue.COMPLEX_UNIT_SP, itemTextSize + 6)
         in middleFontFamilies ->
-            this.setTextSize(TypedValue.COMPLEX_UNIT_SP, BASIC_DIALOG_ITEM_TEXT_SIZE + 2)
-        else -> this.setTextSize(TypedValue.COMPLEX_UNIT_SP, BASIC_DIALOG_ITEM_TEXT_SIZE)
+            this.setTextSize(TypedValue.COMPLEX_UNIT_SP, itemTextSize + 2)
+        else -> this.setTextSize(TypedValue.COMPLEX_UNIT_SP, itemTextSize)
+    }
+}
+
+fun TextView.adjustNoteTextSize(fontId: Int, item: NoteItem) {
+    var itemTextSize = NOTE_TITLE_TEXT_SIZE
+    when (item) {
+        NoteItem.TIME -> itemTextSize = NOTE_TIME_TEXT_SIZE
+        NoteItem.CONTENT -> itemTextSize = NOTE_CONTENT_TEXT_SIZE
+        else -> {}
+    }
+
+    when(fontId) {
+        in smallFontFamilies ->
+            this.setTextSize(TypedValue.COMPLEX_UNIT_SP, itemTextSize + 4)
+        in middleFontFamilies ->
+            this.setTextSize(TypedValue.COMPLEX_UNIT_SP, itemTextSize + 2)
+        else -> this.setTextSize(TypedValue.COMPLEX_UNIT_SP, itemTextSize)
     }
 }
 
@@ -150,4 +169,13 @@ fun Button.adjustDialogButtonTextSize(fontId: Int) {
             this.setTextSize(TypedValue.COMPLEX_UNIT_SP, BASIC_DIALOG_BUTTON_TEXT_SIZE + 2)
         else -> this.setTextSize(TypedValue.COMPLEX_UNIT_SP, BASIC_DIALOG_BUTTON_TEXT_SIZE)
     }
+}
+
+class LinearLayoutManagerWrapper: LinearLayoutManager {
+    constructor(context: Context) : super(context) {}
+    constructor(context: Context, orientation: Int, reverseLayout: Boolean) :
+            super(context, orientation, reverseLayout) {}
+    constructor(context: Context, attrs: AttributeSet, defStyleAttr: Int, defStyleRes: Int) :
+            super(context, attrs, defStyleAttr, defStyleRes)
+    override fun supportsPredictiveItemAnimations(): Boolean { return false }
 }

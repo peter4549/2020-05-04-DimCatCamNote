@@ -32,9 +32,11 @@ class NoteAppWidgetProvider: AppWidgetProvider() {
         // before being used.
         // The value stored in the preference is a color value
         // that has already been converted in SetNoteColorDialogFragment.
-        val appWidgetTitleColor = colorPreferences.getInt(KEY_COLOR_NOTE,
-            context.getColor(R.color.defaultColorNote))
-        val appWidgetBackgroundColor = colorPreferences.getInt(KEY_COLOR_APP_WIDGET_BACKGROUND,
+        val appWidgetTitleColor = colorPreferences.getInt(
+            KEY_COLOR_APP_WIDGET_TITLE,
+            context.getColor(R.color.defaultColorAppWidgetTitle))
+        val appWidgetBackgroundColor = colorPreferences.getInt(
+            KEY_COLOR_APP_WIDGET_BACKGROUND,
             context.getColor(R.color.defaultColorAppWidgetBackground))
         val opacity = opacityPreferences.getString(KEY_OPACITY, DEFAULT_HEX_OPACITY.toString())
         val argbChannelTitleColor =
@@ -132,14 +134,9 @@ class NoteAppWidgetProvider: AppWidgetProvider() {
                 // Notify appWidgetManager of app widget updates.
                 appWidgetManager.updateAppWidget(appWidgetId, views)
             } else {
-                // Run when a note is deleted.
                 val intent = Intent(context, SingleNoteConfigureActivity::class.java)
                 // App Widget ID is sent to SingleNoteConfigureActivity through the action.
                 intent.action = ACTION_APP_WIDGET_ATTACHED + appWidgetId
-
-                val editor = preferences.edit()
-                editor.remove(KEY_APP_WIDGET_NOTE_ID + appWidgetId)
-                editor.apply()
 
                 val pendingIntent = intent.let {
                     PendingIntent.getActivity(context, 0, it, 0)

@@ -109,10 +109,11 @@ class CameraFragment : Fragment() {
 
     override fun onStop() {
         if (uri != null) (activity as MainActivity).writeFragment.uri = uri.toString()
-        (activity as MainActivity).setCurrentFragment(CurrentFragment.WRITE_FRAGMENT)
-
         val message = (activity as MainActivity).writeFragment.handler.obtainMessage()
-        (activity as MainActivity).writeFragment.handler.sendMessage(message)
+        message.what = WriteFragment.SHOW_BOTTOM_NAVIGATION_VIEW
+        (activity as MainActivity).writeFragment.handler
+            .sendMessage(message)
+        (activity as MainActivity).setCurrentFragment(CurrentFragment.WRITE_FRAGMENT)
 
         super.onStop()
     }

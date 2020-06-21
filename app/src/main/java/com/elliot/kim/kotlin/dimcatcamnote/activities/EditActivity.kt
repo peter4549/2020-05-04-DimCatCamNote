@@ -7,19 +7,29 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.*
 import android.graphics.Rect
+import android.graphics.Typeface
+import android.graphics.drawable.Drawable
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.view.*
-import android.view.animation.Animation
+import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.res.ResourcesCompat
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModelProvider
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.DataSource
+import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.bumptech.glide.load.engine.GlideException
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
+import com.bumptech.glide.request.RequestListener
+import com.bumptech.glide.request.target.Target
 import com.elliot.kim.kotlin.dimcatcamnote.*
 import com.elliot.kim.kotlin.dimcatcamnote.adapters.NoteAdapter
 import com.elliot.kim.kotlin.dimcatcamnote.broadcast_receivers.AlarmReceiver
@@ -55,7 +65,7 @@ class EditActivity: AppCompatActivity() {
             if (intent!!.action == ACTION_PASSWORD_CONFIRMED) {
                 passwordConfirmationResult = intent.getBooleanExtra(KEY_PASSWORD_CONFIRMED, false)
                 if(passwordConfirmationResult) {
-                    crossFadeLockView(false)
+                    crossFadeOutLockView()
                 }
             }
         }
@@ -71,9 +81,11 @@ class EditActivity: AppCompatActivity() {
         fragmentManager = supportFragmentManager
         binding = DataBindingUtil.setContentView(this, R.layout.activity_edit)
         textViewTime = binding.textViewTime
-        setSupportActionBar(binding.toolBar)
+        setSupportActionBar(binding.toolbar)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        setViewDesign()
+        initDesignOptions()
+        applyDesign()
 
         val intent = intent!!  // Get intent
         var id = 0
@@ -105,7 +117,7 @@ class EditActivity: AppCompatActivity() {
                         ConfirmPasswordDialogFragment(noteAdapter, this)
                             .show(fragmentManager, tag)
                 } else {
-                    crossFadeLockView(false)
+                    crossFadeOutLockView()
                 }
 
                 binding.editTextContent.setText(note.content)
@@ -162,7 +174,7 @@ class EditActivity: AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        super.onBackPressed()
+        finish(BACK_PRESSED)
     }
 
     private fun keyboardShown(rootView: View): Boolean {
@@ -191,7 +203,7 @@ class EditActivity: AppCompatActivity() {
         val menuLock = menu.findItem(R.id.menu_lock)
 
         if (dataLoadingComplete) {
-            binding.toolBar.title = note.title
+            binding.toolbar.title = note.title
             if (note.isDone) menuDone.title = "완료해제" else menuDone.title = "완료체크"
 
             if (note.alarmTime == null) {
@@ -204,7 +216,7 @@ class EditActivity: AppCompatActivity() {
 
             if (note.isLocked) menuLock.title = "잠금해제" else menuLock.title = "잠금설정"
 
-            binding.toolBar.invalidate()
+            binding.toolbar.invalidate()
         }
 
         return true
@@ -260,6 +272,33 @@ class EditActivity: AppCompatActivity() {
         return super.onOptionsItemSelected(item)
     }
 
+    private fun initDesignOptions() {
+        val defaultToolbarColor = getColor(R.color.defaultColorToolbar)
+        val defaultBackgroundColor = getColor(R.color.defaultColorBackground)
+        val defaultInlayColor = getColor(R.color.defaultColorInlay)
+
+        val colorPreferences = getSharedPreferences(
+            PREFERENCES_SET_COLOR,
+            Context.MODE_PRIVATE
+        )
+
+        toolbarColor = colorPreferences.getInt(KEY_COLOR_TOOLBAR, defaultToolbarColor)
+        backgroundColor = colorPreferences.getInt(KEY_COLOR_BACKGROUND, defaultBackgroundColor)
+        inlayColor = colorPreferences.getInt(KEY_COLOR_INLAY, defaultInlayColor)
+
+        val fontPreferences = getSharedPreferences(PREFERENCES_FONT,
+            Context.MODE_PRIVATE)
+        fontId = fontPreferences.getInt(KEY_FONT_ID, R.font.nanum_gothic_font_family)
+        fontStyleId = fontPreferences.getInt(KEY_FONT_STYLE_ID, R.style.FontNanumGothic)
+        font = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+            resources.getFont(fontId)
+        else ResourcesCompat.getFont(this, fontId)
+
+        toolbarColor = fontPreferences.getInt(KEY_COLOR_TOOLBAR, defaultToolbarColor)
+        backgroundColor = fontPreferences.getInt(KEY_COLOR_BACKGROUND, defaultBackgroundColor)
+        inlayColor = fontPreferences.getInt(KEY_COLOR_INLAY, defaultInlayColor)
+    }
+
     private fun lock() {
         SetPasswordDialogFragment(noteAdapter).show(fragmentManager, tag)
     }
@@ -272,7 +311,7 @@ class EditActivity: AppCompatActivity() {
     }
 
     private fun setText(note: Note) {
-        binding.toolBar.title = note.title
+        binding.toolbar.title = note.title
         binding.editTextContent.setText(note.content)
         binding.editTextContent.isEnabled = false
         setTimeText(note)
@@ -304,17 +343,43 @@ class EditActivity: AppCompatActivity() {
         builder.setMessage("지금까지 편집한 내용을 저장하시겠습니까?")
         builder.setPositiveButton("저장") { _: DialogInterface?, _: Int ->
             finish(SAVE)
-        }.setNeutralButton("계속쓰기"
-        ) { _: DialogInterface?, _: Int -> }
-        builder.setNegativeButton("아니요"
-        ) { _: DialogInterface?, _: Int ->
+        }.setNeutralButton("계속쓰기") { _: DialogInterface?, _: Int -> }
+        builder.setNegativeButton("아니요") { _: DialogInterface?, _: Int ->
             finishWithoutSaving()
         }
         builder.create()
-        builder.show()
+
+        val dialog = builder.show()!!
+
+        val alertTitleId = resources.getIdentifier("alertTitle", "id", packageName)
+        val messageTextView = dialog.findViewById<TextView>(android.R.id.message)!!
+        val okButton = dialog.findViewById<Button>(android.R.id.button1)!!
+        val cancelButton = dialog.findViewById<Button>(android.R.id.button2)!!
+        val keepWritingButton = dialog.findViewById<Button>(android.R.id.button3)!!
+
+        if (alertTitleId > 0) {
+            val titleTextView = dialog.findViewById<TextView>(alertTitleId)!!
+
+            titleTextView.setTextColor(toolbarColor)
+            okButton.setTextColor(toolbarColor)
+            cancelButton.setTextColor(toolbarColor)
+            keepWritingButton.setTextColor(toolbarColor)
+
+            titleTextView.adjustDialogTitleTextSize(fontId)
+            messageTextView.adjustDialogItemTextSize(fontId)
+            okButton.adjustDialogButtonTextSize(fontId)
+            cancelButton.adjustDialogButtonTextSize(fontId)
+            keepWritingButton.adjustDialogButtonTextSize(fontId)
+
+            titleTextView.typeface = font
+            messageTextView.typeface = font
+            okButton.typeface = font
+            cancelButton.typeface = font
+            keepWritingButton.typeface = font
+        }
     }
 
-    // 재정의... 아니면 opStop 에서 구현해도 될듯.
+    // 재정의... 아니면 opStop 에서 구현해도 될듯. // 물어보는 로직 결여. 조정 필요.
 
     private fun finish(action: Int) {
         if (isContentChanged()) {
@@ -410,6 +475,11 @@ class EditActivity: AppCompatActivity() {
                         override fun onAnimationStart(animation: Animator) {
                             Glide.with(binding.imageView.context)
                                 .load(Uri.parse(note.uri))
+                                .error(R.drawable.ic_sentiment_dissatisfied_grey_24dp)
+                                .transition(DrawableTransitionOptions.withCrossFade())
+                                .diskCacheStrategy(DiskCacheStrategy.NONE)
+                                .skipMemoryCache(true)
+                                .listener(requestListener)
                                 .into(binding.imageView)
                         }
                     })
@@ -426,44 +496,57 @@ class EditActivity: AppCompatActivity() {
         }
     }
 
-    private fun setViewDesign() {
-        val preferences = getSharedPreferences(
-            PREFERENCES_SET_COLOR,
-            Context.MODE_PRIVATE
-        )
+    private fun applyDesign() {
+        // Set color
+        binding.toolbar.setBackgroundColor(toolbarColor)
+        binding.textViewTime.setBackgroundColor(inlayColor)
+        binding.editTextContainer.setBackgroundColor(inlayColor)
+        binding.viewLock.setBackgroundColor(backgroundColor)
 
-        binding.toolBar.setBackgroundColor(preferences.getInt(KEY_COLOR_TOOLBAR,
-            getColor(R.color.defaultColorToolbar)))
-        binding.textViewTime.setBackgroundColor(preferences.getInt(KEY_COLOR_BACKGROUND,
-            getColor(R.color.defaultColorBackground)))
-        /*
-        binding.editTextContainer.setBackgroundColor(preferences.getInt(KEY_COLOR_BACKGROUND,
-            getColor(R.color.defaultColorBackground)))
-         */
-        binding.viewLock.setBackgroundColor(preferences.getInt(KEY_COLOR_BACKGROUND,
-            getColor(R.color.defaultColorBackground)))
+        // Set font
+        binding.textViewTime.adjustDialogItemTextSize(fontId, true)
+        binding.editTextContent.adjustDialogInputTextSize(fontId)
+
+        binding.toolbar.setTitleTextAppearance(this, fontStyleId)
+        binding.textViewTime.typeface = font
+        binding.editTextContent.typeface = font
     }
 
-    private fun crossFadeLockView(fadeIn: Boolean) {
-        if (fadeIn) {
-            binding.viewLock.apply {
-                alpha = 0F
-                visibility = View.VISIBLE
+    private fun crossFadeOutLockView() {
+        binding.viewLock.animate()
+            .alpha(0F)
+            .setDuration(shortAnimationDuration.toLong())
+            .setListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator) {
+                    binding.viewLock.visibility = View.GONE
+                }
+            })
+    }
 
-                animate()
-                    .alpha(1F)
-                    .setDuration(shortAnimationDuration.toLong())
-                    .setListener(null)
-            }
-        } else {
-            binding.viewLock.animate()
-                .alpha(0F)
-                .setDuration(shortAnimationDuration.toLong())
-                .setListener(object : AnimatorListenerAdapter() {
-                    override fun onAnimationEnd(animation: Animator) {
-                        binding.viewLock.visibility = View.GONE
-                    }
-                })
+    private val requestListener: RequestListener<Drawable> = object : RequestListener<Drawable> {
+        override fun onLoadFailed(
+            e: GlideException?,
+            model: Any?,
+            target: Target<Drawable>?,
+            isFirstResource: Boolean
+        ): Boolean {
+            binding.imageView.isClickable = false
+            binding.imageView.isFocusable = false
+
+            return false
+        }
+
+        override fun onResourceReady(
+            resource: Drawable?,
+            model: Any?,
+            target: Target<Drawable>?,
+            dataSource: DataSource?,
+            isFirstResource: Boolean
+        ): Boolean {
+            binding.imageView.isClickable = true
+            binding.imageView.isFocusable = true
+
+            return false
         }
     }
 
@@ -471,6 +554,13 @@ class EditActivity: AppCompatActivity() {
     companion object {
         const val SAVE = 0
         const val BACK_PRESSED = 1
+
+        var font: Typeface? = null
+        var fontId = 0
+        var fontStyleId = 0
+        var toolbarColor = 0
+        var backgroundColor = 0
+        var inlayColor = 0
 
         const val ACTION_PASSWORD_CONFIRMED = "action_password_confirmed"
 

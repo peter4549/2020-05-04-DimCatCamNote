@@ -23,12 +23,13 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="horizontal"
-                android:background="@android:color/white">
+                android:background="@color/defaultColorNote">
 
                 <ImageView
                     android:id="@+id/image_view_thumbnail"
                     android:layout_width="60dp"
                     android:layout_height="match_parent"
+                    android:layout_gravity="center_vertical"
                     android:layout_margin="2dp"/>
 
                 <LinearLayout
@@ -123,6 +124,7 @@
                         android:id="@+id/text_view_time"
                         android:layout_width="match_parent"
                         android:layout_height="20dp"
+                        android:layout_marginTop="1dp"
                         android:paddingEnd="8dp"
                         android:paddingStart="8dp"
                         android:textColor="@color/textColorCardView"
@@ -133,6 +135,7 @@
                         android:id="@+id/text_view_alarm_time"
                         android:layout_width="match_parent"
                         android:layout_height="@dimen/alarm_time_text_height"
+                        android:layout_marginTop="1dp"
                         android:paddingEnd="8dp"
                         android:paddingStart="8dp"
                         android:textColor="@color/textColorCardView"
@@ -143,6 +146,7 @@
                         android:id="@+id/text_view_content"
                         android:layout_width="match_parent"
                         android:layout_height="28dp"
+                        android:layout_marginTop="1dp"
                         android:layout_marginEnd="6dp"
                         android:paddingEnd="8dp"
                         android:paddingStart="8dp"

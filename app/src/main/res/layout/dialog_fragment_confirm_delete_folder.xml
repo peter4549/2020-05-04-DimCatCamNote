@@ -22,43 +22,42 @@
         android:layout_width="match_parent"
         android:layout_height="36dp"
         android:layout_below="@+id/text_view_title"
-        android:layout_marginTop="4dp"
+        android:layout_margin="8dp"
         android:gravity="center"
-        android:text="정말로 삭제하시겠습니까?"
+        android:text="폴더를 삭제합니다.\n폴더의 노트는 어떻게 하시겠습니까?"
         android:textSize="@dimen/text_size_middle"/>
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="40dp"
+        android:layout_height="80dp"
         android:layout_below="@+id/text_view_message"
         android:layout_margin="8dp"
-        android:orientation="horizontal">
+        android:orientation="vertical">
 
         <Button
-            android:id="@+id/button_cancel"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
+            android:id="@+id/button_remain"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
             android:layout_weight="1"
             android:layout_margin="4dp"
             android:background="@color/defaultColorToolbar"
-            android:text="@string/cancel"
+            android:text="기본 폴더로 이동"
             android:textColor="@android:color/white"
-            android:textSize="@dimen/text_size_middle_large"
+            android:textSize="@dimen/text_size_middle"
             android:textStyle="bold"/>
 
         <Button
-            android:id="@+id/button_ok"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
+            android:id="@+id/button_delete"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
             android:layout_weight="1"
             android:layout_margin="4dp"
             android:background="@color/defaultColorToolbar"
-            android:text="@string/ok"
+            android:text="모두 삭제"
             android:textColor="@android:color/white"
-            android:textSize="@dimen/text_size_middle_large"
+            android:textSize="@dimen/text_size_middle"
             android:textStyle="bold"/>
 
     </LinearLayout>
-
 
 </RelativeLayout>

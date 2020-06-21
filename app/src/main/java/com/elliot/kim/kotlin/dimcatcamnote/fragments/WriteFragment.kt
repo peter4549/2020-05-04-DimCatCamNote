@@ -19,13 +19,13 @@ import android.util.Log
 import android.view.*
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
+import android.widget.Button
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
-import com.elliot.kim.kotlin.dimcatcamnote.CurrentFragment
-import com.elliot.kim.kotlin.dimcatcamnote.PATTERN_YYYY_MM_dd
-import com.elliot.kim.kotlin.dimcatcamnote.R
+import com.elliot.kim.kotlin.dimcatcamnote.*
 import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity
 import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity.Companion.CAMERA_PERMISSIONS_REQUEST_CODE
 import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity.Companion.RECORD_AUDIO_PERMISSIONS_REQUEST_CODE
@@ -88,6 +88,8 @@ class WriteFragment : Fragment() {
         super.onResume()
         binding.toolbar.setBackgroundColor(MainActivity.toolbarColor)
         binding.bottomNavigationView.setBackgroundColor(MainActivity.toolbarColor)
+        binding.editTextTitle.setBackgroundColor(MainActivity.inlayColor)
+        binding.editTextContent.setBackgroundColor(MainActivity.inlayColor)
         clearText()
         activity.setCurrentFragment(CurrentFragment.WRITE_FRAGMENT)
         isSaved = false
@@ -112,7 +114,6 @@ class WriteFragment : Fragment() {
         binding.imageView.visibility = View.GONE
         binding.imageView.setOnClickListener { startPhotoFragment() }
 
-        // binding.bottomNavigationView.itemIconTintList = null
         binding.bottomNavigationView.setOnNavigationItemSelectedListener {
             when (it.itemId) {
                 R.id.camera -> {
@@ -146,8 +147,6 @@ class WriteFragment : Fragment() {
                     else
                         requestPermissions(MainActivity.LOCATION_PERMISSIONS_REQUESTED,
                             LOCATION_PERMISSIONS_REQUEST_CODE)
-
-
                 }
                  */
             }
@@ -331,7 +330,7 @@ class WriteFragment : Fragment() {
                         activity.fragmentManager.beginTransaction()
                             .addToBackStack(null)
                             .setCustomAnimations(R.anim.slide_up, R.anim.slide_up, R.anim.slide_down, R.anim.slide_down)
-                            .replace(R.id.write_fragment_container, PhotoFragment(this, uri!!)).commit()
+                            .replace(R.id.write_fragment_container, PhotoFragment(this@WriteFragment, uri!!)).commit()
                     }
                 })
         }
@@ -390,6 +389,7 @@ class WriteFragment : Fragment() {
     }
 
     private fun showCheckMessage() {
+        //getResources().getIdentifier( "alertTitle", "id", "your.package.name" )
         val builder = context?.let { AlertDialog.Builder(it) }
         builder?.setTitle("노트 저장")
         builder?.setMessage("지금까지 작성한 내용을 저장하시겠습니까?")
@@ -400,8 +400,35 @@ class WriteFragment : Fragment() {
         builder?.setNegativeButton("아니요") { _: DialogInterface?, _: Int ->
             finishWithoutSaving()
         }
-        builder?.create()
-        builder?.show()
+
+        val dialog = builder?.show()!!
+
+        val alertTitleId = resources.getIdentifier("alertTitle", "id", requireContext().packageName)
+        val messageTextView = dialog.findViewById<TextView>(android.R.id.message)!!
+        val okButton = dialog.findViewById<Button>(android.R.id.button1)!!
+        val cancelButton = dialog.findViewById<Button>(android.R.id.button2)!!
+        val keepWritingButton = dialog.findViewById<Button>(android.R.id.button3)!!
+
+        if (alertTitleId > 0) {
+            val titleTextView = dialog.findViewById<TextView>(alertTitleId)!!
+
+            titleTextView.setTextColor(MainActivity.toolbarColor)
+            okButton.setTextColor(MainActivity.toolbarColor)
+            cancelButton.setTextColor(MainActivity.toolbarColor)
+            keepWritingButton.setTextColor(MainActivity.toolbarColor)
+
+            titleTextView.adjustDialogTitleTextSize(MainActivity.fontId)
+            messageTextView.adjustDialogItemTextSize(MainActivity.fontId)
+            okButton.adjustDialogButtonTextSize(MainActivity.fontId)
+            cancelButton.adjustDialogButtonTextSize(MainActivity.fontId)
+            keepWritingButton.adjustDialogButtonTextSize(MainActivity.fontId)
+
+            titleTextView.typeface = MainActivity.font
+            messageTextView.typeface = MainActivity.font
+            okButton.typeface = MainActivity.font
+            cancelButton.typeface = MainActivity.font
+            keepWritingButton.typeface = MainActivity.font
+        }
     }
 
     private fun showPictureChangeMessage() {
@@ -412,8 +439,31 @@ class WriteFragment : Fragment() {
             startCameraFragment()
         }
         builder?.setNegativeButton("아니요") { _: DialogInterface?, _: Int -> }
-        builder?.create()
-        builder?.show()
+
+        val dialog = builder?.show()!!
+
+        val alertTitleId = resources.getIdentifier("alertTitle", "id", requireContext().packageName)
+        val messageTextView = dialog.findViewById<TextView>(android.R.id.message)!!
+        val okButton = dialog.findViewById<Button>(android.R.id.button1)!!
+        val cancelButton = dialog.findViewById<Button>(android.R.id.button2)!!
+
+        if (alertTitleId > 0) {
+            val titleTextView = dialog.findViewById<TextView>(alertTitleId)!!
+
+            titleTextView.setTextColor(MainActivity.toolbarColor)
+            okButton.setTextColor(MainActivity.toolbarColor)
+            cancelButton.setTextColor(MainActivity.toolbarColor)
+
+            titleTextView.adjustDialogTitleTextSize(MainActivity.fontId)
+            messageTextView.adjustDialogItemTextSize(MainActivity.fontId)
+            okButton.adjustDialogButtonTextSize(MainActivity.fontId)
+            cancelButton.adjustDialogButtonTextSize(MainActivity.fontId)
+
+            titleTextView.typeface = MainActivity.font
+            messageTextView.typeface = MainActivity.font
+            okButton.typeface = MainActivity.font
+            cancelButton.typeface = MainActivity.font
+        }
     }
 
     private fun save() {

@@ -13,10 +13,11 @@
         android:id="@+id/edit_note_container" >
 
         <androidx.appcompat.widget.Toolbar
-            android:id="@+id/tool_bar"
+            android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:background="@color/defaultColorToolbar"
+            android:theme="@style/ToolbarTheme"
             app:popupTheme="@style/AppTheme.PopupOverlay" >
 
         </androidx.appcompat.widget.Toolbar>
@@ -25,19 +26,26 @@
             android:id="@+id/text_view_time"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/tool_bar"
-            android:padding="4dp"
+            android:layout_below="@id/toolbar"
+            android:paddingBottom="4dp"
+            android:paddingEnd="8dp"
+            android:paddingStart="8dp"
+            android:paddingTop="4dp"
             android:layout_marginBottom="2dp"
-            android:background="@color/defaultColorInlay" />
+            android:background="@color/defaultColorInlay"
+            android:gravity="center_vertical"
+            android:textSize="@dimen/text_size_small"/>
 
         <RelativeLayout
             android:id="@+id/edit_text_container"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_below="@id/text_view_time">
+            android:layout_below="@id/text_view_time"
+            android:clickable="true"
+            android:focusable="true">
 
             <ImageView
-                android:id="@+id/imageView"
+                android:id="@+id/image_view"
                 android:layout_width="match_parent"
                 android:layout_height="224dp"
                 android:layout_margin="2dp"
@@ -48,7 +56,7 @@
                 android:id="@+id/edit_text_content"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_below="@id/imageView"
+                android:layout_below="@id/image_view"
                 android:layout_marginTop="2dp"
                 android:background="@color/defaultColorInlay"
                 android:padding="8dp"
@@ -59,7 +67,7 @@
                 android:id="@+id/focus_block"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_below="@id/imageView"
+                android:layout_below="@id/image_view"
                 android:focusable="true"/>
 
         </RelativeLayout>

@@ -2,11 +2,12 @@ package com.elliot.kim.kotlin.dimcatcamnote.adapters
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.util.Log
 
 import android.view.*
 import androidx.recyclerview.widget.RecyclerView
+import com.elliot.kim.kotlin.dimcatcamnote.DEFAULT_FOLDER_ID
 import com.elliot.kim.kotlin.dimcatcamnote.DEFAULT_FOLDER_NAME
+import com.elliot.kim.kotlin.dimcatcamnote.PREFERENCES_FOLDER
 import com.elliot.kim.kotlin.dimcatcamnote.R
 import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity
 import com.elliot.kim.kotlin.dimcatcamnote.data.Folder
@@ -14,13 +15,13 @@ import com.elliot.kim.kotlin.dimcatcamnote.data.Note
 import com.elliot.kim.kotlin.dimcatcamnote.databinding.CardViewNavigationDrawerBinding
 import com.elliot.kim.kotlin.dimcatcamnote.databinding.CardViewNavigationDrawerBinding.bind
 import com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments.ConfirmPasswordDialogFragment
+import com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments.DialogFragments
 import com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments.SetPasswordDialogFragment
 import java.util.*
 
 class FolderAdapter(private val context: Context?):
     RecyclerView.Adapter<FolderAdapter.ViewHolder>() {
     private val tag = "FolderAdapter"
-
     var folders: MutableList<Folder>
     var selectedFolder: Folder? = null
     var lastId = 0
@@ -67,6 +68,7 @@ class FolderAdapter(private val context: Context?):
 
         private val menuItemClickListener = MenuItem.OnMenuItemClickListener {
             val folder = folders[adapterPosition]
+
             when (it.itemId) {
                 MenuItemId.OPEN.id -> {
                     if (folder.isLocked)
@@ -78,8 +80,8 @@ class FolderAdapter(private val context: Context?):
                     else lock()
                 }
                 MenuItemId.REMOVE.id -> {
-                    removeFolder(folder)
-                    notifyItemRemoved(adapterPosition)
+                    (context as MainActivity)
+                        .showDialogFragment(DialogFragments.CONFIRM_DELETE_FOLDER)
                 }
             }
 
@@ -137,7 +139,7 @@ class FolderAdapter(private val context: Context?):
     private fun loadFolders(): MutableList<Folder> {
         val folders = mutableListOf<Folder>()
         val preferences = (context as MainActivity).getSharedPreferences(
-            PREFERENCES_NAME,
+            PREFERENCES_FOLDER,
             Context.MODE_PRIVATE)
 
         val entries = preferences.all
@@ -151,16 +153,12 @@ class FolderAdapter(private val context: Context?):
         var name = ""
         var isLocked = false
         var password = ""
+        var includedNoteIdSet = mutableSetOf<String>()
 
         Arrays.sort(keySet)
 
         // Add default folder.
-        folders.add(
-            Folder(
-                DEFAULT_FOLDER_ID,
-                DEFAULT_FOLDER_NAME
-            )
-        )
+        folders.add(Folder(DEFAULT_FOLDER_ID, DEFAULT_FOLDER_NAME))
 
         for (i in 0 until entriesSize) {
             val key = keySet[i].toString()
@@ -170,13 +168,14 @@ class FolderAdapter(private val context: Context?):
                 1 -> name = preferences.getString(key, "")!!
                 2 -> isLocked = preferences.getBoolean(key, false)
                 3 -> password = preferences.getString(key, "")!!
+                4 -> includedNoteIdSet = preferences.getStringSet(key, null)!!
             }
 
-            if (++count >= 4) {
+            if (++count >= 5) {
                 count = 0
-                val folder =
-                    Folder(id, name)
+                val folder = Folder(id, name)
                 folder.isLocked = isLocked
+                folder.noteIdSet = includedNoteIdSet.map { it.toInt() }.toMutableSet()
                 if (folder.isLocked) folder.password = password
                 folders.add(folder)
             }
@@ -187,16 +186,38 @@ class FolderAdapter(private val context: Context?):
 
     private fun saveFolder(folder: Folder) {
         val preferences = (context as MainActivity).getSharedPreferences(
-            PREFERENCES_NAME,
+            PREFERENCES_FOLDER,
             Context.MODE_PRIVATE)
         val editor = preferences.edit()
         editor.putInt("${folder.id}0", folder.id)
         editor.putString("${folder.id}1", folder.name)
         editor.putBoolean("${folder.id}2", folder.isLocked)
         editor.putString("${folder.id}3", folder.password)
-
+        editor.putStringSet("${folder.id}4", folder.noteIdSet.map { it.toString() }.toMutableSet())
         editor.apply()
     }
+
+    fun updateFolderPassword(folder: Folder) {
+        val preferences = (context as MainActivity).getSharedPreferences(
+            PREFERENCES_FOLDER,
+            Context.MODE_PRIVATE)
+        val editor = preferences.edit()
+        editor.putBoolean("${folder.id}2", folder.isLocked)
+        editor.putString("${folder.id}3", folder.password)
+        editor.apply()
+
+        notifyItemChanged(getPositionByFolder(folder))
+    }
+
+    private fun saveNoteIdSet(folder: Folder) {
+        val preferences = (context as MainActivity).getSharedPreferences(
+            PREFERENCES_FOLDER,
+            Context.MODE_PRIVATE)
+        val editor = preferences.edit()
+        editor.putStringSet("${folder.id}4", folder.noteIdSet.map { it.toString() }.toMutableSet())
+        editor.apply()
+    }
+
 
     fun addFolder(name: String): Boolean {
         return if (folders.add(
@@ -212,9 +233,15 @@ class FolderAdapter(private val context: Context?):
         } else false
     }
 
-    fun removeFolder(folder: Folder): Boolean {
+    fun removeSelectedFolder() {
+        val position = getPositionByFolder(selectedFolder!!)
+        removeFolder(selectedFolder!!)
+        notifyItemRemoved(position)
+    }
+
+    private fun removeFolder(folder: Folder): Boolean {
         val preferences = (context as MainActivity).getSharedPreferences(
-            PREFERENCES_NAME,
+            PREFERENCES_FOLDER,
             Context.MODE_PRIVATE
         )
         val editor = preferences.edit()
@@ -222,12 +249,27 @@ class FolderAdapter(private val context: Context?):
             editor.remove("${folder.id}$i")
         editor.apply()
 
+        for (noteId in folder.noteIdSet)
+                context.getNoteAdapter().getNoteById(noteId).folderId = DEFAULT_FOLDER_ID
+
+        context.showCurrentFolderItems(getFolderById(DEFAULT_FOLDER_ID))
+
         return folders.remove(folder)
     }
 
-    fun moveNoteToFolder(note: Note?, folder: Folder) {
-        note!!.folderId = folder.id
+    fun moveNoteToFolder(note: Note, folder: Folder) {
+        if (note.folderId != DEFAULT_FOLDER_ID) {
+            val previousFolder = getFolderById(note.folderId)
+            previousFolder.noteIdSet.remove(note.id)
+            saveNoteIdSet(previousFolder)
+        }
+
+        folder.noteIdSet.add(note.id)
+        note.folderId = folder.id
         (context as MainActivity).viewModel.update(note)
+        saveNoteIdSet(folder)
+
+        // For smooth display when the folder is changed.
         if (context.currentFolder.name != folder.name &&
                 context.currentFolder.name != DEFAULT_FOLDER_NAME) {
             context.getNoteAdapter().removeFromNotesFiltered(note)
@@ -236,11 +278,6 @@ class FolderAdapter(private val context: Context?):
 
     fun getFolderById(id: Int): Folder = folders.filter { it.id == id }[0]
     fun getFolderByName(name: String): Folder = folders.filter { it.name == name }[0]
-
-    companion object {
-        const val PREFERENCES_NAME = "folder_preferences"
-        const val DEFAULT_FOLDER_ID = 0
-    }
 
     fun lock() {
         SetPasswordDialogFragment(this)
@@ -252,12 +289,9 @@ class FolderAdapter(private val context: Context?):
             .show(context.fragmentManager, tag)
     }
 
-    fun update(folder: Folder) {
-        saveFolder(folder)
-        notifyItemChanged(getPositionByFolder(folder))
-    }
-
     fun isLockedFolder(id: Int) = folders.filter { it.id == id }[0].isLocked
+
+    fun getLockedFolderIds(): List<Int> = folders.filter{ it.isLocked }.map{ it.id }
 
     fun getAllFolderNames(): Array<String> {
         var folderNames = arrayOf<String>()

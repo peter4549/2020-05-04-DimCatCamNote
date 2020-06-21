@@ -10,6 +10,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Resources
 import android.graphics.Paint
+import android.graphics.Typeface
 import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -36,6 +37,10 @@ class AlarmFragment(private val activity: AppCompatActivity) : Fragment() {
     private lateinit var note: Note
     var isFromEditFragment = false
 
+    private var year = 0
+    private var month = 0
+    private var date = 0
+
     fun setNote(note: Note) { this.note = note }
 
     override fun onCreateView(
@@ -48,11 +53,11 @@ class AlarmFragment(private val activity: AppCompatActivity) : Fragment() {
 
         val calendar: Calendar = GregorianCalendar()
         val currentTime = calendar.time
-        val currentYear = SimpleDateFormat("yyyy",
+        year = SimpleDateFormat("yyyy",
             Locale.getDefault()).format(currentTime).toInt()
-        val currentMonth = SimpleDateFormat("MM",
+        month = SimpleDateFormat("MM",
             Locale.getDefault()).format(currentTime).toInt()
-        val currentDayOfMonth = SimpleDateFormat("dd",
+        date = SimpleDateFormat("dd",
             Locale.getDefault()).format(currentTime).toInt()
         val currentHour = SimpleDateFormat("kk",
             Locale.getDefault()).format(currentTime).toInt()
@@ -61,12 +66,48 @@ class AlarmFragment(private val activity: AppCompatActivity) : Fragment() {
 
         binding = FragmentAlarmBinding.bind(view)
         setTimePickerTextColor(binding.timePicker)
+
+        // Apply design
+        val toolbarColor: Int
+        val backgroundColor: Int
+        val font: Typeface?
+        val fontId: Int
+
+        if (activity is MainActivity) {
+            toolbarColor = MainActivity.toolbarColor
+            backgroundColor = MainActivity.backgroundColor
+            font = MainActivity.font
+            fontId = MainActivity.fontId
+        } else {
+            // EditActivity
+            toolbarColor = EditActivity.toolbarColor
+            backgroundColor = EditActivity.backgroundColor
+            font = EditActivity.font
+            fontId = EditActivity.fontId
+        }
+
+        binding.textViewTitle.setBackgroundColor(toolbarColor)
+        binding.textViewSelectDate.setBackgroundColor(toolbarColor)
+        binding.buttonSetDate.setBackgroundColor(backgroundColor)
+        binding.buttonSetAlarm.setBackgroundColor(toolbarColor)
+
+        binding.textViewTitle.adjustDialogTitleTextSize(fontId)
+        binding.textViewSelectDate.adjustDialogItemTextSize(fontId, true)
+        binding.buttonSetDate.adjustDialogButtonTextSize(fontId)
+        binding.buttonSetAlarm.adjustDialogButtonTextSize(fontId)
+
+        binding.textViewTitle.typeface = font
+        binding.textViewSelectDate.typeface = font
+        binding.buttonSetDate.typeface = font
+        binding.buttonSetAlarm.typeface = font
+
         binding.buttonSetDate.text = String.format("%d년 %d월 %d일",
-            currentYear, currentMonth, currentDayOfMonth
+            year, month, date
         )
         binding.timePicker.setIs24HourView(false)
         binding.timePicker.hour = currentHour
         binding.timePicker.minute = currentMinute
+        binding.alarmContainer.setOnClickListener(onClickListener)
         binding.buttonSetAlarm.setOnClickListener(onClickListener)
         binding.buttonSetDate.setOnClickListener(onClickListener)
         binding.imageViewClose.setOnClickListener(onClickListener)
@@ -75,13 +116,9 @@ class AlarmFragment(private val activity: AppCompatActivity) : Fragment() {
     private val onClickListener =
         View.OnClickListener { v ->
             when (v.id) {
+                R.id.alarm_container -> activity.supportFragmentManager.popBackStack()
                 R.id.button_set_date -> showDatePicker()
                 R.id.button_set_alarm -> {
-                    val buttonText = binding.buttonSetDate.text
-                        .toString().replace("[^0-9]".toRegex(), "")
-                    val year = buttonText.substring(0, 4).toInt()
-                    val month = buttonText.substring(4, 5).toInt()
-                    val dayOfMonth = buttonText.substring(5).toInt()
                     val hour: Int
                     val minute: Int
 
@@ -94,7 +131,7 @@ class AlarmFragment(private val activity: AppCompatActivity) : Fragment() {
                     }
 
                     val calendar: Calendar = GregorianCalendar(
-                        year, month - 1, dayOfMonth,
+                        year, month - 1, date,
                         hour, minute, 0
                     )
 
@@ -185,7 +222,7 @@ class AlarmFragment(private val activity: AppCompatActivity) : Fragment() {
         )
 
         Toast.makeText(context, SimpleDateFormat(
-            "yyyy년 MM월 dd일 EE요일 a hh시 mm분 ",
+            "yyyy년 M월 d일 EE요일 a h시 mm분 ",
             Locale.getDefault()
         ).format(calendar.time) + "으로 알림이 설정되었습니다.", Toast.LENGTH_SHORT).show()
 
@@ -217,6 +254,9 @@ class AlarmFragment(private val activity: AppCompatActivity) : Fragment() {
             OnDateSetListener { _: DatePicker?, year: Int, month: Int, dayOfMonth: Int ->
                 binding.buttonSetDate.text =
                     String.format("%d년 %d월 %d일", year, month + 1, dayOfMonth)
+                this.year = year
+                this.month = month + 1
+                this.date = dayOfMonth
             },
             calendar[Calendar.YEAR],
             calendar[Calendar.MONTH],
@@ -227,7 +267,7 @@ class AlarmFragment(private val activity: AppCompatActivity) : Fragment() {
 
     private fun setTimePickerTextColor(timePicker: TimePicker) {
         val color = ContextCompat.getColor(requireContext(),
-            R.color.backgroundColorYellow
+            R.color.backgroundColorLime
         )
         val system = Resources.getSystem()
         val hourNumberPickerId = system.getIdentifier("hour",

@@ -11,10 +11,7 @@ import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.os.Process
-import android.text.method.TextKeyListener.clear
 import android.util.Log
-import android.util.TypedValue
 import android.view.KeyEvent
 import android.view.Menu
 import android.view.MenuItem
@@ -66,25 +63,24 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
     private lateinit var folderAdapter: FolderAdapter
     private lateinit var recyclerViewTouchHelper: RecyclerViewTouchHelper
 
-    var currentFolder = Folder(
-        DEFAULT_FOLDER_ID,
-        DEFAULT_FOLDER_NAME
-    )
+    lateinit var currentFolder: Folder
 
     var alarmedNoteAdapter: AlarmedNoteAdapter? = null
-    var sortingCriteria = SortingCriteria.EDIT_TIME.index
+    private var sortingCriteria = SortingCriteria.EDIT_TIME.index
 
     lateinit var fragmentManager: FragmentManager
 
     val alarmFragment = AlarmFragment(this)
     private val calendarFragment = CalendarFragment()
     val cameraFragment = CameraFragment()
+    val configureFragment = ConfigureFragment()
     val editFragment = EditFragment(this)
     val writeFragment = WriteFragment()
 
     private var initialization = true
     private var isCalendarClicked = false
     private var pressedTime = 0L
+    var isClearing = false
 
     private lateinit var dialogFragmentManager: DialogFragmentManager
 
@@ -118,7 +114,7 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         binding.sortContainer.setOnClickListener {
             dialogFragmentManager.showDialogFragment(DialogFragments.SORT)
         }
-        setSupportActionBar(binding.toolBar)
+        setSupportActionBar(binding.toolbar)
 
         initSortingCriteria()
         initColor()
@@ -132,10 +128,9 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         var notesSize = 0
         viewModel.getAll().observe(this, androidx.lifecycle.Observer { notes ->
             if (initialization) {// 초기화 로직 정리할 것.
-
                 initialize(notes)
                 createUnderlayButtons()
-
+                viewModel.itemCount = notes.count()
                 initialization = false
             } else {
                 when {
@@ -145,11 +140,14 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
                     notesSize == notes.size ->
                         noteAdapter.update(viewModel.targetNote!!)
                     notesSize > notes.size -> {
-                        if (editFragment.isFromAlarmedNoteSelectionFragment)
-                            alarmedNoteAdapter!!
-                                .delete(alarmedNoteAdapter!!
-                                    .getSelectedNoteByCreationTime(viewModel.targetNote!!.creationTime))
-                        noteAdapter.delete(viewModel.targetNote!!)
+                        if (isClearing && viewModel.itemCount == 0) isClearing = false
+                        else {
+                            if (editFragment.isFromAlarmedNoteSelectionFragment)
+                                alarmedNoteAdapter!!.delete(alarmedNoteAdapter!!
+                                            .getSelectedNoteByCreationTime(viewModel.targetNote!!.creationTime)
+                                )
+                            noteAdapter.delete(viewModel.targetNote!!)
+                        }
                     }
                 }
             }
@@ -406,9 +404,18 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         // 달력뷰는 바인딩 하는 중에, 날짜 당일 비교,, 어떤식으로.. current month와 current date를 비교해서.
         // 뭐랑 비교 => 각 노트의 알람시간으로부터 추출.
         isCalendarClicked = true
-        //binding.drawerLayout.closeDrawer(GravityCompat.START, true)
-        //binding.drawerLayout.closeDrawer(GravityCompat.START, true)
-        startFragment(calendarFragment)
+        calendarFragment.setAlarmedNotes(noteAdapter.getAlarmedNotes() as MutableList<Note>)
+
+        fragmentManager.beginTransaction()
+            .setCustomAnimations(
+                R.anim.anim_slide_in_fast_left_enter,
+                R.anim.anim_slide_in_fast_left_exit,
+                R.anim.anim_slide_down_pop_enter,
+                R.anim.anim_slide_down_pop_exit
+            )
+            .addToBackStack(null)
+            .replace(R.id.main_container, calendarFragment).commit()
+        hideFloatingActionButton()
 
     }
 
@@ -424,7 +431,6 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
     }
 
     private fun startFragment(fragment: Fragment) {
-        hideFloatingActionButton()
         fragmentManager.beginTransaction()
             .setCustomAnimations(
                 R.anim.anim_slide_in_left_enter,
@@ -500,7 +506,7 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
             } else {
                 super.onBackPressed()
                 finish()
-                Process.killProcess(Process.myPid())
+                // Process.killProcess(Process.myPid())
             }
         }
     }
@@ -555,10 +561,8 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
 
         setNavigationDrawerColor()
 
-        loadCurrentFolderName()
-
         val toggle = ActionBarDrawerToggle(
-            this, binding.drawerLayout, binding.toolBar,
+            this, binding.drawerLayout, binding.toolbar,
             R.string.navigation_drawer_open,
             R.string.navigation_drawer_close
         )
@@ -573,7 +577,7 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         toggle.syncState()
 
         binding.navigationConfigureContainer.setOnClickListener {
-            startFragment(ConfigureFragment())
+            startFragment(configureFragment)
         }
 
         binding.navigationCalendarContainer.setOnClickListener {
@@ -603,10 +607,12 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         binding.recyclerView.apply {
             setHasFixedSize(true)
             adapter = noteAdapter
-            layoutManager = LinearLayoutManager(context)
+            // Replaced from LinearLayoutManager to LinearLayoutManagerWrapper
+            layoutManager = LinearLayoutManagerWrapper(context)
             layoutAnimation = layoutAnimationController
         }
 
+        loadCurrentFolder()
         showCurrentFolderItems(currentFolder)
     }
 
@@ -635,6 +641,7 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         val defaultBackgroundColor = getColor(R.color.defaultColorBackground)
         val defaultNoteColor = getColor(R.color.defaultColorNote)
         val defaultInlayColor = getColor(R.color.defaultColorInlay)
+        val defaultAppWidgetTitleColor = getColor(R.color.defaultColorAppWidgetTitle)
         val defaultAppWidgetBackgroundColor = getColor(R.color.defaultColorAppWidgetBackground)
 
         val preferences = getSharedPreferences(
@@ -646,19 +653,21 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         backgroundColor = preferences.getInt(KEY_COLOR_BACKGROUND, defaultBackgroundColor)
         noteColor = preferences.getInt(KEY_COLOR_NOTE, defaultNoteColor)
         inlayColor = preferences.getInt(KEY_COLOR_INLAY, defaultInlayColor)
+        appWidgetTitleColor =
+            preferences.getInt(KEY_COLOR_APP_WIDGET_TITLE, defaultAppWidgetTitleColor)
         appWidgetBackgroundColor =
             preferences.getInt(KEY_COLOR_APP_WIDGET_BACKGROUND, defaultAppWidgetBackgroundColor)
 
         binding.mainContainer.setBackgroundColor(backgroundColor)
         binding.sortContainer.setBackgroundColor(toolbarColor)
-        binding.toolBar.setBackgroundColor(toolbarColor)
+        binding.toolbar.setBackgroundColor(toolbarColor)
         binding.writeFloatingActionButton.backgroundTintList = ColorStateList.valueOf(toolbarColor)
     }
 
     fun setViewColor() {
         binding.mainContainer.setBackgroundColor(backgroundColor)
         binding.sortContainer.setBackgroundColor(toolbarColor)
-        binding.toolBar.setBackgroundColor(toolbarColor)
+        binding.toolbar.setBackgroundColor(toolbarColor)
         binding.writeFloatingActionButton.backgroundTintList = ColorStateList.valueOf(toolbarColor)
     }
 
@@ -672,22 +681,26 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         noteAdapter.getFilter().filter("")
     }
 
+    fun refreshCurrentFolderItem(showAnimation: Boolean = true) {
+        if (showAnimation) binding.recyclerView.scheduleLayoutAnimation()
+
+        noteAdapter.getFilter().filter("")
+    }
+
     private fun saveCurrentFolder(folder: Folder) {
         val preferences = getSharedPreferences(
             PREFERENCES_CURRENT_FOLDER,
             Context.MODE_PRIVATE)
         val editor = preferences.edit()
-        editor.putInt("${folder.id}", folder.id)
+        editor.putInt(KEY_CURRENT_FOLDER, folder.id)
         editor.apply()
     }
 
-    private fun loadCurrentFolderName() {
+    private fun loadCurrentFolder() {
         val preferences = getSharedPreferences(
             PREFERENCES_CURRENT_FOLDER,
             Context.MODE_PRIVATE)
-        val folder = folderAdapter.getFolderById(preferences.getInt(KEY_CURRENT_FOLDER, 0))
-
-        binding.textViewCurrentFolderName.text = folder.name
+        currentFolder = folderAdapter.getFolderById(preferences.getInt(KEY_CURRENT_FOLDER, 0))
     }
 
     fun showDialogFragment(dialogFragment: DialogFragments, toolbar: androidx.appcompat.widget.Toolbar? = null) {
@@ -714,25 +727,25 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
     }
 
     fun setFont() {
-        if (fontId == R.font.nanum_brush_font_family ||
-            fontId == R.font.nanum_pen_font_family) {
-            binding.textViewCurrentFolderName.setTextSize(TypedValue.COMPLEX_UNIT_SP, BASIC_DIALOG_TITLE_TEXT_SIZE + 6)
-            binding.textViewSort.setTextSize(TypedValue.COMPLEX_UNIT_SP, BASIC_DIALOG_INPUT_TEXT_SIZE + 6)
-        } else if (fontId == R.font.bmyeonsung_font_family) {
-            binding.textViewCurrentFolderName.setTextSize(TypedValue.COMPLEX_UNIT_SP, BASIC_DIALOG_TITLE_TEXT_SIZE + 2)
-            binding.textViewSort.setTextSize(TypedValue.COMPLEX_UNIT_SP, BASIC_DIALOG_INPUT_TEXT_SIZE + 2)
-        } else {
-            binding.textViewCurrentFolderName.setTextSize(TypedValue.COMPLEX_UNIT_SP, BASIC_DIALOG_TITLE_TEXT_SIZE)
-            binding.textViewSort.setTextSize(TypedValue.COMPLEX_UNIT_SP, BASIC_DIALOG_INPUT_TEXT_SIZE)
-        }
+        binding.textViewCurrentFolderName.adjustDialogTitleTextSize(fontId)
+        binding.textViewSort.adjustDialogItemTextSize(fontId)
 
-        binding.toolBar.setTitleTextAppearance(this, fontStyleId)
+        binding.toolbar.setTitleTextAppearance(this, fontStyleId)
         binding.textViewCurrentFolderName.typeface = font
         binding.textViewSort.typeface = font
     }
 
-    companion object {
+    fun clear() {
+        isClearing = true
+        val message = configureFragment.progressDialogHandler.obtainMessage()
+        message.what = ConfigureFragment.START_PROGRESS_DIALOG
+        configureFragment.progressDialogHandler.sendMessage(message)
+        for(note in noteAdapter.getAllNotes())
+            viewModel.delete(note)
+        noteAdapter.clear()
+    }
 
+    companion object {
         var font: Typeface? = null
         var fontId = 0
         var fontStyleId = 0
@@ -740,11 +753,12 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         var backgroundColor = 0
         var noteColor = 0
         var inlayColor = 0
+        var appWidgetTitleColor = 0
         var appWidgetBackgroundColor = 0
 
         var isAppRunning = false
 
-        const val DATABASE_NAME = "dim_cat_cam_notes_12"
+        const val DATABASE_NAME = "dim_cat_cam_notes_13"
 
         const val PREFERENCES_CURRENT_FOLDER = "current_folder"
 

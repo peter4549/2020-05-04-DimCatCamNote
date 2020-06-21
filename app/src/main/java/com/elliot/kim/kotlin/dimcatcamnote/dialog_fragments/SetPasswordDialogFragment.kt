@@ -3,6 +3,7 @@ package com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments
 import android.app.Activity
 import android.app.Dialog
 import android.content.Context
+import android.graphics.Typeface
 import android.os.Build
 import android.os.Bundle
 import android.util.TypedValue
@@ -41,43 +42,35 @@ class SetPasswordDialogFragment(private val adapter: Any) : DialogFragment() {
         val button = dialog.findViewById<Button>(R.id.button_enter_password)
 
         // Apply design
+        val toolbarColor: Int
+        val backgroundColor: Int
+        val font: Typeface?
+        val fontId: Int
+
         if (activity is MainActivity) {
-            setPasswordContainer.setBackgroundColor(MainActivity.backgroundColor)
-            textView.setBackgroundColor(MainActivity.toolbarColor)
-            button.setBackgroundColor(MainActivity.toolbarColor)
-
-            textView.adjustDialogTitleTextSize(MainActivity.fontId)
-            editText.adjustDialogInputTextSize(MainActivity.fontId)
-            button.adjustDialogButtonTextSize(MainActivity.fontId)
-
-            textView.typeface = MainActivity.font
-            editText.typeface = MainActivity.font
-            button.typeface = MainActivity.font
+            toolbarColor = MainActivity.toolbarColor
+            backgroundColor = MainActivity.backgroundColor
+            font = MainActivity.font
+            fontId = MainActivity.fontId
         } else {
-            val colorPreferences =
-                activity.getSharedPreferences(PREFERENCES_SET_COLOR, Context.MODE_PRIVATE)
-            setPasswordContainer.setBackgroundColor(colorPreferences.getInt(KEY_COLOR_BACKGROUND,
-                activity.getColor(R.color.defaultColorBackground)))
-            textView.setBackgroundColor(colorPreferences.getInt(KEY_COLOR_TOOLBAR,
-                activity.getColor(R.color.defaultColorToolbar)))
-            button.setBackgroundColor(colorPreferences.getInt(KEY_COLOR_TOOLBAR,
-                activity.getColor(R.color.defaultColorToolbar)))
-
-            val fontPreferences =
-                activity.getSharedPreferences(PREFERENCES_FONT, Context.MODE_PRIVATE)
-            val fontId = fontPreferences.getInt(KEY_FONT_ID, DEFAULT_FOLDER_ID)
-            val font = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-                resources.getFont(fontId)
-            else ResourcesCompat.getFont(requireContext(), fontId)
-
-            textView.adjustDialogTitleTextSize(fontId)
-            editText.adjustDialogInputTextSize(fontId)
-            button.adjustDialogButtonTextSize(fontId)
-
-            textView.typeface = font
-            editText.typeface = font
-            button.typeface = font
+            // EditActivity
+            toolbarColor = EditActivity.toolbarColor
+            backgroundColor = EditActivity.backgroundColor
+            font = EditActivity.font
+            fontId = EditActivity.fontId
         }
+
+        setPasswordContainer.setBackgroundColor(backgroundColor)
+        textView.setBackgroundColor(toolbarColor)
+        button.setBackgroundColor(toolbarColor)
+
+        textView.adjustDialogTitleTextSize(fontId)
+        editText.adjustDialogInputTextSize(fontId)
+        button.adjustDialogButtonTextSize(fontId)
+
+        textView.typeface = font
+        editText.typeface = font
+        button.typeface = font
 
         button.setOnClickListener {
             if (isPasswordEntered) reconfirmPassword(dialog, editText)
@@ -120,7 +113,7 @@ class SetPasswordDialogFragment(private val adapter: Any) : DialogFragment() {
     private fun setFolderPassword(password: String) {
         (adapter as FolderAdapter).selectedFolder?.isLocked = true
         adapter.selectedFolder?.password = password
-        adapter.update(adapter.selectedFolder!!)
+        adapter.updateFolderPassword(adapter.selectedFolder!!)
     }
 
     private fun setNotePassword(password: String) {

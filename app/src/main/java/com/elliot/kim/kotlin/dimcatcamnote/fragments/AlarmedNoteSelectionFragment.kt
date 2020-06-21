@@ -11,6 +11,8 @@ import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.widget.ImageView
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.elliot.kim.kotlin.dimcatcamnote.LinearLayoutManagerWrapper
+import com.elliot.kim.kotlin.dimcatcamnote.PATTERN_YYYY_MM_dd
 
 import com.elliot.kim.kotlin.dimcatcamnote.R
 import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity
@@ -24,14 +26,22 @@ import kotlin.collections.ArrayList
 /**
  * A simple [Fragment] subclass.
  */
-class AlarmedNoteSelectionFragment(private val alarmedNotes: ArrayList<Note>,
-                                   private val selectedDateText: String,
-                                   private val selectedImageView: ImageView) : Fragment() {
+class AlarmedNoteSelectionFragment : Fragment() {
+
+    private lateinit var alarmedNotes: ArrayList<Note>
+    private lateinit var selectedImageView: ImageView
+    private var currentDate: Long = 0L
 
     private lateinit var activity: MainActivity
     private lateinit var binding: FragmentAlarmedNoteSelectionBinding
     private lateinit var alarmedNoteAdapter: AlarmedNoteAdapter
     private var selectedDate = 0L
+
+    fun setData(alarmedNotes: ArrayList<Note>, currentDate: Long, imageView: ImageView) {
+        this.alarmedNotes = alarmedNotes
+        this.currentDate = currentDate
+        this.selectedImageView = imageView
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -39,6 +49,7 @@ class AlarmedNoteSelectionFragment(private val alarmedNotes: ArrayList<Note>,
     ): View? {
         activity = requireActivity() as MainActivity
         this.alarmedNoteAdapter = AlarmedNoteAdapter(activity, alarmedNotes)
+        // Synchronize deletion with reference to alarmedNotAdapter.
         activity.alarmedNoteAdapter = this.alarmedNoteAdapter
         return inflater.inflate(R.layout.fragment_alarmed_note_selection, container, false)
     }
@@ -47,12 +58,14 @@ class AlarmedNoteSelectionFragment(private val alarmedNotes: ArrayList<Note>,
         super.onViewCreated(view, savedInstanceState)
 
         binding = FragmentAlarmedNoteSelectionBinding.bind(view)
-        binding.textViewDate.text = selectedDateText
+        binding.textViewDate.text =  MainActivity.longTimeToString(currentDate, PATTERN_YYYY_MM_dd)
 
-        val buttonText = selectedDateText.replace("[^0-9]".toRegex(), "")
-        val year = buttonText.substring(0, 4).toInt()
-        val month = buttonText.substring(4, 6).toInt()
-        val dayOfMonth = buttonText.substring(6).toInt()
+        val year = SimpleDateFormat("yyyy",
+            Locale.getDefault()).format(currentDate).toInt()
+        val month = SimpleDateFormat("MM",
+            Locale.getDefault()).format(currentDate).toInt()
+        val dayOfMonth = SimpleDateFormat("dd",
+            Locale.getDefault()).format(currentDate).toInt()
 
         selectedDate = convertDateAndHourIntToLong(year, month, dayOfMonth)
 
@@ -63,7 +76,8 @@ class AlarmedNoteSelectionFragment(private val alarmedNotes: ArrayList<Note>,
         binding.recyclerView.apply {
             setHasFixedSize(true)
             adapter = alarmedNoteAdapter
-            layoutManager = LinearLayoutManager(context)
+            // Replaced from LinearLayoutManager to LinearLayoutManagerWrapper
+            layoutManager = LinearLayoutManagerWrapper(context)
         }
     }
 

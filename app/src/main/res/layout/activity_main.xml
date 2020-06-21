@@ -19,10 +19,10 @@
             tools:context=".activities.MainActivity">
 
             <androidx.appcompat.widget.Toolbar
-                android:id="@+id/tool_bar"
+                android:id="@+id/toolbar"
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
-                android:background="@android:color/white"
+                android:background="@color/defaultColorToolbar"
                 android:theme="@style/ToolbarTheme"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -48,7 +48,6 @@
                 android:id="@+id/text_view_current_folder_name"
                 android:layout_width="match_parent"
                 android:layout_height="36dp"
-                android:layout_marginTop="2dp"
                 android:gravity="center_vertical"
                 android:paddingEnd="12dp"
                 android:paddingStart="12dp"
@@ -58,7 +57,7 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/tool_bar"
+                app:layout_constraintTop_toBottomOf="@+id/toolbar"
                 app:layout_constraintVertical_bias="0.0" />
 
             <RelativeLayout

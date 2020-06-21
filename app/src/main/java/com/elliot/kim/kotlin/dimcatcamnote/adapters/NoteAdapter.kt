@@ -1,33 +1,28 @@
 package com.elliot.kim.kotlin.dimcatcamnote.adapters
 
 import android.annotation.SuppressLint
-import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
 import android.content.Context
 import android.content.Intent
-import android.graphics.Color
 import android.graphics.Paint
 import android.net.Uri
-import android.os.Build
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Filter
-import android.widget.RemoteViews
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.res.ResourcesCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.load.resource.bitmap.CircleCrop
 import com.elliot.kim.kotlin.dimcatcamnote.*
-import com.elliot.kim.kotlin.dimcatcamnote.activities.EditActivity
 import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity
 import com.elliot.kim.kotlin.dimcatcamnote.activities.SingleNoteConfigureActivity
 import com.elliot.kim.kotlin.dimcatcamnote.data.Note
 import com.elliot.kim.kotlin.dimcatcamnote.databinding.CardViewBinding
 import com.elliot.kim.kotlin.dimcatcamnote.databinding.CardViewBinding.bind
 import com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments.ConfirmPasswordDialogFragment
+import com.elliot.kim.kotlin.dimcatcamnote.fragments.ConfigureFragment
 import com.elliot.kim.kotlin.dimcatcamnote.item_touch_helper.ItemMovedListener
 import java.util.*
 import kotlin.collections.ArrayList
@@ -40,6 +35,7 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
     ItemMovedListener {
 
     private val tag = "NoteAdapter"
+    private var currentTime = 0L
     private var notesFiltered: MutableList<Note> = notes
     private lateinit var recyclerView: RecyclerView
     var selectedNote: Note? = null
@@ -57,7 +53,6 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-
         val v = LayoutInflater.from(parent.context).inflate(R.layout.card_view, parent, false)
 
         return ViewHolder(v)
@@ -97,28 +92,28 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
         // Apply design
         if (context is MainActivity) {
             holder.binding.colorContainer.setBackgroundColor(MainActivity.noteColor)
+
+            holder.binding.textViewTitle.adjustNoteTextSize(MainActivity.fontId, NoteItem.TITLE)
+            holder.binding.textViewTime.adjustNoteTextSize(MainActivity.fontId, NoteItem.TIME)
+            holder.binding.textViewAlarmTime.adjustNoteTextSize(MainActivity.fontId, NoteItem.TIME)
+            holder.binding.textViewContent.adjustNoteTextSize(MainActivity.fontId, NoteItem.CONTENT)
+
             holder.binding.textViewTitle.typeface = MainActivity.font
             holder.binding.textViewTime.typeface = MainActivity.font
             holder.binding.textViewAlarmTime.typeface = MainActivity.font
             holder.binding.textViewContent.typeface = MainActivity.font
         } else if (context is SingleNoteConfigureActivity) {
-            val colorPreferences =
-                context.getSharedPreferences(PREFERENCES_SET_COLOR, Context.MODE_PRIVATE)
-            holder.binding.colorContainer
-                .setBackgroundColor(colorPreferences.getInt(KEY_COLOR_NOTE,
-                    context.getColor(R.color.defaultColorNote)))
+            holder.binding.colorContainer.setBackgroundColor(SingleNoteConfigureActivity.noteColor)
 
-            val fontPreferences =
-                context.getSharedPreferences(PREFERENCES_FONT, Context.MODE_PRIVATE)
-            val fontId = fontPreferences.getInt(KEY_FONT_ID, R.font.nanum_gothic_font_family)
-            val font = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-                context.resources.getFont(fontId)
-            else ResourcesCompat.getFont(context, fontId)
+            holder.binding.textViewTitle.adjustNoteTextSize(SingleNoteConfigureActivity.fontId, NoteItem.TITLE)
+            holder.binding.textViewTime.adjustNoteTextSize(SingleNoteConfigureActivity.fontId, NoteItem.TIME)
+            holder.binding.textViewAlarmTime.adjustNoteTextSize(SingleNoteConfigureActivity.fontId, NoteItem.TIME)
+            holder.binding.textViewContent.adjustNoteTextSize(SingleNoteConfigureActivity.fontId, NoteItem.CONTENT)
 
-            holder.binding.textViewTitle.typeface = font
-            holder.binding.textViewTime.typeface = font
-            holder.binding.textViewAlarmTime.typeface = font
-            holder.binding.textViewContent.typeface = font
+            holder.binding.textViewTitle.typeface = SingleNoteConfigureActivity.font
+            holder.binding.textViewTime.typeface = SingleNoteConfigureActivity.font
+            holder.binding.textViewAlarmTime.typeface = SingleNoteConfigureActivity.font
+            holder.binding.textViewContent.typeface = SingleNoteConfigureActivity.font
         }
 
         holder.binding.textViewTitle.text = title
@@ -130,6 +125,9 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
             holder.binding.imageViewThumbnail.visibility = View.VISIBLE
             Glide.with(holder.binding.imageViewThumbnail.context)
                 .load(Uri.parse(uri))
+                .error(R.drawable.ic_sentiment_dissatisfied_grey_24dp)
+                .diskCacheStrategy(DiskCacheStrategy.NONE)
+                .skipMemoryCache(true)
                 .transform(CircleCrop())
                 .into(holder.binding.imageViewThumbnail)
         }
@@ -155,13 +153,21 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
             holder.binding.textViewAlarmTime.visibility = View.GONE
             holder.binding.imageViewAlarm.visibility = View.GONE
         } else {
+            holder.binding.imageViewAlarm.visibility = View.VISIBLE
+
+            currentTime = MainActivity.getCurrentTime()
+            var text = context?.getString(R.string.alarm_time)
+            if (note.alarmTime!! < currentTime) {
+                text = "캘린더 등록시간"
+                holder.binding.imageViewAlarm
+                    .setImageDrawable(context!!.getDrawable(R.drawable.ic_today_white_24dp))
+            }
             val alarmTimeText =
-                "${context?.getString(R.string.alarm_time)}: ${MainActivity.longTimeToString(alarmTime,
-                    PATTERN_UP_TO_SECONDS
+                "$text: ${MainActivity.longTimeToString(alarmTime,
+                    PATTERN_UP_TO_MINUTES
                 )}"
             holder.binding.textViewAlarmTime.visibility = View.VISIBLE
             holder.binding.textViewAlarmTime.text = alarmTimeText
-            holder.binding.imageViewAlarm.visibility = View.VISIBLE
         }
 
         if (note.isLocked) {
@@ -205,18 +211,21 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
     fun getFilter(): Filter {
         return object : Filter() {
             override fun performFiltering(constraint: CharSequence): FilterResults {
-
                 val currentFolderId = (context as MainActivity).currentFolder.id
                 val searchWord = constraint.toString()
+                val lockedFolders = context.getFolderAdapter().getLockedFolderIds()
                 if (searchWord.isEmpty() && currentFolderId == DEFAULT_FOLDER_ID) {
                     // Show all notes.
                     val noteListFiltering: MutableList<Note> = ArrayList()
                     for (note in notes) {
                         // Exclude note in the locked folder.
-                        if (!context.getFolderAdapter().isLockedFolder(note.folderId))
+                        if (note.folderId == DEFAULT_FOLDER_ID)
+                            noteListFiltering.add(note)
+                        else if (note.folderId !in lockedFolders)
                             noteListFiltering.add(note)
                     }
-                    notesFiltered = noteListFiltering
+
+                    notesFiltered =  noteListFiltering
                 }
                 else if (searchWord.isNotEmpty() && currentFolderId == DEFAULT_FOLDER_ID){
                     // Show notes that contain search word in the title.
@@ -264,7 +273,8 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
                 constraint: CharSequence,
                 results: FilterResults
             ) {
-                notesFiltered = results.values as MutableList<Note>
+                if (results.values != null)
+                    notesFiltered = results.values as MutableList<Note>
 
                 Collections.sort(notesFiltered,
                     Comparator { o1: Note, o2: Note ->
@@ -322,6 +332,31 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
         if (note.uri != null) context.deleteFileFromUri(note.uri!!)
     }
 
+    fun clear() {
+        val notesIterator = notes.iterator()
+        while(notesIterator.hasNext()) {
+            val note = notesIterator.next()
+            (context as MainActivity).cancelAlarm(note, isDelete = true, isByUser = true)
+            if (note.uri != null) context.deleteFileFromUri(note.uri!!)
+            notesIterator.remove()
+        }
+
+        val filteredNotesIterator = notesFiltered.iterator()
+        while(filteredNotesIterator.hasNext()) {
+            val note = filteredNotesIterator.next()
+            filteredNotesIterator.remove()
+        }
+
+        if (notes.count() == 0) {
+            val message = (context as MainActivity).configureFragment.progressDialogHandler.obtainMessage()
+            message.what = ConfigureFragment.STOP_PROGRESS_DIALOG
+            context.configureFragment.progressDialogHandler.sendMessage(message)
+            context.showToast("모든 노트가 삭제되었습니다.")
+            notifyDataSetChanged()
+        }
+    }
+
+    // 이미지 새로 찍었을 때 기존 이미지 제거에 사용가할듯.
     fun removePhoto(note: Note) {
         if (note.uri != null) (context as MainActivity).deleteFileFromUri(note.uri!!)
     }
@@ -363,6 +398,9 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
         return notes.filter{ it.id == id }[0]
     }
 
+    fun getAllNotes() = notes
+
+    // For smooth display when the folder is changed.
     fun removeFromNotesFiltered(note: Note) {
         val position: Int = notesFiltered.indexOf(note)
         notesFiltered.removeAt(position)

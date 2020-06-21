@@ -23,10 +23,12 @@ const val KEY_SORTING_CRITERIA = "key_sorting_criteria"
 const val KEY_COLOR_TOOLBAR = "key_color_toolbar"
 const val KEY_COLOR_BACKGROUND = "key_color_background"
 const val KEY_COLOR_NOTE = "key_color_note_v2"
+const val KEY_COLOR_APP_WIDGET_TITLE = "key_color_app_widget_title"
 const val KEY_COLOR_APP_WIDGET_BACKGROUND = "key_color_app_widget_background"
 const val KEY_COLOR_INLAY = "key_color_inlay"
 const val KEY_SET_THEME_COLOR_CHECKED_RADIO_BUTTON_ID = "key_set_theme_color_checked_radio_button_id"
 const val KEY_SET_NOTE_COLOR_CHECKED_RADIO_BUTTON_ID = "key_set_note_color_checked_radio_button_id"
+const val KEY_SET_APP_WIDGET_COLOR_CHECKED_RADIO_BUTTON_ID = "key_set_app_widget_color_checked_radio_button_id"
 const val KEY_SET_INLAY_COLOR_CHECKED_RADIO_BUTTON_ID = "key_set_inlay_color_checked_radio_button_id"
 const val KEY_SET_FONT_CHECKED_RADIO_BUTTON_ID = "key_set_font_checked_radio_button_id"
 const val KEY_FONT_ID = "key_font_id"
@@ -39,6 +41,8 @@ const val DEFAULT_VALUE_NOTE_ID = -1
 const val DEFAULT_FOLDER_ID = 0
 const val DEFAULT_FOLDER_NAME = "모든 노트"
 
+const val DEFAULT_FONT_ID = R.font.nanum_gothic_font_family
+
 const val DEFAULT_HEX_OPACITY = 80
 const val DEFAULT_SEEK_BAR_PROGRESS = 50
 
@@ -46,6 +50,7 @@ const val DEFAULT_SEEK_BAR_PROGRESS = 50
 const val PREFERENCES_NAME_ALARM = "preferences_name_alarm"
 const val PREFERENCES_SORTING_CRITERIA = "preference_sorting_criteria"
 const val PREFERENCES_SET_COLOR = "preferences_set_color"
+const val PREFERENCES_FOLDER = "preferences_folder_v2"
 const val PREFERENCES_FONT = "preferences_font"
 const val PREFERENCES_OPACITY = "preferences_opacity"
 const val APP_WIDGET_PREFERENCES = "app_widget_preferences"
@@ -63,6 +68,10 @@ const val BASIC_DIALOG_BUTTON_TEXT_SIZE = 16.0f
 const val BASIC_DIALOG_INPUT_TEXT_SIZE = 14.0f
 const val BASIC_SPINNER_ITEM_TEXT_SIZE = 16.0f
 const val BASIC_DIALOG_ITEM_TEXT_SIZE = 16.0f
+const val SMALL_DIALOG_ITEM_TEXT_SIZE = 12.0f
+const val NOTE_TITLE_TEXT_SIZE = 16.0f
+const val NOTE_TIME_TEXT_SIZE = 14.0f
+const val NOTE_CONTENT_TEXT_SIZE = 12.0f
 
 enum class CurrentFragment {
     ALARM_FRAGMENT,
@@ -72,6 +81,12 @@ enum class CurrentFragment {
     EDIT_FRAGMENT,
     PHOTO_FRAGMENT,
     WRITE_FRAGMENT
+}
+
+enum class NoteItem {
+    TITLE,
+    TIME,
+    CONTENT
 }
 
 const val PATTERN_YYYY_MM_dd = "yyyy년 M월 d일"

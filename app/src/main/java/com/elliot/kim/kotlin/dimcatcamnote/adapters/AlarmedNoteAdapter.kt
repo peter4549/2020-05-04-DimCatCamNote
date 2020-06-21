@@ -11,26 +11,27 @@ import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil.bind
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.load.resource.bitmap.CircleCrop
-import com.elliot.kim.kotlin.dimcatcamnote.PATTERN_UP_TO_SECONDS
-import com.elliot.kim.kotlin.dimcatcamnote.R
+import com.elliot.kim.kotlin.dimcatcamnote.*
 import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity
 import com.elliot.kim.kotlin.dimcatcamnote.data.Note
 import com.elliot.kim.kotlin.dimcatcamnote.databinding.CardViewAlarmedNoteBinding
+import com.elliot.kim.kotlin.dimcatcamnote.databinding.CardViewBinding
 import com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments.ConfirmPasswordDialogFragment
 
 class AlarmedNoteAdapter(private val activity: MainActivity,
                          private val notes: ArrayList<Note>):
     RecyclerView.Adapter<AlarmedNoteAdapter.ViewHolder>() {
 
-    private val tag = "AlarmedNoteAdapter"
-
     private lateinit var recyclerView: RecyclerView
+    private val tag = "AlarmedNoteAdapter"
+    private var currentTime = 0L
     var selectedNote: Note? = null
 
     inner class ViewHolder(context: Context?, v: View)
         : RecyclerView.ViewHolder(v){
-        var binding: CardViewAlarmedNoteBinding = bind(v)!!
+        var binding: CardViewBinding = bind(v)!!
     }
 
     override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
@@ -41,7 +42,7 @@ class AlarmedNoteAdapter(private val activity: MainActivity,
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AlarmedNoteAdapter.ViewHolder {
         val v = LayoutInflater.from(parent.context).inflate(
-            R.layout.card_view_alarmed_note,
+            R.layout.card_view,
             parent, false)
         return ViewHolder(activity, v)
     }
@@ -66,6 +67,18 @@ class AlarmedNoteAdapter(private val activity: MainActivity,
                 PATTERN_UP_TO_SECONDS
             )}"
 
+        holder.binding.colorContainer.setBackgroundColor(MainActivity.noteColor)
+
+        holder.binding.textViewTitle.adjustNoteTextSize(MainActivity.fontId, NoteItem.TITLE)
+        holder.binding.textViewTime.adjustNoteTextSize(MainActivity.fontId, NoteItem.TIME)
+        holder.binding.textViewAlarmTime.adjustNoteTextSize(MainActivity.fontId, NoteItem.TIME)
+        holder.binding.textViewContent.adjustNoteTextSize(MainActivity.fontId, NoteItem.CONTENT)
+
+        holder.binding.textViewTitle.typeface = MainActivity.font
+        holder.binding.textViewTime.typeface = MainActivity.font
+        holder.binding.textViewAlarmTime.typeface = MainActivity.font
+        holder.binding.textViewContent.typeface = MainActivity.font
+
         holder.binding.textViewTitle.text = title
         holder.binding.textViewTime.text = time
         holder.binding.textViewContent.text = content
@@ -75,6 +88,9 @@ class AlarmedNoteAdapter(private val activity: MainActivity,
             holder.binding.imageViewThumbnail.visibility = View.VISIBLE
             Glide.with(holder.binding.imageViewThumbnail.context)
                 .load(Uri.parse(uri))
+                .error(R.drawable.ic_sentiment_dissatisfied_grey_24dp)
+                .diskCacheStrategy(DiskCacheStrategy.NONE)
+                .skipMemoryCache(true)
                 .transform(CircleCrop())
                 .into(holder.binding.imageViewThumbnail)
         }
@@ -86,13 +102,13 @@ class AlarmedNoteAdapter(private val activity: MainActivity,
                     Paint.STRIKE_THRU_TEXT_FLAG
             holder.binding.textViewContent.paintFlags = holder.binding.textViewContent.paintFlags or
                     Paint.STRIKE_THRU_TEXT_FLAG
-            holder.binding.imageViewLogo.setImageResource(R.drawable.ic_cat_footprint)
+            //holder.binding.imageViewLogo.setImageResource(R.drawable.ic_cat_footprint)
             holder.binding.imageViewDone.visibility = View.VISIBLE
         } else {
             holder.binding.textViewTitle.paintFlags = 0
             holder.binding.textViewTime.paintFlags = 0
             holder.binding.textViewContent.paintFlags = 0
-            holder.binding.imageViewLogo.setImageResource(R.drawable.ic_cat_card_view_00)
+            //holder.binding.imageViewLogo.setImageResource(R.drawable.ic_cat_card_view_00)
             holder.binding.imageViewDone.visibility = View.INVISIBLE
         }
 
@@ -100,13 +116,25 @@ class AlarmedNoteAdapter(private val activity: MainActivity,
             holder.binding.textViewAlarmTime.visibility = View.GONE
             holder.binding.imageViewAlarm.visibility = View.GONE
         } else {
+            holder.binding.imageViewAlarm.visibility = View.VISIBLE
+
+            currentTime = MainActivity.getCurrentTime()
+            var text = activity.getString(R.string.alarm_time)
+            holder.binding.imageViewAlarm
+                .setImageDrawable(activity.getDrawable(R.drawable.ic_alarm_on_white_24dp))
+
+            if (note.alarmTime!! < currentTime) {
+                text = "캘린더 등록시간"
+                holder.binding.imageViewAlarm
+                    .setImageDrawable(activity.getDrawable(R.drawable.ic_today_white_24dp))
+            }
+
             val alarmTimeText =
-                "${activity.getString(R.string.alarm_time)}: ${MainActivity.longTimeToString(alarmTime,
-                    PATTERN_UP_TO_SECONDS
+                "$text: ${MainActivity.longTimeToString(alarmTime,
+                    PATTERN_UP_TO_MINUTES
                 )}"
             holder.binding.textViewAlarmTime.visibility = View.VISIBLE
             holder.binding.textViewAlarmTime.text = alarmTimeText
-            holder.binding.imageViewAlarm.visibility = View.VISIBLE
         }
 
         if (note.isLocked) {

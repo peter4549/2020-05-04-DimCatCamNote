@@ -5,6 +5,7 @@ import android.animation.AnimatorListenerAdapter
 import android.annotation.SuppressLint
 import android.content.DialogInterface
 import android.graphics.Rect
+import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
 import android.view.*
@@ -12,14 +13,19 @@ import android.view.GestureDetector.SimpleOnGestureListener
 import android.view.View.OnTouchListener
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
+import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
-import com.elliot.kim.kotlin.dimcatcamnote.CurrentFragment
-import com.elliot.kim.kotlin.dimcatcamnote.PATTERN_UP_TO_SECONDS
-import com.elliot.kim.kotlin.dimcatcamnote.R
+import com.bumptech.glide.load.DataSource
+import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.bumptech.glide.load.engine.GlideException
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
+import com.bumptech.glide.request.RequestListener
+import com.bumptech.glide.request.target.Target
+import com.elliot.kim.kotlin.dimcatcamnote.*
 import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity
 import com.elliot.kim.kotlin.dimcatcamnote.data.Note
 import com.elliot.kim.kotlin.dimcatcamnote.databinding.FragmentEditBinding
@@ -274,14 +280,40 @@ class EditFragment(private val activity: MainActivity) : Fragment() {
         builder.setMessage("지금까지 편집한 내용을 저장하시겠습니까?")
         builder.setPositiveButton("저장") { _: DialogInterface?, _: Int ->
             finish(SAVE)
-        }.setNeutralButton("계속쓰기"
-        ) { _: DialogInterface?, _: Int -> }
-        builder.setNegativeButton("아니요"
-        ) { _: DialogInterface?, _: Int ->
+        }.setNeutralButton("계속쓰기") { _: DialogInterface?, _: Int -> }
+        builder.setNegativeButton("아니요") { _: DialogInterface?, _: Int ->
             finishWithoutSaving()
         }
         builder.create()
-        builder.show()
+
+        val dialog = builder.show()!!
+
+        val alertTitleId = resources.getIdentifier("alertTitle", "id", requireContext().packageName)
+        val messageTextView = dialog.findViewById<TextView>(android.R.id.message)!!
+        val okButton = dialog.findViewById<Button>(android.R.id.button1)!!
+        val cancelButton = dialog.findViewById<Button>(android.R.id.button2)!!
+        val keepWritingButton = dialog.findViewById<Button>(android.R.id.button3)!!
+
+        if (alertTitleId > 0) {
+            val titleTextView = dialog.findViewById<TextView>(alertTitleId)!!
+
+            titleTextView.setTextColor(MainActivity.toolbarColor)
+            okButton.setTextColor(MainActivity.toolbarColor)
+            cancelButton.setTextColor(MainActivity.toolbarColor)
+            keepWritingButton.setTextColor(MainActivity.toolbarColor)
+
+            titleTextView.adjustDialogTitleTextSize(MainActivity.fontId)
+            messageTextView.adjustDialogItemTextSize(MainActivity.fontId)
+            okButton.adjustDialogButtonTextSize(MainActivity.fontId)
+            cancelButton.adjustDialogButtonTextSize(MainActivity.fontId)
+            keepWritingButton.adjustDialogButtonTextSize(MainActivity.fontId)
+
+            titleTextView.typeface = MainActivity.font
+            messageTextView.typeface = MainActivity.font
+            okButton.typeface = MainActivity.font
+            cancelButton.typeface = MainActivity.font
+            keepWritingButton.typeface = MainActivity.font
+        }
     }
 
     fun finish(action: Int) {
@@ -334,6 +366,11 @@ class EditFragment(private val activity: MainActivity) : Fragment() {
                         override fun onAnimationStart(animation: Animator) {
                             Glide.with(binding.imageView.context)
                                 .load(Uri.parse(note.uri))
+                                .error(R.drawable.ic_sentiment_dissatisfied_grey_24dp)
+                                .transition(DrawableTransitionOptions.withCrossFade())
+                                .diskCacheStrategy(DiskCacheStrategy.NONE)
+                                .skipMemoryCache(true)
+                                .listener(requestListener)
                                 .into(binding.imageView)
                         }
                     })
@@ -364,6 +401,33 @@ class EditFragment(private val activity: MainActivity) : Fragment() {
     private fun showImage() {
         if(uri == null) return
         else crossFadeImageView(true)
+    }
+
+    private val requestListener: RequestListener<Drawable> = object : RequestListener<Drawable> {
+        override fun onLoadFailed(
+            e: GlideException?,
+            model: Any?,
+            target: Target<Drawable>?,
+            isFirstResource: Boolean
+        ): Boolean {
+            binding.imageView.isClickable = false
+            binding.imageView.isFocusable = false
+
+            return false
+        }
+
+        override fun onResourceReady(
+            resource: Drawable?,
+            model: Any?,
+            target: Target<Drawable>?,
+            dataSource: DataSource?,
+            isFirstResource: Boolean
+        ): Boolean {
+            binding.imageView.isClickable = true
+            binding.imageView.isFocusable = true
+
+            return false
+        }
     }
 
     companion object {

@@ -12,6 +12,7 @@
         android:layout_height="48dp"
         android:background="@color/defaultColorToolbar"
         android:gravity="center"
+        android:text="모든 노트 삭제"
         android:textColor="@android:color/white"
         android:textSize="@dimen/text_size_large"
         android:textStyle="bold"/>
@@ -20,11 +21,11 @@
     <TextView
         android:id="@+id/text_view_message"
         android:layout_width="match_parent"
-        android:layout_height="36dp"
+        android:layout_height="60dp"
         android:layout_below="@+id/text_view_title"
         android:layout_marginTop="4dp"
         android:gravity="center"
-        android:text="정말로 삭제하시겠습니까?"
+        android:text="모든 노트가 삭제되며 복원할 수 없습니다.\n계속하시겠습니까?"
         android:textSize="@dimen/text_size_middle"/>
 
     <LinearLayout

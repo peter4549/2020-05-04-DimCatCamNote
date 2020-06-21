@@ -2,6 +2,7 @@ package com.elliot.kim.kotlin.dimcatcamnote.fragments
 
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -41,9 +42,9 @@ class PhotoFragment(private val fragment: Any, private val uri: String) : Fragme
         when (fragment) {
             is EditFragment -> (activity as MainActivity).setCurrentFragment(CurrentFragment.EDIT_FRAGMENT)
             is WriteFragment -> {
-                val message =
-                    (activity as MainActivity).writeFragment.handler.obtainMessage()
-                (activity as MainActivity).writeFragment.handler.sendMessage(message)
+                val message = fragment.handler.obtainMessage()
+                message.what = WriteFragment.SHOW_BOTTOM_NAVIGATION_VIEW
+                fragment.handler.sendMessage(message)
                 (activity as MainActivity).setCurrentFragment(CurrentFragment.WRITE_FRAGMENT)
             }
             is EditActivity -> {

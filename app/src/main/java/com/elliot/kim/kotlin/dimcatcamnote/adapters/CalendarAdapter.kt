@@ -19,13 +19,12 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 class CalendarAdapter(private val activity: MainActivity, private val rowViewId: Int,
-                      private val calendar: Calendar, private val alarmedNotes: MutableList<Note>,
-                      private val todayDate: Int): BaseAdapter() {
+                      private val calendar: Calendar, private var noteIdAlarmDatePairs : ArrayList<Pair<Int, Long>>,
+                      private val alarmedNotes: MutableList<Note>, private val todayDate: Int): BaseAdapter() {
 
     private lateinit var inflater: LayoutInflater
     private val itemCount = 42
-
-    private var noteIdAlarmDatePairs = arrayListOf<Pair<Int, Long>>()
+    private var alarmedNoteSelectionFragment: AlarmedNoteSelectionFragment
 
     private var lastDay = 0
 
@@ -38,7 +37,8 @@ class CalendarAdapter(private val activity: MainActivity, private val rowViewId:
         for(i in calendarStartDay until itemCount) {
             dateArray[i] = j++
         }
-        getAlarmTimeFromNotes()
+
+        alarmedNoteSelectionFragment = AlarmedNoteSelectionFragment()
     }
 
     @SuppressLint("ViewHolder")
@@ -47,11 +47,9 @@ class CalendarAdapter(private val activity: MainActivity, private val rowViewId:
         val currentMonth = calendar.get(Calendar.MONTH) + 1
 
         lastDay = calendar.getActualMaximum(Calendar.DAY_OF_MONTH)
-
         inflater = activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
 
-        val rowView = inflater.inflate(rowViewId, null) // 뷰 홀더 패턴..
-
+        val rowView = inflater.inflate(rowViewId, null)
         val textView = rowView.findViewById<TextView>(R.id.text_view)
         val imageView = rowView.findViewById<ImageView>(R.id.image_view)
         imageView.visibility = View.INVISIBLE
@@ -62,7 +60,6 @@ class CalendarAdapter(private val activity: MainActivity, private val rowViewId:
             rowView.foreground = null
         }
         else {
-
             // Date displayed
             val currentDate = convertDateIntToLong(currentYear, currentMonth, dateArray[position] as Int)
             val today = convertDateIntToLong(currentYear, currentMonth, todayDate)
@@ -80,17 +77,10 @@ class CalendarAdapter(private val activity: MainActivity, private val rowViewId:
                 }
             }
 
-            val simpleDateFormat = SimpleDateFormat(
-                PATTERN_YYYY_MM_dd, Locale.getDefault())
-
-            val alarmedNoteSelectionFragment = AlarmedNoteSelectionFragment(alarmedNotes.filter {
-                simpleDateFormat.parse(simpleDateFormat.format(it.alarmTime))?.time!! == currentDate
-            } as ArrayList<Note>, MainActivity.longTimeToString(currentDate, PATTERN_YYYY_MM_dd), imageView)
-
             textView.text = dateArray[position].toString()
 
             rowView.setOnClickListener {
-                startAlarmedNoteSelectionFragment(alarmedNoteSelectionFragment)
+                startAlarmedNoteSelectionFragment(alarmedNoteSelectionFragment, currentDate, imageView)
             }
 
         }
@@ -104,22 +94,6 @@ class CalendarAdapter(private val activity: MainActivity, private val rowViewId:
     override fun getItemId(position: Int): Long = position.toLong()
 
     override fun getCount(): Int = itemCount
-
-    private fun getAlarmTimeFromNotes() {
-        // year, month랑 date 추출하여... 튜플에 저장???
-        // 알람 기능부에 전부 알림 어레이에 더할 수 있도록..
-        // 키 데이트 얻으면,, 키로 접근 삽 가능.
-
-        val simpleDateFormat = SimpleDateFormat(
-            PATTERN_YYYY_MM_dd, Locale.getDefault())
-
-        for (alarmedNote in alarmedNotes) {
-            val alarmedDate = simpleDateFormat.format(alarmedNote.alarmTime)
-            val date = simpleDateFormat.parse(alarmedDate)?.time!!
-
-            noteIdAlarmDatePairs.add(Pair(alarmedNote.id, date))
-        }
-    }
 
     fun updateCalendar() {
         // 얘가 노트 추가나 변경시 호출될 차기 에이스
@@ -135,7 +109,12 @@ class CalendarAdapter(private val activity: MainActivity, private val rowViewId:
        return simpleDateFormat.parse(String.format("%d-%d-%d", year, month, date))?.time!!
    }
 
-    private fun startAlarmedNoteSelectionFragment(alarmedNoteSelectionFragment: AlarmedNoteSelectionFragment) {
+    private fun startAlarmedNoteSelectionFragment(alarmedNoteSelectionFragment: AlarmedNoteSelectionFragment,
+                                                  currentDate: Long, imageView: ImageView) {
+        val simpleDateFormat = SimpleDateFormat(PATTERN_YYYY_MM_dd, Locale.getDefault())
+        alarmedNoteSelectionFragment.setData(alarmedNotes.filter {
+            simpleDateFormat.parse(simpleDateFormat.format(it.alarmTime))?.time!! == currentDate
+        } as ArrayList<Note>, currentDate, imageView)
         activity.fragmentManager.beginTransaction()
             .addToBackStack(null)
             .setCustomAnimations(R.anim.anim_slide_in_left_enter,

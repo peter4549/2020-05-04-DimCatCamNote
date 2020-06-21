@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
+import android.os.Handler
 import android.view.*
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
@@ -17,6 +18,7 @@ import androidx.fragment.app.Fragment
 import com.elliot.kim.kotlin.dimcatcamnote.*
 import com.elliot.kim.kotlin.dimcatcamnote.activities.EditActivity
 import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity
+import com.elliot.kim.kotlin.dimcatcamnote.activities.SingleNoteConfigureActivity
 import com.elliot.kim.kotlin.dimcatcamnote.databinding.FragmentConfigureBinding
 import com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments.DialogFragments
 
@@ -26,6 +28,7 @@ class ConfigureFragment : Fragment() {
     private lateinit var binding: FragmentConfigureBinding
     private var hexStringOpacity = "80"
     private var seekBarProgress = DEFAULT_SEEK_BAR_PROGRESS
+    lateinit var progressDialogHandler: Handler
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -44,16 +47,28 @@ class ConfigureFragment : Fragment() {
 
         initOpacitySeekBar()
 
-        binding.setThemeColorContainer.setOnClickListener {
+        binding.textViewSetThemeColor.setOnClickListener {
             (activity as MainActivity).showDialogFragment(DialogFragments.SET_THEME_COLOR, binding.toolbar)
         }
 
-        binding.setNoteColorContainer.setOnClickListener {
+        binding.textViewSetNoteColor.setOnClickListener {
             (activity as MainActivity).showDialogFragment(DialogFragments.SET_NOTE_COLOR)
         }
 
-        binding.setFontContainer.setOnClickListener {
+        binding.textViewSetFont.setOnClickListener {
             (activity as MainActivity).showDialogFragment(DialogFragments.SET_FONT, binding.toolbar)
+        }
+
+        binding.textViewClear.setOnClickListener {
+            (activity as MainActivity).showDialogFragment(DialogFragments.CONFIRM_CLEAR)
+        }
+
+        binding.textViewSetInlayColor.setOnClickListener {
+            (activity as MainActivity).showDialogFragment(DialogFragments.SET_INLAY_COLOR)
+        }
+
+        binding.textViewSetAppWidgetColor.setOnClickListener {
+            (activity as MainActivity).showDialogFragment(DialogFragments.SET_APP_WIDGET_COLOR)
         }
 
         binding.seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
@@ -77,6 +92,18 @@ class ConfigureFragment : Fragment() {
             }
 
         })
+
+        progressDialogHandler = Handler {
+            when(it.what) {
+                START_PROGRESS_DIALOG -> {
+                    binding.progressContainer.visibility = View.VISIBLE
+                }
+                STOP_PROGRESS_DIALOG -> {
+                    binding.progressContainer.visibility = View.INVISIBLE
+                }
+            }
+            true
+        }
     }
 
     override fun onResume() {
@@ -153,7 +180,7 @@ class ConfigureFragment : Fragment() {
         val noAttachmentMessage = requireActivity().getString(R.string.no_attachment_message)
 
         val argbChannelTitleColor =
-            String.format("#${hexStringOpacity}%06X", 0xFFFFFF and MainActivity.noteColor)
+            String.format("#${hexStringOpacity}%06X", 0xFFFFFF and MainActivity.appWidgetTitleColor)
         val argbChannelBackgroundColor =
             String.format("#${hexStringOpacity}%06X", 0xFFFFFF and MainActivity.appWidgetBackgroundColor)
 
@@ -251,7 +278,47 @@ class ConfigureFragment : Fragment() {
 
                 // Notify appWidgetManager of app widget updates.
                 appWidgetManager.updateAppWidget(appWidgetId, views)
+            } else {
+                val intent = Intent(context, SingleNoteConfigureActivity::class.java)
+                // App widget ID is sent to SingleNoteConfigureActivity through the action.
+                intent.action = ACTION_APP_WIDGET_ATTACHED + appWidgetId
+
+                val pendingIntent = intent.let {
+                    PendingIntent.getActivity(context, 0, intent, 0)
+                }
+
+                val views: RemoteViews = RemoteViews(
+                    requireActivity().packageName,
+                    R.layout.app_widget
+                ).apply {
+                    setViewVisibility(R.id.image_view_done, View.GONE)
+                    setViewVisibility(R.id.image_view_lock, View.GONE)
+                    setViewVisibility(R.id.image_view_alarm, View.GONE)
+                    setViewVisibility(R.id.text_view_creation_time, View.GONE)
+                    setViewVisibility(R.id.text_view_edit_time, View.GONE)
+                    setViewVisibility(R.id.text_view_alarm_time, View.GONE)
+                    setViewVisibility(R.id.image_view_photo, View.GONE)
+                    setInt(R.id.title_container, "setBackgroundColor", Color.parseColor(argbChannelTitleColor))
+                    setInt(R.id.text_view_content, "setBackgroundColor", Color.parseColor(argbChannelBackgroundColor))
+                    setOnClickPendingIntent(R.id.text_view_content, pendingIntent)
+                    setOnClickPendingIntent(R.id.image_button_change, pendingIntent)
+                    setCharSequence(R.id.text_view_title, "setText",
+                        requireContext().getString(R.string.no_attachment_message))
+                    setCharSequence(R.id.text_view_content, "setText",
+                        requireContext().getString(R.string.no_attachment_message))
+                }
+
+                // Notify appWidgetManager of app widget updates.
+                appWidgetManager.updateAppWidget(appWidgetId, views)
             }
         }
     }
+
+    companion object {
+        const val STOP_PROGRESS_DIALOG = 0
+        const val START_PROGRESS_DIALOG = 1
+    }
 }
+
+
+

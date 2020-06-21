@@ -25,14 +25,20 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/toolbar"
-            android:padding="4dp"
+            android:paddingBottom="4dp"
+            android:paddingEnd="8dp"
+            android:paddingStart="8dp"
+            android:paddingTop="4dp"
             android:layout_marginBottom="2dp"
-            android:background="@color/defaultColorInlay" />
+            android:background="@color/defaultColorInlay"
+            android:textSize="@dimen/text_size_small"/>
 
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_below="@id/text_view_time">
+            android:layout_below="@id/text_view_time"
+            android:clickable="true"
+            android:focusable="true">
 
             <ImageView
                 android:id="@+id/imageView"
@@ -58,6 +64,7 @@
                 android:id="@+id/focus_block"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:layout_below="@id/imageView"
                 android:focusable="true"/>
 
         </RelativeLayout>
