@@ -49,7 +49,7 @@ class AlarmedNoteSelectionFragment : Fragment() {
     ): View? {
         activity = requireActivity() as MainActivity
         this.alarmedNoteAdapter = AlarmedNoteAdapter(activity, alarmedNotes)
-        // Synchronize deletion with reference to alarmedNotAdapter.
+        // Synchronize deletion with reference to alarmedNotAdapter
         activity.alarmedNoteAdapter = this.alarmedNoteAdapter
         return inflater.inflate(R.layout.fragment_alarmed_note_selection, container, false)
     }

@@ -31,7 +31,8 @@
             android:paddingTop="4dp"
             android:layout_marginBottom="2dp"
             android:background="@color/defaultColorInlay"
-            android:textSize="@dimen/text_size_small"/>
+            android:textSize="@dimen/text_size_small"
+            android:textColor="@color/defaultTextColor" />
 
         <RelativeLayout
             android:layout_width="match_parent"
@@ -58,7 +59,10 @@
                 android:padding="8dp"
                 android:gravity="top"
                 android:background="@color/defaultColorInlay"
-                android:autofillHints="" />
+                android:autofillHints=""
+                android:scrollbars="vertical"
+                android:textColor="@color/defaultTextColor"
+                android:textColorHint="@color/defaultTextColorHint"/>
 
             <View
                 android:id="@+id/focus_block"

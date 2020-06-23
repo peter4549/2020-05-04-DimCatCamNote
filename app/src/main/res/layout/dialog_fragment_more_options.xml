@@ -82,4 +82,19 @@
         android:drawableTint="@color/colorStatusIcon"
         android:foreground="?attr/selectableItemBackground"/>
 
+    <TextView
+        android:id="@+id/text_view_add_to_status_bar"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginStart="4dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center"
+        android:text="상태바에 등록"
+        android:textSize="@dimen/text_size_middle"
+        android:textStyle="bold"
+        android:drawableStart="@drawable/ic_pin_white_24dp"
+        android:drawableTint="@color/colorStatusIcon"
+        android:foreground="?attr/selectableItemBackground"/>
+
 </LinearLayout>

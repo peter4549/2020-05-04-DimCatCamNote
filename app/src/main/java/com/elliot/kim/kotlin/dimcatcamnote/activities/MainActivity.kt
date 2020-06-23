@@ -3,7 +3,10 @@ package com.elliot.kim.kotlin.dimcatcamnote.activities
 import android.Manifest
 import android.app.AlarmManager
 import android.app.PendingIntent
-import android.content.*
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.content.res.ColorStateList
 import android.graphics.Typeface
@@ -94,8 +97,17 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
     }
 
     override fun onStart() {
-        super.onStart()
         isAppRunning = true
+
+        // Release fragments to prevent errors
+        // that can occur when changing the theme of the application
+        while (fragmentManager.backStackEntryCount > 0)
+            fragmentManager.popBackStackImmediate()
+
+        for (fragment in fragmentManager.fragments)
+            fragmentManager.beginTransaction().remove(fragment!!).commit()
+
+        super.onStart()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -109,6 +121,7 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         }
 
         fragmentManager = supportFragmentManager
+
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
         binding.writeFloatingActionButton.setOnClickListener { startWriteFragment() }
         binding.sortContainer.setOnClickListener {
@@ -170,9 +183,9 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         super.onPause()
     }
 
-    override fun onStop() {
-        super.onStop()
+    override fun onDestroy() {
         isAppRunning = false
+        super.onDestroy()
     }
 
     private fun createUnderlayButtons() {
@@ -513,6 +526,28 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
 
     fun deleteFileFromUri(stringUri: String): Boolean {
         val uri = Uri.parse(stringUri)
+        val file = File(uri.path!!)
+        if (file.delete()) {
+            refreshGallery(file)
+            return true
+        }
+        else {
+            if (file.canonicalFile.delete()) {
+                refreshGallery(file)
+                return true
+            }
+            else applicationContext.deleteFile(file.name)
+            return if (file.exists()) false
+            else {
+                refreshGallery(file)
+                true
+            }
+        }
+    }
+
+    fun deleteFileFromUri(uri: Uri?): Boolean {
+        if (uri == null) return false
+
         val file = File(uri.path!!)
         if (file.delete()) {
             refreshGallery(file)

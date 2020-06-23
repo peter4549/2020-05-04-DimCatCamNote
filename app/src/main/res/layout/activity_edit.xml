@@ -61,7 +61,10 @@
                 android:background="@color/defaultColorInlay"
                 android:padding="8dp"
                 android:gravity="top"
-                android:autofillHints="" />
+                android:autofillHints=""
+                android:scrollbars="vertical"
+                android:textColor="@color/defaultTextColor"
+                android:textColorHint="@color/defaultTextColorHint"/>
 
             <View
                 android:id="@+id/focus_block"

@@ -6,7 +6,10 @@ import android.appwidget.AppWidgetManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.res.ColorStateList
 import android.graphics.Color
+import android.graphics.ColorFilter
+import android.graphics.PorterDuff
 import android.os.Bundle
 import android.os.Handler
 import android.view.*
@@ -70,7 +73,9 @@ class ConfigureFragment : Fragment() {
         binding.textViewSetAppWidgetColor.setOnClickListener {
             (activity as MainActivity).showDialogFragment(DialogFragments.SET_APP_WIDGET_COLOR)
         }
-
+        @Suppress("DEPRECATION")
+        binding.seekBar.thumb.setColorFilter(requireContext().getColor(R.color.colorStatusIcon), PorterDuff.Mode.SRC_ATOP)
+        binding.seekBar.progressTintList = ColorStateList.valueOf(requireContext().getColor(R.color.colorStatusIcon))
         binding.seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 val text = "${progress}%"
@@ -239,7 +244,6 @@ class ConfigureFragment : Fragment() {
                     )
                     setOnClickPendingIntent(R.id.text_view_content, pendingIntent)
                     setCharSequence(R.id.text_view_title, "setText", title)
-                    setCharSequence(R.id.text_view_content, "setText", content)
 
                     if (isDone) setViewVisibility(R.id.image_view_done, View.VISIBLE)
                     else setViewVisibility(R.id.image_view_done, View.GONE)
@@ -274,6 +278,11 @@ class ConfigureFragment : Fragment() {
                             " " + MainActivity.longTimeToString(editTime, PATTERN_UP_TO_MINUTES)
                         )
                     }
+
+                    // Finally, set the background color.
+                    // Fix an issue where the background color of a time text view is not assigned.
+                    setInt(R.id.content_container, "setBackgroundColor",
+                        Color.parseColor(argbChannelBackgroundColor))
                 }
 
                 // Notify appWidgetManager of app widget updates.

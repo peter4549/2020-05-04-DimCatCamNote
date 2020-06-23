@@ -44,10 +44,10 @@ class AlarmReceiver : BroadcastReceiver() {
             val importance = NotificationManager.IMPORTANCE_HIGH
             val channel = NotificationChannel(CHANNEL_ID, CHANNEL_NAME, importance)
 
-            builder.setSmallIcon(R.drawable.ic_notification)
+            builder.setSmallIcon(R.drawable.ic_notification_120px)
             channel.description = CHANNEL_DESCRIPTION
             manager.createNotificationChannel(channel)
-        } else builder.setSmallIcon(R.mipmap.ic_notification)
+        } else builder.setSmallIcon(R.mipmap.ic_notification_120px)
 
         builder.setAutoCancel(true)
             .setDefaults(NotificationCompat.DEFAULT_ALL)

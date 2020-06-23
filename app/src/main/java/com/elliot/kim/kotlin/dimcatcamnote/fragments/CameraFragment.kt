@@ -18,7 +18,6 @@ import android.util.Log
 import android.view.*
 import android.webkit.MimeTypeMap
 import android.widget.ImageButton
-import android.widget.SeekBar
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
@@ -60,6 +59,7 @@ class CameraFragment : Fragment() {
     private var camera: Camera? = null
 
     private var uri: Uri? = null
+    private var previousUri: Uri? = null
 
     private val displayManager by lazy {
         requireContext().getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
@@ -93,38 +93,51 @@ class CameraFragment : Fragment() {
     /** Blocking camera operations are performed using this executor */
     private lateinit var cameraExecutor: ExecutorService
 
+    fun setPreviousUri(uri: String?) {
+        previousUri = if (uri == null) null
+        else Uri.parse(uri)
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?): View? =
-        inflater.inflate(R.layout.fragment_camera, container, false)
+        savedInstanceState: Bundle?): View? {
+        // Initialize our background executor
+        cameraExecutor = Executors.newSingleThreadExecutor()
+
+        // Every time the orientation of device changes, update rotation for use cases
+        displayManager.registerDisplayListener(displayListener, null)
+
+        // Determine the output directory
+        outputDirectory = MainActivity.getOutputDirectory(requireContext())
+
+        return inflater.inflate(R.layout.fragment_camera, container, false)
+    }
 
     override fun onResume() {
         super.onResume()
-
         uri = null
-
         (activity as MainActivity).setCurrentFragment(CurrentFragment.CAMERA_FRAGMENT)
     }
 
-    override fun onStop() {
-        if (uri != null) (activity as MainActivity).writeFragment.uri = uri.toString()
+    override fun onDestroyView() {
+        if (uri != null)
+            (activity as MainActivity).writeFragment.uri = uri.toString()
+
+        previousUri = null
+
         val message = (activity as MainActivity).writeFragment.handler.obtainMessage()
         message.what = WriteFragment.SHOW_BOTTOM_NAVIGATION_VIEW
         (activity as MainActivity).writeFragment.handler
             .sendMessage(message)
         (activity as MainActivity).setCurrentFragment(CurrentFragment.WRITE_FRAGMENT)
 
-        super.onStop()
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-
         cameraExecutor.shutdown()
 
         broadcastManager.unregisterReceiver(volumeDownReceiver)
         displayManager.unregisterDisplayListener(displayListener)
+
+        super.onDestroyView()
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -133,27 +146,14 @@ class CameraFragment : Fragment() {
         container = view as ConstraintLayout
         viewFinder = container.findViewById(R.id.view_finder)
 
-        // Initialize our background executor
-        cameraExecutor = Executors.newSingleThreadExecutor()
-
         broadcastManager = LocalBroadcastManager.getInstance(view.context)
 
         // Set up the intent filter that will receive events from our main activity
         val filter = IntentFilter().apply { addAction(KEY_EVENT_ACTION) }
         broadcastManager.registerReceiver(volumeDownReceiver, filter)
 
-        // Every time the orientation of device changes, update rotation for use cases
-        displayManager.registerDisplayListener(displayListener, null)
-
-        // Determine the output directory
-        outputDirectory =
-            MainActivity.getOutputDirectory(
-                requireContext()
-            )
-
         // Wait for the views to be properly laid out
         viewFinder.post {
-
             // Keep track of the display in which this view is attached
             displayId = viewFinder.display.displayId
 
@@ -172,9 +172,7 @@ class CameraFragment : Fragment() {
         }
     }
 
-    // slide해서 뷰 바꾸는 법.
-
-    // pinch zoom,, 어떻게 등록된건지 확인할것.
+    // Pinch zoom
     val listener = object : ScaleGestureDetector.SimpleOnScaleGestureListener() {
         override fun onScale(detector: ScaleGestureDetector): Boolean {
             val scale = camera!!.cameraInfo.zoomState.value!!.zoomRatio * detector.scaleFactor
@@ -182,7 +180,6 @@ class CameraFragment : Fragment() {
             return true
         }
     }
-
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
@@ -261,8 +258,8 @@ class CameraFragment : Fragment() {
                     this, cameraSelector, preview, imageCapture, imageAnalyzer)
 
                 // Attach the viewfinder's surface provider to preview use case
-                //preview?.setSurfaceProvider(viewFinder.createSurfaceProvider(camera?.cameraInfo))
-                // 업데이트 된듯??
+                // preview?.setSurfaceProvider(viewFinder.createSurfaceProvider(camera?.cameraInfo))
+                // Above code has been updated as below.
                 preview?.setSurfaceProvider(viewFinder.createSurfaceProvider())
             } catch(exc: Exception) {
                 Log.e(TAG, "Use case binding failed", exc)
@@ -341,6 +338,8 @@ class CameraFragment : Fragment() {
 
                             uri = savedUri
 
+                            (activity as MainActivity).deleteFileFromUri(previousUri)
+
                             // Implicit broadcasts will be ignored for devices running API level >= 24
                             // so if you only target API level 24+ you can remove this statement
                             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
@@ -370,7 +369,6 @@ class CameraFragment : Fragment() {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 
                     // Display flash animation to indicate that photo was captured
-
                     container.postDelayed({
                         // 뒤에 고양이 이미지 넣든가 하면 될듯.
                         container.foreground = ColorDrawable(Color.CYAN)
@@ -394,6 +392,7 @@ class CameraFragment : Fragment() {
             bindCameraUseCases()
         }
 
+        /*
         controls.findViewById<SeekBar>(R.id.zoomSeekBar).setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 camera!!.cameraControl.setLinearZoom(progress / 100.toFloat())
@@ -403,6 +402,7 @@ class CameraFragment : Fragment() {
 
             override fun onStopTrackingTouch(seekBar: SeekBar?) {}
         })
+         */
     }
 
 
@@ -423,7 +423,7 @@ class CameraFragment : Fragment() {
         /**
          * Used to add listeners that will be called with each luma computed
          */
-        fun onFrameAnalyzed(listener: LumaListener) = listeners.add(listener)
+        // fun onFrameAnalyzed(listener: LumaListener) = listeners.add(listener)
 
         /**
          * Helper extension function used to extract a byte array from an image plane buffer
@@ -507,49 +507,9 @@ class CameraFragment : Fragment() {
 
         /** Helper function used to create a timestamped file */
         private fun createFile(baseFolder: File, format: String, extension: String) =
-            File(baseFolder, SimpleDateFormat(format, Locale.KOREA)
+            File(baseFolder, SimpleDateFormat(format, Locale.getDefault())
                 .format(System.currentTimeMillis()) + extension)
     }
-
-    /* 아마 안쓸거같은데.
-
-    private fun setUpPinchToZoom() {
-        val listener = object : ScaleGestureDetector.SimpleOnScaleGestureListener() {
-            override fun onScale(detector: ScaleGestureDetector): Boolean {
-                val currentZoomRatio: Float = cameraInfo.zoomRatio.value ?: 0F
-                val delta = detector.scaleFactor
-                cameraControl.setZoomRatio(currentZoomRatio * delta)
-                return true
-            }
-        }
-
-        val scaleGestureDetector = ScaleGestureDetector(context, listener)
-
-        cameraTextureView.setOnTouchListener { _, event ->
-            scaleGestureDetector.onTouchEvent(event)
-            return@setOnTouchListener true
-        }
-        }
-        */
-    /*
-    private fun setUpTapToFocus(textureView: TextureView, cameraControl: CameraControl) {
-        textureView.setOnTouchListener { _, event ->
-            if (event.action != MotionEvent.ACTION_UP) {
-                return@setOnTouchListener false
-            }
-
-            val factory = TextureViewMeteringPointFactory(textureView)
-            val point = factory.createPoint(event.x, event.y)
-            val action = FocusMeteringAction.Builder.from(point).build()
-            cameraControl.startFocusAndMetering(action)
-            return@setOnTouchListener true
-        }
-    }
-
-     */
-
-
-
 }
 
 

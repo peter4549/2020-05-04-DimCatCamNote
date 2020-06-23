@@ -128,7 +128,7 @@
     <!-- Base Background Color -->
     <color name="backgroundColorBase">#efebe9</color>
 
-    <!-- Notification Icon -->
+    <!-- Dark Mode Notification Icon Color -->
     <color name="colorNotificationIcon">#FEFEFE</color>
 
     <!-- Text Color -->

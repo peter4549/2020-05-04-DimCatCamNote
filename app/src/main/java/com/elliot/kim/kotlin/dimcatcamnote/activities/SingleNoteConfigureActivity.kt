@@ -28,6 +28,10 @@ class SingleNoteConfigureActivity : AppCompatActivity() {
             R.layout.activity_single_note_configure
         )
 
+        binding.container.setOnClickListener {
+            finish()
+        }
+
         val configureIntent = intent
         val extras: Bundle? = configureIntent.extras
 

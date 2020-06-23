@@ -79,6 +79,9 @@ class EditFragment(private val activity: MainActivity) : Fragment() {
         setHasOptionsMenu(true)
 
         // Apply the design.
+        binding.textViewTime.adjustDialogItemTextSize(MainActivity.fontId, true)
+        binding.editTextContent.adjustDialogInputTextSize(MainActivity.fontId)
+
         binding.toolbar.setTitleTextAppearance(activity, MainActivity.fontStyleId)
         binding.textViewTime.typeface = MainActivity.font
         binding.editTextContent.typeface = MainActivity.font
@@ -265,13 +268,15 @@ class EditFragment(private val activity: MainActivity) : Fragment() {
     }
 
     private fun startPhotoFragment() {
+        val photoFragment = PhotoFragment()
+        photoFragment.setParameters(this, note.uri!!)
         activity.fragmentManager.beginTransaction()
             .addToBackStack(null)
             .setCustomAnimations(R.anim.anim_slide_in_left_enter,
                 R.anim.anim_slide_in_left_exit,
                 R.anim.anim_slide_down_pop_enter,
                 R.anim.anim_slide_down_pop_exit)
-            .replace(R.id.edit_note_container, PhotoFragment(this, note.uri!!)).commit()
+            .replace(R.id.edit_note_container, photoFragment).commit()
     }
 
     private fun showCheckMessage() {

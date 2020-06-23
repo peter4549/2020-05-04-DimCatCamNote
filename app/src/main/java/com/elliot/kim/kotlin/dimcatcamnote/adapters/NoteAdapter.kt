@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.load.resource.bitmap.CircleCrop
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.elliot.kim.kotlin.dimcatcamnote.*
 import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity
 import com.elliot.kim.kotlin.dimcatcamnote.activities.SingleNoteConfigureActivity
@@ -128,6 +129,7 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
                 .error(R.drawable.ic_sentiment_dissatisfied_grey_24dp)
                 .diskCacheStrategy(DiskCacheStrategy.NONE)
                 .skipMemoryCache(true)
+                .transition(DrawableTransitionOptions.withCrossFade())
                 .transform(CircleCrop())
                 .into(holder.binding.imageViewThumbnail)
         }
