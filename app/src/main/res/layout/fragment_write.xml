@@ -41,9 +41,11 @@
             android:layout_width="match_parent"
             android:layout_height="224dp"
             android:layout_below="@id/editTextTitle"
+            android:background="@android:color/white"
             android:layout_margin="2dp"
             android:clickable="true"
-            android:focusable="true" />
+            android:focusable="true"
+            android:visibility="gone"/>
 
         <EditText
             android:id="@+id/editTextContent"
@@ -60,35 +62,37 @@
             android:scrollbars="vertical" />
 
         <LinearLayout
-            android:id="@+id/linear_layout_speech_recognition"
-            android:layout_width="256dp"
-            android:layout_height="88dp"
+            android:id="@+id/speech_recognition_container"
+            android:layout_width="220dp"
+            android:layout_height="wrap_content"
             android:layout_above="@+id/bottomNavigationView"
             android:layout_centerHorizontal="true"
-            android:background="@color/defaultColorBackground"
+            android:layout_marginBottom="16dp"
+            android:background="@color/defaultColorToolbar"
             android:orientation="vertical"
             android:visibility="gone">
 
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="24dp"
-                android:background="@color/design_default_color_background"
-                android:gravity="center"
-                android:padding="2dp"
-                android:text="지금 말씀하세요." />
-
             <ImageView
+                android:id="@+id/image_view_mic"
                 android:layout_width="match_parent"
-                android:layout_height="32dp"
+                android:layout_height="36dp"
+                android:paddingTop="4dp"
                 android:src="@drawable/ic_mic_grey_24dp"
+                android:tint="@android:color/white"
                 android:contentDescription=""/>
 
-            <Button
-                android:id="@+id/button_complete_speech_recognition"
+            <TextView
+                android:id="@+id/text_view_speech_recognition_finish"
                 android:layout_width="match_parent"
-                android:layout_height="32dp"
-                android:background="@color/colorToolbarYellow"
-                android:text="완료"/>
+                android:layout_height="36dp"
+                android:gravity="center"
+                android:text="완료"
+                android:textColor="@android:color/white"
+                android:textSize="@dimen/text_size_middle"
+                android:textStyle="bold"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"/>
 
         </LinearLayout>
 

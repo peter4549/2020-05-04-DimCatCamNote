@@ -47,6 +47,12 @@ class SingleNoteConfigureActivity : AppCompatActivity() {
             )
         }
 
+        val resultIntent = Intent()
+        resultIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
+        setResult(RESULT_CANCELED, resultIntent)
+
+        if (appWidgetId == AppWidgetManager.INVALID_APPWIDGET_ID) finish()
+
         initDesignOptions()
 
         val viewModelFactory = ViewModelProvider.AndroidViewModelFactory.getInstance(application)
@@ -66,11 +72,9 @@ class SingleNoteConfigureActivity : AppCompatActivity() {
             }
         })
 
-        val resultIntent = Intent()
-        resultIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
-        setResult(RESULT_CANCELED, resultIntent)
-
-        if (appWidgetId == AppWidgetManager.INVALID_APPWIDGET_ID) finish()
+        binding.addNoteContainer.setOnClickListener {
+            startWriteFragment()
+        }
     }
 
     private fun initDesignOptions() {
@@ -84,6 +88,10 @@ class SingleNoteConfigureActivity : AppCompatActivity() {
         font = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
             resources.getFont(fontId)
         else ResourcesCompat.getFont(this, fontId)
+    }
+
+    private fun startWriteFragment() {
+        // 여 부터.
     }
 
     companion object {

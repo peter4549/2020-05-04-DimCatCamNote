@@ -23,9 +23,6 @@ import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
 
-/**
- * A simple [Fragment] subclass.
- */
 class AlarmedNoteSelectionFragment : Fragment() {
 
     private lateinit var alarmedNotes: ArrayList<Note>

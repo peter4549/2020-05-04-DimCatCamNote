@@ -129,7 +129,7 @@
     <color name="backgroundColorBase">#efebe9</color>
 
     <!-- Notification Icon -->
-    <color name="colorNotificationIcon">#FEFEFE</color>
+    <color name="colorNotificationIcon">#ff9100</color>
 
     <!-- Text Color -->
     <color name="defaultTextColor">#212121</color>

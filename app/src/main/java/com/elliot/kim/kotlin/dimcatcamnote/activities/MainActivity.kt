@@ -23,6 +23,7 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.SearchView
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
@@ -99,13 +100,16 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
     override fun onStart() {
         isAppRunning = true
 
+        // Not used
         // Release fragments to prevent errors
         // that can occur when changing the theme of the application
+        /*
         while (fragmentManager.backStackEntryCount > 0)
             fragmentManager.popBackStackImmediate()
 
         for (fragment in fragmentManager.fragments)
             fragmentManager.beginTransaction().remove(fragment!!).commit()
+         */
 
         super.onStart()
     }
@@ -429,7 +433,6 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
             .addToBackStack(null)
             .replace(R.id.main_container, calendarFragment).commit()
         hideFloatingActionButton()
-
     }
 
     fun startEditFragment() {
@@ -524,7 +527,9 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         }
     }
 
-    fun deleteFileFromUri(stringUri: String): Boolean {
+    fun deleteFileFromUri(stringUri: String?): Boolean {
+        if (stringUri == null) return false
+
         val uri = Uri.parse(stringUri)
         val file = File(uri.path!!)
         if (file.delete()) {

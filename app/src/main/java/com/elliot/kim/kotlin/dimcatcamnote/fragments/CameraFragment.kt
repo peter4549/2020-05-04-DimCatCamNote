@@ -388,6 +388,7 @@ class CameraFragment : Fragment() {
             } else {
                 CameraSelector.LENS_FACING_FRONT
             }
+
             // Re-bind use cases to update selected camera
             bindCameraUseCases()
         }

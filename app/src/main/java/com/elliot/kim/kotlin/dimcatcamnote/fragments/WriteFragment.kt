@@ -7,6 +7,7 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Rect
+import android.graphics.drawable.AnimationDrawable
 import android.media.AudioManager
 import android.net.Uri
 import android.os.AsyncTask
@@ -48,6 +49,7 @@ class WriteFragment : Fragment() {
     private lateinit var recognizer: SpeechRecognizer
     private lateinit var title: String
     private lateinit var content: String
+    private lateinit var micAnimation: AnimationDrawable
     private var alarmedNoteAdapter: AlarmedNoteAdapter? = null
     private var newNote: Note? = null
     private var originalVolume = 0
@@ -71,8 +73,7 @@ class WriteFragment : Fragment() {
         activity = requireActivity() as MainActivity
         audioManager = activity.getSystemService(Context.AUDIO_SERVICE) as AudioManager
         existingUri = uri
-        shortAnimationDuration = resources.getInteger(android.R.integer.config_shortAnimTime) - 40
-
+        shortAnimationDuration = resources.getInteger(android.R.integer.config_shortAnimTime)
 
         intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
         intent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, requireActivity().packageName)
@@ -100,29 +101,38 @@ class WriteFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         binding = FragmentWriteBinding.bind(view)
-        binding.toolbar.setBackgroundColor(MainActivity.toolbarColor)
-        binding.bottomNavigationView.setBackgroundColor(MainActivity.toolbarColor)
-        binding.editTextTitle.setBackgroundColor(MainActivity.inlayColor)
-        binding.editTextContent.setBackgroundColor(MainActivity.inlayColor)
+        binding.toolbar.title = TITLE_TOOLBAR
 
         activity.setSupportActionBar(binding.toolbar)
         activity.supportActionBar?.setDisplayHomeAsUpEnabled(true)
         setHasOptionsMenu(true)
 
-        // Apply the design.
+        // Apply mic icon animation
+        binding.imageViewMic.apply {
+            setBackgroundResource(R.drawable.mic_animation_list)
+            micAnimation = background as AnimationDrawable
+        }
+
+        // Apply design
+        binding.toolbar.setBackgroundColor(MainActivity.toolbarColor)
+        binding.bottomNavigationView.setBackgroundColor(MainActivity.toolbarColor)
+        binding.editTextTitle.setBackgroundColor(MainActivity.inlayColor)
+        binding.editTextContent.setBackgroundColor(MainActivity.inlayColor)
+        binding.speechRecognitionContainer.setBackgroundColor(MainActivity.toolbarColor)
+
         binding.toolbar.setTitleTextAppearance(activity, MainActivity.fontStyleId)
         binding.toolbar.invalidate()
         binding.editTextTitle.typeface = MainActivity.font
         binding.editTextContent.typeface = MainActivity.font
+        binding.textViewSpeechRecognitionFinish.typeface = MainActivity.font
 
-        binding.toolbar.title = TITLE_TOOLBAR
-        binding.imageView.visibility = View.GONE
         binding.imageView.setOnClickListener { startPhotoFragment() }
 
         binding.bottomNavigationView.setOnNavigationItemSelectedListener {
             when (it.itemId) {
                 R.id.camera -> {
-                    if (isRecognizingSpeech) finishSpeechRecognition()
+                    if (isRecognizingSpeech)
+                        finishSpeechRecognition()
                     else {
                         if (uri == null) {
                             if (MainActivity.hasCameraPermissions(requireContext()))
@@ -158,7 +168,7 @@ class WriteFragment : Fragment() {
             return@setOnNavigationItemSelectedListener true
         }
 
-        binding.buttonCompleteSpeechRecognition.setOnClickListener { finishSpeechRecognition() }
+        binding.textViewSpeechRecognitionFinish.setOnClickListener { finishSpeechRecognition() }
         binding.editTextContent.viewTreeObserver.addOnGlobalLayoutListener {
             if (keyboardShown(binding.editTextContent.rootView)) {
                 crossFadeImageView(false)
@@ -174,7 +184,8 @@ class WriteFragment : Fragment() {
 
                 if ((binding.editTextTitle.isFocused
                             || binding.editTextContent.isFocused)
-                    && currentFragment == CurrentFragment.WRITE_FRAGMENT)
+                    && currentFragment == CurrentFragment.WRITE_FRAGMENT
+                    && binding.bottomNavigationView.visibility == View.GONE)
                     crossFadeBottomNavigationView(true)
             }
         }
@@ -197,22 +208,25 @@ class WriteFragment : Fragment() {
         }
     }
 
-    override fun onCreateAnimation(transit: Int, enter: Boolean, nextAnim: Int): Animation? {
 
+
+    override fun onCreateAnimation(transit: Int, enter: Boolean, nextAnim: Int): Animation? {
         val animation = AnimationUtils.loadAnimation(activity, nextAnim)
 
-        animation!!.setAnimationListener( object: Animation.AnimationListener {
+        animation!!.setAnimationListener(object : Animation.AnimationListener {
             override fun onAnimationRepeat(animation: Animation?) {
 
             }
 
             override fun onAnimationEnd(animation: Animation?) {
-                MainActivity.hideKeyboard(context, view)
-                if (isSaved) activity.showToast(activity.getString(R.string.save_complete_message))
+                if (!enter) {
+                    MainActivity.hideKeyboard(context, view)
+                    if (isSaved) activity.showToast(activity.getString(R.string.save_complete_message))
+                }
             }
 
             override fun onAnimationStart(animation: Animation?) {
-                clearText()
+                if (enter) clearText()
             }
         })
 
@@ -261,7 +275,7 @@ class WriteFragment : Fragment() {
                 } else {
                     Toast.makeText(
                         context,
-                        "카메라 권한을 승인하셔야 카메라 기능을 사용하실 수 있습니다.",
+                        "카메라 권한을 승인하셔야 카메라를 사용하실 수 있습니다.",
                         Toast.LENGTH_SHORT
                     ).show()
                 }
@@ -272,7 +286,7 @@ class WriteFragment : Fragment() {
                 } else {
                     Toast.makeText(
                         context,
-                        "오디오 권한을 승인하셔야 오디오 기능을 사용하실 수 있습니다.",
+                        "오디오 권한을 승인하셔야 음성 노트를 사용하실 수 있습니다.",
                         Toast.LENGTH_SHORT
                     ).show()
                 }
@@ -297,15 +311,10 @@ class WriteFragment : Fragment() {
     }
 
     private fun showImage() {
-        if(uri == null) return
-        else {
+        if(uri == null)
+            return
+        else
             crossFadeImageView(true)
-            Glide.with(binding.imageView.context)
-                .load(Uri.parse(uri))
-                .error(R.drawable.ic_sentiment_dissatisfied_grey_24dp)
-                .transition(DrawableTransitionOptions.withCrossFade())
-                .into(binding.imageView)
-        }
     }
 
     private fun startCameraFragment() {
@@ -321,13 +330,16 @@ class WriteFragment : Fragment() {
                     override fun onAnimationEnd(animation: Animator) {
                         binding.bottomNavigationView.visibility = View.GONE
                         activity.cameraFragment.setPreviousUri(uri)
+                        //
+                        val cameraViewFragment = CameraViewFragment()
+                        cameraViewFragment.setPreviousUri(uri)
                         activity.fragmentManager.beginTransaction()
                             .addToBackStack(null)
                             .setCustomAnimations(R.anim.anim_camera_fragment_enter,
                                 R.anim.anim_camera_fragment_exit,
                                 R.anim.anim_camera_fragment_pop_enter,
                                 R.anim.anim_camera_fragment_pop_exit)
-                            .replace(R.id.write_fragment_container, activity.cameraFragment).commit()
+                            .replace(R.id.write_fragment_container, cameraViewFragment).commit()
                     }
                 })
         }
@@ -361,7 +373,7 @@ class WriteFragment : Fragment() {
         recognizer.setRecognitionListener(recognitionListener)
 
         isFirstOnResults = true
-        binding.linearLayoutSpeechRecognition.apply {
+        binding.speechRecognitionContainer.apply {
             alpha = 0F
             visibility = View.VISIBLE
 
@@ -371,6 +383,7 @@ class WriteFragment : Fragment() {
                 .setListener(object : AnimatorListenerAdapter() {
                     override fun onAnimationEnd(animation: Animator) {
                         isRecognizingSpeech = true
+                        micAnimation.start()
                     }
                 })
         }
@@ -381,12 +394,13 @@ class WriteFragment : Fragment() {
 
     private fun finishSpeechRecognition() {
         audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, originalVolume, 0)
-        binding.linearLayoutSpeechRecognition.animate()
+        binding.speechRecognitionContainer.animate()
             .alpha(0F)
             .setDuration(shortAnimationDuration.toLong())
             .setListener(object : AnimatorListenerAdapter() {
                 override fun onAnimationEnd(animation: Animator) {
-                    binding.linearLayoutSpeechRecognition.visibility = View.GONE
+                    micAnimation.stop()
+                    binding.speechRecognitionContainer.visibility = View.GONE
                     recognizer.stopListening()
                     recognizer.cancel()
                     recognizer.destroy()
@@ -516,6 +530,7 @@ class WriteFragment : Fragment() {
     }
 
     private fun finishWithoutSaving() {
+        activity.deleteFileFromUri(uri)
         Toast.makeText(context, "저장되지 않았습니다.", Toast.LENGTH_SHORT).show()
         activity.backPressed()
     }
@@ -540,7 +555,8 @@ class WriteFragment : Fragment() {
             binding.bottomNavigationView.apply {
                 translationY = 0F
 
-                animate().translationY(bottomNavigationView.height.toFloat())
+                animate()
+                    .translationY(bottomNavigationView.height.toFloat())
                     .setDuration(shortAnimationDuration.toLong())
                     .setListener(null)
             }
@@ -551,12 +567,20 @@ class WriteFragment : Fragment() {
         if (fadeIn) {
             binding.imageView.apply {
                 alpha = 0F
-                visibility = View.VISIBLE
 
                 animate()
                     .alpha(1F)
                     .setDuration(shortAnimationDuration.toLong())
-                    .setListener(null)
+                    .setListener(object : AnimatorListenerAdapter() {
+                        override fun onAnimationEnd(animation: Animator) {
+                            visibility = View.VISIBLE
+                            Glide.with(binding.imageView.context)
+                                .load(Uri.parse(uri))
+                                .error(R.drawable.ic_sentiment_dissatisfied_grey_24dp)
+                                .transition(DrawableTransitionOptions.withCrossFade())
+                                .into(binding.imageView)
+                        }
+                    })
             }
         } else {
             binding.imageView.animate()
