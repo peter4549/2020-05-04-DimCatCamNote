@@ -1,8 +1,6 @@
 package com.elliot.kim.kotlin.dimcatcamnote.fragments
 
-import android.media.Image
 import android.os.Bundle
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -10,7 +8,6 @@ import android.view.ViewGroup
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.widget.ImageView
-import androidx.recyclerview.widget.LinearLayoutManager
 import com.elliot.kim.kotlin.dimcatcamnote.LinearLayoutManagerWrapper
 import com.elliot.kim.kotlin.dimcatcamnote.PATTERN_YYYY_MM_dd
 
@@ -108,8 +105,8 @@ class AlarmedNoteSelectionFragment : Fragment() {
             .setCustomAnimations(
                 R.anim.anim_slide_in_left_enter,
                 R.anim.anim_slide_in_left_exit,
-                R.anim.anim_slide_down_pop_enter,
-                R.anim.anim_slide_down_pop_exit
+                R.anim.anim_slide_out_right_enter,
+                R.anim.anim_slide_out_right_exit
             )
             .addToBackStack(null)
             .replace(R.id.alarmed_note_selection_container, activity.writeFragment).commit()

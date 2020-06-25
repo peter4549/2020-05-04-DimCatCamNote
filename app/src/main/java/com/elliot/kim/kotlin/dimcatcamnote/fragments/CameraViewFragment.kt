@@ -1,10 +1,7 @@
-package com.elliot.kim.kotlin.dimcatcamnote
+package com.elliot.kim.kotlin.dimcatcamnote.fragments
 
-import android.content.Intent
-import android.hardware.Camera
 import android.media.MediaScannerConnection
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -13,8 +10,10 @@ import android.view.ViewGroup
 import android.webkit.MimeTypeMap
 import androidx.core.net.toFile
 import androidx.fragment.app.Fragment
+import com.elliot.kim.kotlin.dimcatcamnote.CurrentFragment
+import com.elliot.kim.kotlin.dimcatcamnote.R
 import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity
-import com.elliot.kim.kotlin.dimcatcamnote.fragments.WriteFragment
+import com.elliot.kim.kotlin.dimcatcamnote.activities.SingleNoteConfigureActivity
 import com.otaliastudios.cameraview.*
 import com.otaliastudios.cameraview.controls.Facing
 import com.otaliastudios.cameraview.gesture.Gesture
@@ -76,8 +75,6 @@ class CameraViewFragment : Fragment(), FileCallback {
                     )
 
                 result.toFile(photoFile, this@CameraViewFragment)
-
-                (activity as MainActivity).fragmentManager.popBackStack()
             }
         })
     }
@@ -85,22 +82,15 @@ class CameraViewFragment : Fragment(), FileCallback {
     override fun onResume() {
         super.onResume()
         uri = null
-        (activity as MainActivity).setCurrentFragment(CurrentFragment.CAMERA_FRAGMENT)
+        if (activity is MainActivity)
+            (activity as MainActivity).setCurrentFragment(CurrentFragment.CAMERA_FRAGMENT)
+        if (activity is SingleNoteConfigureActivity)
+            (activity as SingleNoteConfigureActivity).setCurrentFragment(CurrentFragment.CAMERA_FRAGMENT)
     }
 
-    override fun onDestroyView() {
-        if (uri != null)
-            (activity as MainActivity).writeFragment.uri = uri.toString()
-
-        previousUri = null
-
-        val message = (activity as MainActivity).writeFragment.handler.obtainMessage()
-        message.what = WriteFragment.SHOW_BOTTOM_NAVIGATION_VIEW
-        (activity as MainActivity).writeFragment.handler
-            .sendMessage(message)
-        (activity as MainActivity).setCurrentFragment(CurrentFragment.WRITE_FRAGMENT)
-
-        super.onDestroyView()
+    fun reopenCamera() {
+        cameraView.close()
+        cameraView.open()
     }
 
     override fun onFileReady(file: File?) {
@@ -110,13 +100,30 @@ class CameraViewFragment : Fragment(), FileCallback {
         val savedUri = Uri.fromFile(file)
         uri = savedUri
 
+        if (activity is MainActivity) {
+            (activity as MainActivity).writeFragment.uri = uri.toString()
+            (activity as MainActivity).deleteFileFromUri(previousUri)
+            previousUri = null
+            (activity as MainActivity).onBackPressed()
+        } else if (activity is SingleNoteConfigureActivity) {
+            (activity as SingleNoteConfigureActivity).writeFragment.uri = uri.toString()
+            (activity as SingleNoteConfigureActivity).deleteFileFromUri(previousUri)
+            previousUri = null
+            (activity as SingleNoteConfigureActivity).onBackPressed()
+        }
+
+
+
         // Implicit broadcasts will be ignored for devices running API level >= 24
         // so if you only target API level 24+ you can remove this statement
+
+        /*
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
             requireActivity().sendBroadcast(
                 Intent(Camera.ACTION_NEW_PICTURE, savedUri)
             )
         }
+         */
 
         // If the folder selected is an external media directory, this is
         // unnecessary but otherwise other apps will not be able to access our
@@ -132,17 +139,26 @@ class CameraViewFragment : Fragment(), FileCallback {
         }
     }
 
+    override fun onDestroyView() {
+        if (activity is MainActivity) {
+            val message = (activity as MainActivity).writeFragment.handler.obtainMessage()
+            message.what = WriteFragment.SHOW_BOTTOM_NAVIGATION_VIEW
+            (activity as MainActivity).writeFragment.handler.sendMessage(message)
+            (activity as MainActivity).setCurrentFragment(CurrentFragment.WRITE_FRAGMENT)
+        } else if (activity is SingleNoteConfigureActivity) {
+            val message = (activity as SingleNoteConfigureActivity).writeFragment.handler.obtainMessage()
+            message.what = WriteFragment.SHOW_BOTTOM_NAVIGATION_VIEW
+            (activity as SingleNoteConfigureActivity).writeFragment.handler.sendMessage(message)
+            (activity as SingleNoteConfigureActivity).setCurrentFragment(CurrentFragment.WRITE_FRAGMENT)
+        }
+
+        super.onDestroyView()
+    }
+
     companion object {
         private const val TAG = "CAMERA_VIEW_FRAGMENT"
         private const val FILENAME = "yyyy-MM-dd-HH-mm-ss-SSS"
         private const val PHOTO_EXTENSION = ".jpg"
-        private const val RATIO_4_3_VALUE = 4.0 / 3.0
-        private const val RATIO_16_9_VALUE = 16.0 / 9.0
-
-        const val KEY_URI = "key_uri"
-        const val KEY_ROOT_DIRECTORY = "key_root_directory"
-
-        var isFromWriteFragment = false
 
         /** Helper function used to create a timestamped file */
         private fun createFile(baseFolder: File, format: String, extension: String) =

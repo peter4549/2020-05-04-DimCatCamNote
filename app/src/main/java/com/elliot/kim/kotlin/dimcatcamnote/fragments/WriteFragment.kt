@@ -2,6 +2,7 @@ package com.elliot.kim.kotlin.dimcatcamnote.fragments
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
+import android.app.Activity
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
@@ -34,6 +35,7 @@ import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity.Companion.REC
 import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity.Companion.currentFragment
 import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity.Companion.getCurrentTime
 import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity.Companion.longTimeToString
+import com.elliot.kim.kotlin.dimcatcamnote.activities.SingleNoteConfigureActivity
 import com.elliot.kim.kotlin.dimcatcamnote.adapters.AlarmedNoteAdapter
 import com.elliot.kim.kotlin.dimcatcamnote.data.Note
 import com.elliot.kim.kotlin.dimcatcamnote.databinding.FragmentWriteBinding
@@ -42,7 +44,6 @@ import kotlinx.android.synthetic.main.fragment_write.view.*
 class WriteFragment : Fragment() {
 
     lateinit var handler: Handler
-    private lateinit var activity: MainActivity
     private lateinit var audioManager: AudioManager
     private lateinit var binding: FragmentWriteBinding
     private lateinit var intent: Intent
@@ -70,10 +71,10 @@ class WriteFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         if (context == null) onDestroy()
-        activity = requireActivity() as MainActivity
-        audioManager = activity.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        audioManager = requireActivity().getSystemService(Context.AUDIO_SERVICE) as AudioManager
         existingUri = uri
         shortAnimationDuration = resources.getInteger(android.R.integer.config_shortAnimTime)
+        shortAnimationDuration -= 80
 
         intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
         intent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, requireActivity().packageName)
@@ -92,7 +93,11 @@ class WriteFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        activity.setCurrentFragment(CurrentFragment.WRITE_FRAGMENT)
+        if (activity is MainActivity)
+            (activity as MainActivity).setCurrentFragment(CurrentFragment.WRITE_FRAGMENT)
+        else if (activity is SingleNoteConfigureActivity)
+            (activity as SingleNoteConfigureActivity)
+                .setCurrentFragment(CurrentFragment.WRITE_FRAGMENT)
         isSaved = false
         originalVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
     }
@@ -103,8 +108,15 @@ class WriteFragment : Fragment() {
         binding = FragmentWriteBinding.bind(view)
         binding.toolbar.title = TITLE_TOOLBAR
 
-        activity.setSupportActionBar(binding.toolbar)
-        activity.supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        if (activity is MainActivity) {
+            (activity as MainActivity).setSupportActionBar(binding.toolbar)
+            (activity as MainActivity).supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        } else if (activity is SingleNoteConfigureActivity) {
+            (activity as SingleNoteConfigureActivity).setSupportActionBar(binding.toolbar)
+            (activity as SingleNoteConfigureActivity)
+                .supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        }
+
         setHasOptionsMenu(true)
 
         // Apply mic icon animation
@@ -152,18 +164,7 @@ class WriteFragment : Fragment() {
                         requestPermissions(
                             MainActivity.RECORD_AUDIO_PERMISSIONS_REQUESTED,
                             RECORD_AUDIO_PERMISSIONS_REQUEST_CODE)
-
                 }
-                /*
-                R.id.menu_location -> {
-
-                    if (MainActivity.hasLocationPermissions(requireContext()))
-
-                    else
-                        requestPermissions(MainActivity.LOCATION_PERMISSIONS_REQUESTED,
-                            LOCATION_PERMISSIONS_REQUEST_CODE)
-                }
-                 */
             }
             return@setOnNavigationItemSelectedListener true
         }
@@ -184,8 +185,7 @@ class WriteFragment : Fragment() {
 
                 if ((binding.editTextTitle.isFocused
                             || binding.editTextContent.isFocused)
-                    && currentFragment == CurrentFragment.WRITE_FRAGMENT
-                    && binding.bottomNavigationView.visibility == View.GONE)
+                    && currentFragment == CurrentFragment.WRITE_FRAGMENT)
                     crossFadeBottomNavigationView(true)
             }
         }
@@ -208,8 +208,6 @@ class WriteFragment : Fragment() {
         }
     }
 
-
-
     override fun onCreateAnimation(transit: Int, enter: Boolean, nextAnim: Int): Animation? {
         val animation = AnimationUtils.loadAnimation(activity, nextAnim)
 
@@ -221,7 +219,7 @@ class WriteFragment : Fragment() {
             override fun onAnimationEnd(animation: Animation?) {
                 if (!enter) {
                     MainActivity.hideKeyboard(context, view)
-                    if (isSaved) activity.showToast(activity.getString(R.string.save_complete_message))
+                    if (isSaved) showToast(requireContext().getString(R.string.save_complete_message))
                 }
             }
 
@@ -233,17 +231,25 @@ class WriteFragment : Fragment() {
         return animation
     }
 
+    private fun showToast(text: String) {
+        Toast.makeText(requireContext(), text, Toast.LENGTH_SHORT).show()
+    }
+
+
     override fun onDestroyView() {
         uri = null
 
         if (this::recognizer.isInitialized) { recognizer.destroy() }
 
-        if (isFromAlarmedNoteSelectionFragment)
-            activity.setCurrentFragment(CurrentFragment.CALENDAR_FRAGMENT)
-        else {
-            activity.setCurrentFragment(null)
-            activity.showFloatingActionButton()
-        }
+        if (activity is MainActivity) {
+            if (isFromAlarmedNoteSelectionFragment)
+                (activity as MainActivity).setCurrentFragment(CurrentFragment.CALENDAR_FRAGMENT)
+            else {
+                (activity as MainActivity).setCurrentFragment(null)
+                (activity as MainActivity).showFloatingActionButton()
+            }
+        } else if (activity is SingleNoteConfigureActivity)
+            (activity as SingleNoteConfigureActivity).setCurrentFragment(null)
 
         this.alarmedNoteAdapter = null
         super.onDestroyView()
@@ -282,7 +288,7 @@ class WriteFragment : Fragment() {
             }
             RECORD_AUDIO_PERMISSIONS_REQUEST_CODE -> {
                 if (PackageManager.PERMISSION_GRANTED == grantResults.firstOrNull()) {
-                    startCameraFragment()
+                    startSpeechRecognition()
                 } else {
                     Toast.makeText(
                         context,
@@ -318,7 +324,6 @@ class WriteFragment : Fragment() {
     }
 
     private fun startCameraFragment() {
-        Glide.with(binding.imageView.context).clear(binding.imageView)
         binding.editTextTitle.clearFocus()
         binding.editTextContent.clearFocus()
         binding.bottomNavigationView.apply {
@@ -329,17 +334,32 @@ class WriteFragment : Fragment() {
                 .setListener(object : AnimatorListenerAdapter() {
                     override fun onAnimationEnd(animation: Animator) {
                         binding.bottomNavigationView.visibility = View.GONE
-                        activity.cameraFragment.setPreviousUri(uri)
-                        //
-                        val cameraViewFragment = CameraViewFragment()
-                        cameraViewFragment.setPreviousUri(uri)
-                        activity.fragmentManager.beginTransaction()
-                            .addToBackStack(null)
-                            .setCustomAnimations(R.anim.anim_camera_fragment_enter,
-                                R.anim.anim_camera_fragment_exit,
-                                R.anim.anim_camera_fragment_pop_enter,
-                                R.anim.anim_camera_fragment_pop_exit)
-                            .replace(R.id.write_fragment_container, cameraViewFragment).commit()
+                        if (activity is MainActivity) {
+                            (activity as MainActivity).cameraFragment.setPreviousUri(uri)
+                            (activity as MainActivity).fragmentManager.beginTransaction()
+                                .addToBackStack(null)
+                                .setCustomAnimations(
+                                    R.anim.anim_camera_fragment_enter,
+                                    R.anim.anim_camera_fragment_exit,
+                                    R.anim.anim_camera_fragment_pop_enter,
+                                    R.anim.anim_camera_fragment_pop_exit
+                                )
+                                .replace(R.id.write_fragment_container, (activity as MainActivity).cameraFragment)
+                                .commit()
+                        } else if (activity is SingleNoteConfigureActivity) {
+                            (activity as SingleNoteConfigureActivity).cameraFragment.setPreviousUri(uri)
+                            (activity as SingleNoteConfigureActivity).fragmentManager.beginTransaction()
+                                .addToBackStack(null)
+                                .setCustomAnimations(
+                                    R.anim.anim_camera_fragment_enter,
+                                    R.anim.anim_camera_fragment_exit,
+                                    R.anim.anim_camera_fragment_pop_enter,
+                                    R.anim.anim_camera_fragment_pop_exit
+                                )
+                                .replace(R.id.write_fragment_container,
+                                    (activity as SingleNoteConfigureActivity).cameraFragment)
+                                .commit()
+                        }
                     }
                 })
         }
@@ -358,7 +378,7 @@ class WriteFragment : Fragment() {
                         binding.bottomNavigationView.visibility = View.GONE
                         val photoFragment = PhotoFragment()
                         photoFragment.setParameters(this@WriteFragment, uri!!)
-                        activity.fragmentManager.beginTransaction()
+                        activity!!.supportFragmentManager.beginTransaction()
                             .addToBackStack(null)
                             .setCustomAnimations(R.anim.slide_up, R.anim.slide_up, R.anim.slide_down, R.anim.slide_down)
                             .replace(R.id.write_fragment_container, photoFragment).commit()
@@ -422,7 +442,6 @@ class WriteFragment : Fragment() {
     }
 
     private fun showCheckMessage() {
-        //getResources().getIdentifier( "alertTitle", "id", "your.package.name" )
         val builder = context?.let { AlertDialog.Builder(it) }
         builder?.setTitle("노트 저장")
         builder?.setMessage("지금까지 작성한 내용을 저장하시겠습니까?")
@@ -499,16 +518,30 @@ class WriteFragment : Fragment() {
         }
     }
 
+    override fun onStop() {
+        binding.editTextTitle.clearFocus()
+        binding.editTextContent.clearFocus()
+        super.onStop()
+    }
+
     private fun save() {
-        if (isFromAlarmedNoteSelectionFragment) alarmedNoteAdapter!!.insert(newNote!!)
-        activity.viewModel.insert(newNote!!)
+        if (isFromAlarmedNoteSelectionFragment)
+            alarmedNoteAdapter!!.insert(newNote!!)
+
+        if (activity is MainActivity)
+            (activity as MainActivity).viewModel.insert(newNote!!)
+        else if (activity is SingleNoteConfigureActivity) {
+            (activity as SingleNoteConfigureActivity).viewModel.insert(newNote!!)
+            (activity as SingleNoteConfigureActivity).noteAdapter.insert(newNote!!)
+        }
     }
 
     fun finish(save: Int) {
         if (isRecognizingSpeech) finishSpeechRecognition()
         else {
             setTitleContent()
-            if (isEmpty()) finishWithoutSaving()
+            if (isEmpty())
+                finishWithoutSaving()
             else {
                 when (save) {
                     SAVE -> finishWithSaving()
@@ -523,16 +556,21 @@ class WriteFragment : Fragment() {
     private fun finishWithSaving() {
         isSaved = true
         newNote = createNote()
-        val asyncSaveTask = AsyncSaveTask(activity) {
+        val asyncSaveTask = AsyncSaveTask(requireActivity()) {
             save()
         }
         asyncSaveTask.execute()
     }
 
     private fun finishWithoutSaving() {
-        activity.deleteFileFromUri(uri)
         Toast.makeText(context, "저장되지 않았습니다.", Toast.LENGTH_SHORT).show()
-        activity.backPressed()
+        if (activity is MainActivity) {
+            (activity as MainActivity).deleteFileFromUri(uri)
+            (activity as MainActivity).backPressed()
+        } else if (activity is SingleNoteConfigureActivity) {
+            (activity as SingleNoteConfigureActivity).deleteFileFromUri(uri)
+            (activity as SingleNoteConfigureActivity).backPressed()
+        }
     }
 
     private fun clearText() {
@@ -543,13 +581,16 @@ class WriteFragment : Fragment() {
     private fun crossFadeBottomNavigationView(fadeIn: Boolean) {
         if (fadeIn) {
             binding.bottomNavigationView.apply {
-                translationY = binding.bottomNavigationView.height.toFloat()
-                visibility = View.VISIBLE
+                translationY = bottomNavigationView.height.toFloat()
 
                 animate()
                     .translationY(0F)
                     .setDuration(shortAnimationDuration.toLong())
-                    .setListener(null)
+                    .setListener(object : AnimatorListenerAdapter() {
+                        override fun onAnimationEnd(animation: Animator) {
+                            visibility = View.VISIBLE
+                        }
+                    })
             }
         } else {
             binding.bottomNavigationView.apply {
@@ -558,7 +599,11 @@ class WriteFragment : Fragment() {
                 animate()
                     .translationY(bottomNavigationView.height.toFloat())
                     .setDuration(shortAnimationDuration.toLong())
-                    .setListener(null)
+                    .setListener(object : AnimatorListenerAdapter() {
+                        override fun onAnimationEnd(animation: Animator) {
+                            visibility = View.GONE
+                        }
+                    })
             }
         }
     }
@@ -707,7 +752,10 @@ class WriteFragment : Fragment() {
 
         val note = Note(title, getCurrentTime(), uri)
         note.content = content
-        note.folderId = activity.currentFolder.id
+        if (activity is MainActivity)
+            note.folderId = (activity as MainActivity).currentFolder.id
+        else
+            note.folderId = DEFAULT_FOLDER_ID
 
         if (isFromAlarmedNoteSelectionFragment)
             note.alarmTime = dateSelectedInCalender
@@ -726,8 +774,7 @@ class WriteFragment : Fragment() {
         private const val SPEECH_RECOGNIZER_ERROR_TAG = "Speech Recognizer Error"
     }
 
-
-    class AsyncSaveTask(val activity: MainActivity, val handler: () -> Unit) : AsyncTask<Void, Void, Void>() {
+    class AsyncSaveTask(val activity: Activity, val handler: () -> Unit) : AsyncTask<Void, Void, Void>() {
         override fun doInBackground(vararg params: Void?): Void? {
             handler()
             return null
@@ -737,7 +784,10 @@ class WriteFragment : Fragment() {
             super.onPostExecute(result)
             val handler = Handler()
             handler.postDelayed({
-                activity.backPressed()
+                if (activity is MainActivity)
+                    activity.backPressed()
+                else if (activity is SingleNoteConfigureActivity)
+                    activity.backPressed()
             }, 120)
         }
     }

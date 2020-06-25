@@ -1,6 +1,13 @@
 <animation-list xmlns:android="http://schemas.android.com/apk/res/android"
     android:oneshot="false">
-    <item android:drawable="@drawable/ic_pin_white_24dp" android:duration="200" />
-    <item android:drawable="@drawable/ic_today_white_24dp" android:duration="200" />
-    <item android:drawable="@drawable/ic_folder" android:duration="200" />
+    <item android:drawable="@drawable/ic_mic_anim_00_24dp" android:duration="400" />
+    <item android:drawable="@drawable/ic_mic_anim_01_24dp" android:duration="200" />
+    <item android:drawable="@drawable/ic_mic_anim_02_24dp" android:duration="200" />
+    <item android:drawable="@drawable/ic_mic_anim_03_24dp" android:duration="200" />
+    <item android:drawable="@drawable/ic_mic_anim_04_24dp" android:duration="400" />
+    <item android:drawable="@drawable/ic_mic_anim_05_24dp" android:duration="200" />
+    <item android:drawable="@drawable/ic_mic_anim_04_24dp" android:duration="200" />
+    <item android:drawable="@drawable/ic_mic_anim_03_24dp" android:duration="200" />
+    <item android:drawable="@drawable/ic_mic_anim_02_24dp" android:duration="200" />
+    <item android:drawable="@drawable/ic_mic_anim_01_24dp" android:duration="200" />
 </animation-list>

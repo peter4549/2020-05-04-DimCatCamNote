@@ -60,8 +60,8 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
     }
 
     override fun onItemMoved(from: Int, to: Int) {
-
-        if (from == to) return
+        if (from == to)
+            return
 
         val fromItem = notesFiltered.removeAt(from)
         notesFiltered.add(to, fromItem)
@@ -240,6 +240,7 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
                                 noteListFiltering.add(note)
                         }
                     }
+
                     notesFiltered = noteListFiltering
                 } else if (searchWord.isEmpty() && currentFolderId != DEFAULT_FOLDER_ID){
                     // Show notes contained in a specific folder.
@@ -249,6 +250,7 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
                             noteListFiltering.add(note)
                         }
                     }
+
                     notesFiltered = noteListFiltering
                 } else {
                     // Shows notes that are included in a specific folder
@@ -262,11 +264,13 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
                             noteListFiltering.add(note)
                         }
                     }
+
                     notesFiltered = noteListFiltering
                 }
 
                 val filterResults = FilterResults()
                 filterResults.values = notesFiltered
+
                 return filterResults
             }
 
@@ -300,10 +304,13 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
         if (isFirstBinding) isFirstBinding = false
 
         notes.add(0, note)
+        notesFiltered.add(0, note)
         notifyItemInserted(0)
-        (context as MainActivity).recyclerViewScrollToTop()
-
-        context.showCurrentFolderItems((context).currentFolder, false)
+        if (context is MainActivity) {
+            context.recyclerViewScrollToTop()
+            //context.showCurrentFolderItems((context).currentFolder, false)
+        } else if (context is SingleNoteConfigureActivity)
+            context.recyclerViewScrollToTop()
 
         /** The code below controls the scrolling speed.
         val linearSmoothScroller: LinearSmoothScroller =
@@ -358,11 +365,6 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
         }
     }
 
-    // 이미지 새로 찍었을 때 기존 이미지 제거에 사용가할듯.
-    fun removePhoto(note: Note) {
-        if (note.uri != null) (context as MainActivity).deleteFileFromUri(note.uri!!)
-    }
-
     fun sort(sortingCriteria: Int): Long {
         this.sortingCriteria = sortingCriteria
         Collections.sort(notesFiltered,
@@ -381,11 +383,13 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
         recyclerView.scheduleLayoutAnimation()
         notifyDataSetChanged()
 
-        val preferences =
-            context!!.getSharedPreferences(PREFERENCES_SORTING_CRITERIA, Context.MODE_PRIVATE)
-        val editor = preferences.edit()
-        editor.putInt(KEY_SORTING_CRITERIA, sortingCriteria)
-        editor.apply()
+        if (context is MainActivity) {
+            val preferences =
+                context.getSharedPreferences(PREFERENCES_SORTING_CRITERIA, Context.MODE_PRIVATE)
+            val editor = preferences.edit()
+            editor.putInt(KEY_SORTING_CRITERIA, sortingCriteria)
+            editor.apply()
+        }
 
         return 0L
     }

@@ -53,6 +53,7 @@
         <activity
             android:name=".activities.EditActivity"
             android:theme="@style/AppTheme.NoActionBar"
+            android:configChanges="orientation|keyboardHidden"
             android:windowSoftInputMode="adjustPan" >
         </activity>
 

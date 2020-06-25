@@ -17,6 +17,7 @@ import com.elliot.kim.kotlin.dimcatcamnote.databinding.CardViewNavigationDrawerB
 import com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments.ConfirmPasswordDialogFragment
 import com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments.DialogFragments
 import com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments.SetPasswordDialogFragment
+import java.lang.IndexOutOfBoundsException
 import java.util.*
 
 class FolderAdapter(private val context: Context?):
@@ -245,7 +246,7 @@ class FolderAdapter(private val context: Context?):
             Context.MODE_PRIVATE
         )
         val editor = preferences.edit()
-        for (i in 0..3)
+        for (i in 0..4)
             editor.remove("${folder.id}$i")
         editor.apply()
 
@@ -276,7 +277,13 @@ class FolderAdapter(private val context: Context?):
         }
     }
 
-    fun getFolderById(id: Int): Folder = folders.filter { it.id == id }[0]
+    fun getFolderById(id: Int): Folder {
+        return try {
+            folders.filter { it.id == id }[0]
+        } catch (e: IndexOutOfBoundsException) {
+            folders[0]
+        }
+    }
     fun getFolderByName(name: String): Folder = folders.filter { it.name == name }[0]
 
     fun lock() {

@@ -334,8 +334,8 @@ class EditActivity: AppCompatActivity() {
             .addToBackStack(null)
             .setCustomAnimations(R.anim.anim_slide_in_left_enter,
                 R.anim.anim_slide_in_left_exit,
-                R.anim.anim_slide_down_pop_enter,
-                R.anim.anim_slide_down_pop_exit)
+                R.anim.anim_slide_out_right_enter,
+                R.anim.anim_slide_out_right_exit)
             .replace(R.id.edit_note_container, photoFragment).commit()
     }
 

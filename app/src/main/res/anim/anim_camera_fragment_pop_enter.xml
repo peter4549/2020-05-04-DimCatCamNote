@@ -4,5 +4,5 @@
         android:duration="320"
         android:fromXDelta="100%"
         android:toXDelta="0%"
-        android:interpolator="@android:anim/linear_interpolator" />
+        android:interpolator="@android:anim/decelerate_interpolator" />
 </set>

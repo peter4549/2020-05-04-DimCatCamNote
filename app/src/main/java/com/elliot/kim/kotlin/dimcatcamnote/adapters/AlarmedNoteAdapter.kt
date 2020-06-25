@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Paint
 import android.net.Uri
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,7 +15,6 @@ import com.bumptech.glide.load.resource.bitmap.CircleCrop
 import com.elliot.kim.kotlin.dimcatcamnote.*
 import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity
 import com.elliot.kim.kotlin.dimcatcamnote.data.Note
-import com.elliot.kim.kotlin.dimcatcamnote.databinding.CardViewAlarmedNoteBinding
 import com.elliot.kim.kotlin.dimcatcamnote.databinding.CardViewBinding
 import com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments.ConfirmPasswordDialogFragment
 
@@ -175,8 +173,8 @@ class AlarmedNoteAdapter(private val activity: MainActivity,
             .addToBackStack(null)
             .setCustomAnimations(R.anim.anim_slide_in_left_enter,
                 R.anim.anim_slide_in_left_exit,
-                R.anim.anim_slide_down_pop_enter,
-                R.anim.anim_slide_down_pop_exit)
+                R.anim.anim_slide_out_right_enter,
+                R.anim.anim_slide_out_right_exit)
             .replace(R.id.calendar_container, activity.editFragment).commit()
     }
 

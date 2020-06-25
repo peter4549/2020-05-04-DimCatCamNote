@@ -2,12 +2,12 @@ package com.elliot.kim.kotlin.dimcatcamnote.adapters
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.ImageView
+import android.widget.RelativeLayout
 import android.widget.TextView
 import com.elliot.kim.kotlin.dimcatcamnote.PATTERN_YYYY_MM_dd
 import com.elliot.kim.kotlin.dimcatcamnote.R
@@ -18,7 +18,7 @@ import com.elliot.kim.kotlin.dimcatcamnote.fragments.CalendarFragment
 import java.text.SimpleDateFormat
 import java.util.*
 
-class CalendarAdapter(private val activity: MainActivity, private val rowViewId: Int,
+class CalendarAdapter(private val activity: MainActivity, private val convertViewId: Int,
                       private val calendar: Calendar, private var noteIdAlarmDatePairs : ArrayList<Pair<Int, Long>>,
                       private val alarmedNotes: MutableList<Note>, private val todayDate: Int): BaseAdapter() {
 
@@ -41,23 +41,33 @@ class CalendarAdapter(private val activity: MainActivity, private val rowViewId:
         alarmedNoteSelectionFragment = AlarmedNoteSelectionFragment()
     }
 
-    @SuppressLint("ViewHolder")
     override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
+        val holder: ViewHolder
+        val view: View
         val currentYear = calendar.get(Calendar.YEAR)
         val currentMonth = calendar.get(Calendar.MONTH) + 1
 
         lastDay = calendar.getActualMaximum(Calendar.DAY_OF_MONTH)
         inflater = activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
 
-        val rowView = inflater.inflate(rowViewId, null)
-        val textView = rowView.findViewById<TextView>(R.id.text_view)
-        val imageView = rowView.findViewById<ImageView>(R.id.image_view)
-        imageView.visibility = View.INVISIBLE
+        if (convertView == null) {
+            holder = ViewHolder()
+            view = inflater.inflate(convertViewId, null)
+
+            holder.container = view.findViewById(R.id.container)
+            holder.textView = view.findViewById(R.id.text_view)
+            holder.imageView = view.findViewById(R.id.image_view)
+
+            view?.tag = holder
+        } else
+            holder = convertView.tag as ViewHolder
+
+        holder.imageView.visibility = View.INVISIBLE
 
         if (dateArray[position] == null || dateArray[position]!!.toInt() > lastDay)
         {
-            textView.text = null
-            rowView.foreground = null
+            holder.textView.text = null
+            holder.container.foreground = null
         }
         else {
             // Date displayed
@@ -66,25 +76,27 @@ class CalendarAdapter(private val activity: MainActivity, private val rowViewId:
 
             if (currentYear == CalendarFragment.thisYear
                 && currentMonth == CalendarFragment.thisMonth && currentDate == today)
-                rowView.setBackgroundColor(activity.getColor(R.color.backgroundColorLightBlue))
+                holder.container.setBackgroundColor(activity.getColor(R.color.backgroundColorLightBlue))
 
             for (idAlarmDatePair in noteIdAlarmDatePairs) {
                 if(currentDate == idAlarmDatePair.second) {
-                    imageView.visibility = View.VISIBLE
+                    holder.imageView.visibility = View.VISIBLE
 
                     // The code below is expected to raise the ConcurrentModificationException.
                     // noteIdAlarmDatePairs.remove(idAlarmDatePair)
                 }
             }
 
-            textView.text = dateArray[position].toString()
+            holder.textView.text = dateArray[position].toString()
 
-            rowView.setOnClickListener {
-                startAlarmedNoteSelectionFragment(alarmedNoteSelectionFragment, currentDate, imageView)
+            holder.container.setOnClickListener {
+                startAlarmedNoteSelectionFragment(alarmedNoteSelectionFragment,
+                    currentDate, holder.imageView)
             }
 
         }
-        return rowView
+
+        return holder.container
     }
 
     override fun getItem(position: Int): Any {
@@ -100,6 +112,12 @@ class CalendarAdapter(private val activity: MainActivity, private val rowViewId:
         // 데이터셋 정리하고,
 
         notifyDataSetChanged()
+    }
+
+    class ViewHolder {
+        lateinit var container: RelativeLayout
+        lateinit var textView: TextView
+        lateinit var  imageView: ImageView
     }
 
    private fun convertDateIntToLong(year: Int, month: Int, date: Int): Long {
@@ -119,8 +137,8 @@ class CalendarAdapter(private val activity: MainActivity, private val rowViewId:
             .addToBackStack(null)
             .setCustomAnimations(R.anim.anim_slide_in_left_enter,
                 R.anim.anim_slide_in_left_exit,
-                R.anim.anim_slide_down_pop_enter,
-                R.anim.anim_slide_down_pop_exit)
+                R.anim.anim_slide_out_right_enter,
+                R.anim.anim_slide_out_right_exit)
             .replace(R.id.calendar_container, alarmedNoteSelectionFragment).commit()
     }
 }

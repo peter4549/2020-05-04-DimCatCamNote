@@ -28,7 +28,7 @@ class SortDialogFragment(noteAdapter: NoteAdapter) : DialogFragment() {
         val textViewByEditTime = dialog.findViewById<TextView>(R.id.by_edit_time)
         val textViewByName = dialog.findViewById<TextView>(R.id.by_name)
 
-        // Apply design.
+        // Apply design
         dialog.findViewById<RelativeLayout>(R.id.sort_container).setBackgroundColor(MainActivity.backgroundColor)
         textView.setBackgroundColor(MainActivity.toolbarColor)
 

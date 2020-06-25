@@ -9,6 +9,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.content.res.ColorStateList
+import android.content.res.Configuration
 import android.graphics.Typeface
 import android.media.MediaScannerConnection
 import android.net.Uri
@@ -23,7 +24,6 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.SearchView
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
@@ -76,7 +76,7 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
 
     val alarmFragment = AlarmFragment(this)
     private val calendarFragment = CalendarFragment()
-    val cameraFragment = CameraFragment()
+    val cameraFragment = CameraViewFragment()
     val configureFragment = ConfigureFragment()
     val editFragment = EditFragment(this)
     val writeFragment = WriteFragment()
@@ -84,7 +84,7 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
     private var initialization = true
     private var isCalendarClicked = false
     private var pressedTime = 0L
-    var isClearing = false
+    private var isClearing = false
 
     private lateinit var dialogFragmentManager: DialogFragmentManager
 
@@ -151,11 +151,8 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
                 initialization = false
             } else {
                 when {
-                    notesSize < notes.size -> {
-                        noteAdapter.insert(notes[notes.size - 1])
-                    }
-                    notesSize == notes.size ->
-                        noteAdapter.update(viewModel.targetNote!!)
+                    notesSize < notes.size -> noteAdapter.insert(notes[notes.size - 1])
+                    notesSize == notes.size -> noteAdapter.update(viewModel.targetNote!!)
                     notesSize > notes.size -> {
                         if (isClearing && viewModel.itemCount == 0) isClearing = false
                         else {
@@ -201,7 +198,7 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
             ) {
                 rightButtonBuffer.add(
                     UnderlayButton(this@MainActivity,
-                        UnderlayButtonIds.EDIT,
+                        UnderlayButtonIds.MORE,
                         "더보기",
                         30,
                         R.drawable.ic_more_vert_white_24dp,
@@ -298,7 +295,8 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         if (binding.drawerLayout.isDrawerOpen(GravityCompat.START))
             binding.drawerLayout.closeDrawer(GravityCompat.START, true)
         else {
-            if (currentFragment == null) finishApplication()
+            if (currentFragment == null)
+                finishApplication()
             else {
                 when (currentFragment) {
                     CurrentFragment.ALARM_FRAGMENT -> super.onBackPressed()
@@ -427,8 +425,8 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
             .setCustomAnimations(
                 R.anim.anim_slide_in_fast_left_enter,
                 R.anim.anim_slide_in_fast_left_exit,
-                R.anim.anim_slide_down_pop_enter,
-                R.anim.anim_slide_down_pop_exit
+                R.anim.anim_slide_out_right_enter,
+                R.anim.anim_slide_out_right_exit
             )
             .addToBackStack(null)
             .replace(R.id.main_container, calendarFragment).commit()
@@ -451,8 +449,8 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
             .setCustomAnimations(
                 R.anim.anim_slide_in_left_enter,
                 R.anim.anim_slide_in_left_exit,
-                R.anim.anim_slide_down_pop_enter,
-                R.anim.anim_slide_down_pop_exit
+                R.anim.anim_slide_out_right_enter,
+                R.anim.anim_slide_out_right_exit
             )
             .addToBackStack(null)
             .replace(R.id.main_container, fragment).commit()
@@ -740,7 +738,7 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         val preferences = getSharedPreferences(
             PREFERENCES_CURRENT_FOLDER,
             Context.MODE_PRIVATE)
-        currentFolder = folderAdapter.getFolderById(preferences.getInt(KEY_CURRENT_FOLDER, 0))
+        currentFolder = folderAdapter.getFolderById(preferences.getInt(KEY_CURRENT_FOLDER, DEFAULT_FOLDER_ID))
     }
 
     fun showDialogFragment(dialogFragment: DialogFragments, toolbar: androidx.appcompat.widget.Toolbar? = null) {
@@ -785,6 +783,12 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         noteAdapter.clear()
     }
 
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        if (currentFragment == CurrentFragment.CAMERA_FRAGMENT)
+            cameraFragment.reopenCamera()
+    }
+
     companion object {
         var font: Typeface? = null
         var fontId = 0
@@ -798,7 +802,7 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
 
         var isAppRunning = false
 
-        const val DATABASE_NAME = "dim_cat_cam_notes_13"
+        const val DATABASE_NAME = "dim_cat_cam_notes_14"
 
         const val PREFERENCES_CURRENT_FOLDER = "current_folder"
 
@@ -813,6 +817,7 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
 
         val CAMERA_PERMISSIONS_REQUIRED = arrayOf(Manifest.permission.CAMERA)
         val RECORD_AUDIO_PERMISSIONS_REQUESTED = arrayOf(Manifest.permission.RECORD_AUDIO)
+
         /*
         val LOCATION_PERMISSIONS_REQUESTED = arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION,
             Manifest.permission.ACCESS_FINE_LOCATION)

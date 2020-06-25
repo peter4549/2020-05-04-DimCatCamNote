@@ -13,9 +13,10 @@ import com.elliot.kim.kotlin.dimcatcamnote.CurrentFragment
 import com.elliot.kim.kotlin.dimcatcamnote.R
 import com.elliot.kim.kotlin.dimcatcamnote.activities.EditActivity
 import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity
+import com.elliot.kim.kotlin.dimcatcamnote.activities.SingleNoteConfigureActivity
 import com.github.chrisbanes.photoview.PhotoView
 
-class PhotoFragment() : Fragment() {
+class PhotoFragment : Fragment() {
 
     private lateinit var photoView: PhotoView
     private lateinit var fragment: Any
@@ -32,9 +33,7 @@ class PhotoFragment() : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
         photoView = view.findViewById(R.id.photo_view)
-        // val resource = uri.let { File(it) } ?: R.drawable.check_mark
         Glide.with(photoView.context)
             .load(Uri.parse(uri))
             .error(R.drawable.ic_sentiment_dissatisfied_grey_24dp)
@@ -48,6 +47,8 @@ class PhotoFragment() : Fragment() {
         super.onResume()
         if (activity is MainActivity)
             (activity as MainActivity).setCurrentFragment(CurrentFragment.PHOTO_FRAGMENT)
+        else if (activity is SingleNoteConfigureActivity)
+            (activity as SingleNoteConfigureActivity).setCurrentFragment(CurrentFragment.PHOTO_FRAGMENT)
     }
 
     override fun onDestroyView() {
@@ -57,7 +58,11 @@ class PhotoFragment() : Fragment() {
                 val message = (fragment as WriteFragment).handler.obtainMessage()
                 message.what = WriteFragment.SHOW_BOTTOM_NAVIGATION_VIEW
                 (fragment as WriteFragment).handler.sendMessage(message)
-                (activity as MainActivity).setCurrentFragment(CurrentFragment.WRITE_FRAGMENT)
+                if (activity is MainActivity)
+                    (activity as MainActivity).setCurrentFragment(CurrentFragment.WRITE_FRAGMENT)
+                else if (activity is SingleNoteConfigureActivity)
+                    (activity as SingleNoteConfigureActivity)
+                        .setCurrentFragment(CurrentFragment.WRITE_FRAGMENT)
             }
             is EditActivity -> {
                 // PhotoFragment can also be executed from a EditActivity.
