@@ -4,21 +4,29 @@ import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.annotation.SuppressLint
 import android.app.AlarmManager
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.*
+import android.graphics.Color
 import android.graphics.Rect
 import android.graphics.Typeface
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.text.SpannableString
+import android.text.style.ForegroundColorSpan
+import android.text.style.TextAppearanceSpan
 import android.view.*
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.NotificationCompat
 import androidx.core.content.res.ResourcesCompat
+import androidx.core.view.forEachIndexed
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModelProvider
@@ -35,7 +43,9 @@ import com.elliot.kim.kotlin.dimcatcamnote.adapters.NoteAdapter
 import com.elliot.kim.kotlin.dimcatcamnote.broadcast_receivers.AlarmReceiver
 import com.elliot.kim.kotlin.dimcatcamnote.data.Note
 import com.elliot.kim.kotlin.dimcatcamnote.databinding.ActivityEditBinding
+import com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments.AddToCalendarDialogFragment
 import com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments.ConfirmPasswordDialogFragment
+import com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments.MoreOptionsDialogFragment
 import com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments.SetPasswordDialogFragment
 import com.elliot.kim.kotlin.dimcatcamnote.fragments.AlarmFragment
 import com.elliot.kim.kotlin.dimcatcamnote.fragments.PhotoFragment
@@ -50,7 +60,6 @@ class EditActivity: AppCompatActivity() {
     private lateinit var note: Note
     private lateinit var noteAdapter: NoteAdapter
     private lateinit var originContent: String
-    private lateinit var rootView: View
     private val alarmFragment = AlarmFragment(this)
     private val tag = "EditActivity"
     private var isEditMode = false
@@ -140,10 +149,11 @@ class EditActivity: AppCompatActivity() {
                 dataLoadingComplete = true
                 initialized = true
             }
-            // 보류.
         })
 
-        binding.imageView.setOnClickListener { startPhotoFragment() }
+        binding.imageView.setOnClickListener {
+            startPhotoFragment()
+        }
 
         binding.focusBlock.setOnTouchListener(object : View.OnTouchListener {
             private val gestureDetector = GestureDetector(applicationContext,
@@ -200,7 +210,11 @@ class EditActivity: AppCompatActivity() {
         val menuDone = menu.findItem(R.id.menu_done)
         val menuAlarm = menu.findItem(R.id.menu_alarm)
         val menuChangeAlarm = menu.findItem(R.id.menu_change_alarm)
+        val menuMoveToFolder = menu.findItem(R.id.menu_move_to_folder)
         val menuLock = menu.findItem(R.id.menu_lock)
+
+        // EditActivity does not offer the menu below
+        menuMoveToFolder.isVisible = false
 
         if (dataLoadingComplete) {
             binding.toolbar.title = note.title
@@ -217,6 +231,30 @@ class EditActivity: AppCompatActivity() {
             if (note.isLocked) menuLock.title = "잠금해제" else menuLock.title = "잠금설정"
 
             binding.toolbar.invalidate()
+
+            // Apply font
+            menu.forEachIndexed { index, _ ->
+                // Except mode menu
+                if (index != 0) {
+                    val menuItem = menu.getItem(index)
+                    val spanString = SpannableString(menuItem.title.toString())
+                    spanString.setSpan(
+                        TextAppearanceSpan(this, fontStyleId),
+                        0,
+                        spanString.length,
+                        0
+                    )
+
+                    spanString.setSpan(
+                        ForegroundColorSpan(Color.BLACK),
+                        0,
+                        spanString.length,
+                        0
+                    )
+
+                    menuItem.title = (spanString)
+                }
+            }
         }
 
         return true
@@ -268,6 +306,10 @@ class EditActivity: AppCompatActivity() {
                 showToast("노트가 삭제되었습니다.")
                 finish()
             }
+            R.id.menu_add_to_status_bar -> addToStatusBar(note)
+            R.id.menu_add_to_calendar -> AddToCalendarDialogFragment(note)
+                .show(fragmentManager, tag)
+
         }
         return super.onOptionsItemSelected(item)
     }
@@ -277,7 +319,7 @@ class EditActivity: AppCompatActivity() {
         val defaultBackgroundColor = getColor(R.color.defaultColorBackground)
         val defaultInlayColor = getColor(R.color.defaultColorInlay)
 
-        val colorPreferences = getSharedPreferences(
+        val colorPreferences = this.getSharedPreferences(
             PREFERENCES_SET_COLOR,
             Context.MODE_PRIVATE
         )
@@ -293,10 +335,6 @@ class EditActivity: AppCompatActivity() {
         font = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
             resources.getFont(fontId)
         else ResourcesCompat.getFont(this, fontId)
-
-        toolbarColor = fontPreferences.getInt(KEY_COLOR_TOOLBAR, defaultToolbarColor)
-        backgroundColor = fontPreferences.getInt(KEY_COLOR_BACKGROUND, defaultBackgroundColor)
-        inlayColor = fontPreferences.getInt(KEY_COLOR_INLAY, defaultInlayColor)
     }
 
     private fun lock() {
@@ -381,7 +419,49 @@ class EditActivity: AppCompatActivity() {
         }
     }
 
-    // 재정의... 아니면 opStop 에서 구현해도 될듯. // 물어보는 로직 결여. 조정 필요.
+    private fun addToStatusBar(note: Note) {
+        val builder = NotificationCompat.Builder(this,
+            MoreOptionsDialogFragment.CHANNEL_ID
+        )
+        val notificationManager =
+            getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val notificationIntent = Intent(this, EditActivity::class.java)
+        val id = note.id
+        val title = note.title
+        val content = note.content
+
+        notificationIntent.action = ACTION_ALARM_NOTIFICATION_CLICKED + id
+        notificationIntent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                Intent.FLAG_ACTIVITY_SINGLE_TOP
+        notificationIntent.putExtra(KEY_NOTE_ID, id)
+
+        val pendingIntent = PendingIntent.getActivity(
+            this,
+            id,
+            notificationIntent,
+            PendingIntent.FLAG_ONE_SHOT
+        )
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val importance = NotificationManager.IMPORTANCE_LOW
+            val channel = NotificationChannel(MoreOptionsDialogFragment.CHANNEL_ID, MoreOptionsDialogFragment.CHANNEL_NAME, importance)
+
+            builder.setSmallIcon(R.drawable.ic_cat_00_orange_32dp)
+            channel.description = MoreOptionsDialogFragment.CHANNEL_DESCRIPTION
+            notificationManager.createNotificationChannel(channel)
+        } else builder.setSmallIcon(R.mipmap.ic_cat_00_orange_128px)
+
+        builder.setAutoCancel(true)
+            .setDefaults(NotificationCompat.DEFAULT_ALL)
+            .setWhen(System.currentTimeMillis())
+            .setContentTitle(title)
+            .setContentText(content)
+            .setContentInfo(MoreOptionsDialogFragment.CONTENT_INFO)
+            .setContentIntent(pendingIntent)
+        notificationManager.notify(id, builder.build())
+
+        showToast("상태바에 등록되었습니다.")
+    }
 
     private fun finish(action: Int) {
         if (isContentChanged()) {
@@ -502,7 +582,8 @@ class EditActivity: AppCompatActivity() {
         // Set color
         binding.toolbar.setBackgroundColor(toolbarColor)
         binding.textViewTime.setBackgroundColor(inlayColor)
-        binding.editTextContainer.setBackgroundColor(inlayColor)
+        binding.editTextContainer.setBackgroundColor(getColor(R.color.backgroundColorBase))
+        binding.editTextContent.setBackgroundColor(inlayColor)
         binding.viewLock.setBackgroundColor(backgroundColor)
 
         // Set font
@@ -532,6 +613,12 @@ class EditActivity: AppCompatActivity() {
             target: Target<Drawable>?,
             isFirstResource: Boolean
         ): Boolean {
+            binding.imageView.setOnClickListener {
+                showToast("이미지를 찾을 수 없습니다.")
+                note.uri = null
+                viewModel.update(note)
+                it.visibility = View.GONE
+            }
             binding.imageView.isClickable = false
             binding.imageView.isFocusable = false
 

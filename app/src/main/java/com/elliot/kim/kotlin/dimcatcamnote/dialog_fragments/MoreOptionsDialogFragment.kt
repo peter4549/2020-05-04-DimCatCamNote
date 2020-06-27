@@ -129,9 +129,9 @@ class MoreOptionsDialogFragment(private val noteAdapter: NoteAdapter) : DialogFr
     }
 
     companion object {
-        private const val CHANNEL_ID = "default"
-        private const val CHANNEL_NAME = "com_duke_elliot_kim_kotlin_cat_note"
-        private const val CHANNEL_DESCRIPTION = "dim_cat_note_notification_channel"
-        private const val CONTENT_INFO = "none"
+        const val CHANNEL_ID = "default"
+        const val CHANNEL_NAME = "com_duke_elliot_kim_kotlin_cat_note"
+        const val CHANNEL_DESCRIPTION = "dim_cat_note_notification_channel"
+        const val CONTENT_INFO = "none"
     }
 }

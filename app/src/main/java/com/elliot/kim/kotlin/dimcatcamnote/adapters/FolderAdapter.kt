@@ -17,6 +17,7 @@ import com.elliot.kim.kotlin.dimcatcamnote.databinding.CardViewNavigationDrawerB
 import com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments.ConfirmPasswordDialogFragment
 import com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments.DialogFragments
 import com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments.SetPasswordDialogFragment
+import kotlinx.coroutines.*
 import java.lang.IndexOutOfBoundsException
 import java.util.*
 
@@ -25,7 +26,7 @@ class FolderAdapter(private val context: Context?):
     private val tag = "FolderAdapter"
     var folders: MutableList<Folder>
     var selectedFolder: Folder? = null
-    var lastId = 0
+    private var lastId = 0
 
     init {
         folders = loadFolders()
@@ -161,6 +162,9 @@ class FolderAdapter(private val context: Context?):
         // Add default folder.
         folders.add(Folder(DEFAULT_FOLDER_ID, DEFAULT_FOLDER_NAME))
 
+        for (i in 0 until entriesSize)
+            println("FUCKUO"+keySet[i])
+
         for (i in 0 until entriesSize) {
             val key = keySet[i].toString()
 
@@ -211,12 +215,18 @@ class FolderAdapter(private val context: Context?):
     }
 
     private fun saveNoteIdSet(folder: Folder) {
-        val preferences = (context as MainActivity).getSharedPreferences(
-            PREFERENCES_FOLDER,
-            Context.MODE_PRIVATE)
-        val editor = preferences.edit()
-        editor.putStringSet("${folder.id}4", folder.noteIdSet.map { it.toString() }.toMutableSet())
-        editor.apply()
+        if (folder.id != DEFAULT_FOLDER_ID) {
+            val preferences = (context as MainActivity).getSharedPreferences(
+                PREFERENCES_FOLDER,
+                Context.MODE_PRIVATE
+            )
+            val editor = preferences.edit()
+            editor.putStringSet(
+                "${folder.id}4",
+                folder.noteIdSet.map { it.toString() }.toMutableSet()
+            )
+            editor.apply()
+        }
     }
 
 
@@ -234,24 +244,48 @@ class FolderAdapter(private val context: Context?):
         } else false
     }
 
-    fun removeSelectedFolder() {
+    fun removeSelectedFolder(action: Int) {
         val position = getPositionByFolder(selectedFolder!!)
-        removeFolder(selectedFolder!!)
+        removeFolder(selectedFolder!!, action)
         notifyItemRemoved(position)
     }
 
-    private fun removeFolder(folder: Folder): Boolean {
+    private fun removeFolder(folder: Folder, action: Int): Boolean {
         val preferences = (context as MainActivity).getSharedPreferences(
             PREFERENCES_FOLDER,
             Context.MODE_PRIVATE
         )
+
         val editor = preferences.edit()
         for (i in 0..4)
             editor.remove("${folder.id}$i")
         editor.apply()
 
-        for (noteId in folder.noteIdSet)
+        // Delete notes in the folder
+        if (action == DELETE) {
+            context.allowDelete = false
+            targetFolderItemCount = folder.noteIdSet.count()
+
+            CoroutineScope(Dispatchers.Main).launch {
+                val notes = context.getNoteAdapter().getNotesInFolder(folder.id)
+                val job = Job()
+                val scope = CoroutineScope(Dispatchers.IO + job)
+                scope.launch {
+                    for (note in notes)
+                        context.viewModel.delete(note, false)
+                }.join()
+
+                context.getNoteAdapter().deleteNotesInFolder(folder.id)
+                context.getNoteAdapter().notifyDataSetChanged()
+                context.showToast("폴더의 노트가 삭제되었습니다.")
+            }
+        }
+
+        // Move notes to default folder
+        else if (action == MOVE) {
+            for (noteId in folder.noteIdSet)
                 context.getNoteAdapter().getNoteById(noteId).folderId = DEFAULT_FOLDER_ID
+        }
 
         context.showCurrentFolderItems(getFolderById(DEFAULT_FOLDER_ID))
 
@@ -311,4 +345,11 @@ class FolderAdapter(private val context: Context?):
     }
 
     private fun getPositionByFolder(folder: Folder): Int = folders.indexOf(folder)
+
+    companion object {
+        const val DELETE = 0
+        const val MOVE = 1
+
+        var targetFolderItemCount = 0
+    }
 }

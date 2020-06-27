@@ -3,7 +3,9 @@ package com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments
 import android.app.Dialog
 import android.content.Context
 import android.os.Bundle
+import android.view.View
 import android.widget.RadioGroup
+import android.widget.TextView
 import androidx.fragment.app.DialogFragment
 import com.elliot.kim.kotlin.dimcatcamnote.*
 import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity
@@ -21,13 +23,23 @@ class SetNoteColorDialogFragment : DialogFragment() {
         val dialog = Dialog(context as MainActivity)
         dialog.setContentView(R.layout.dialog_fragment_set_color)
 
+        val titleTextView = dialog.findViewById<TextView>(R.id.text_view)
+        titleTextView.text = "노트 색상 설정"
+        titleTextView.setBackgroundColor(MainActivity.toolbarColor)
+        titleTextView.adjustDialogTitleTextSize(MainActivity.fontId, -2f)
+        titleTextView.typeface = MainActivity.font
+
         val checkedRadioButtonId =
             preferences.getInt(KEY_SET_NOTE_COLOR_CHECKED_RADIO_BUTTON_ID, R.id.radio_button_set_in_yellow)
 
         val radioGroup = dialog.findViewById<RadioGroup>(R.id.radio_group)
+        radioGroup.getChildAt(0).visibility = View.VISIBLE  // White
         radioGroup.check(checkedRadioButtonId)
         radioGroup.setOnCheckedChangeListener { _, checkedId ->
             when(checkedId) {
+                R.id.radio_button_set_in_white -> {
+                    MainActivity.noteColor = (context as MainActivity).getColor(android.R.color.white)
+                }
                 R.id.radio_button_set_in_red -> {
                     MainActivity.noteColor = (context as MainActivity).getColor(R.color.colorNoteRed)
                 }
@@ -77,6 +89,7 @@ class SetNoteColorDialogFragment : DialogFragment() {
                     MainActivity.noteColor = (context as MainActivity).getColor(R.color.colorNoteDeepOrange)
                 }
             }
+
             editor.putInt(KEY_COLOR_NOTE, MainActivity.noteColor)
             editor.putInt(KEY_SET_NOTE_COLOR_CHECKED_RADIO_BUTTON_ID, radioGroup.checkedRadioButtonId)
             editor.apply()

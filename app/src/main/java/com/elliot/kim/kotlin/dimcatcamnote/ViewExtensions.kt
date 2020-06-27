@@ -33,17 +33,27 @@ import android.widget.ImageButton
 import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 
+const val DEFAULT_DIALOG_TITLE_TEXT_SIZE = 20.0f
+const val DEFAULT_DIALOG_BUTTON_TEXT_SIZE = 16.0f
+const val DEFAULT_DIALOG_INPUT_TEXT_SIZE = 14.0f
+const val DEFAULT_SPINNER_ITEM_TEXT_SIZE = 16.0f
+const val DEFAULT_DIALOG_ITEM_TEXT_SIZE = 16.0f
+const val SMALL_DIALOG_ITEM_TEXT_SIZE = 12.0f
+const val NOTE_TITLE_TEXT_SIZE = 16.0f
+const val NOTE_TIME_TEXT_SIZE = 14.0f
+const val NOTE_CONTENT_TEXT_SIZE = 12.0f
 
 /** Combination of all flags required to put activity into immersive mode */
 const val FLAGS_FULLSCREEN =
-        View.SYSTEM_UI_FLAG_LOW_PROFILE or
-                View.SYSTEM_UI_FLAG_FULLSCREEN or
-                View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
-                View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or
-                View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
-                View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+    View.SYSTEM_UI_FLAG_LOW_PROFILE or
+            View.SYSTEM_UI_FLAG_FULLSCREEN or
+            View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
+            View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or
+            View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
+            View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
 
 /** Milliseconds used for UI animations */
 const val ANIMATION_FAST_MILLIS = 50L
@@ -69,10 +79,10 @@ fun View.padWithDisplayCutout() {
 
     /** Helper method that applies padding from cutout's safe insets */
     fun doPadding(cutout: DisplayCutout) = setPadding(
-            cutout.safeInsetLeft,
-            cutout.safeInsetTop,
-            cutout.safeInsetRight,
-            cutout.safeInsetBottom)
+        cutout.safeInsetLeft,
+        cutout.safeInsetTop,
+        cutout.safeInsetRight,
+        cutout.safeInsetBottom)
 
     // Apply padding using the display cutout designated "safe area"
     rootWindowInsets?.displayCutout?.let { doPadding(it) }
@@ -88,8 +98,8 @@ fun View.padWithDisplayCutout() {
 fun AlertDialog.showImmersive() {
     // Set the dialog to not focusable
     window?.setFlags(
-            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
-            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE)
+        WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+        WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE)
 
     // Make sure that the dialog's window is in full screen
     window?.decorView?.systemUiVisibility = FLAGS_FULLSCREEN
@@ -104,28 +114,28 @@ fun AlertDialog.showImmersive() {
 val smallFontFamilies = listOf(R.font.nanum_brush_font_family, R.font.nanum_pen_font_family)
 val middleFontFamilies = listOf(R.font.bmyeonsung_font_family)
 
-fun TextView.adjustDialogTitleTextSize(fontId: Int) {
+fun TextView.adjustDialogTitleTextSize(fontId: Int, offset: Float = 0f) {
     when(fontId) {
         in smallFontFamilies ->
-            this.setTextSize(TypedValue.COMPLEX_UNIT_SP, BASIC_DIALOG_TITLE_TEXT_SIZE + 6)
+            this.setTextSize(TypedValue.COMPLEX_UNIT_SP, DEFAULT_DIALOG_TITLE_TEXT_SIZE + 6 + offset)
         in middleFontFamilies ->
-            this.setTextSize(TypedValue.COMPLEX_UNIT_SP, BASIC_DIALOG_TITLE_TEXT_SIZE + 2)
-        else -> this.setTextSize(TypedValue.COMPLEX_UNIT_SP, BASIC_DIALOG_TITLE_TEXT_SIZE)
+            this.setTextSize(TypedValue.COMPLEX_UNIT_SP, DEFAULT_DIALOG_TITLE_TEXT_SIZE + 2 + offset)
+        else -> this.setTextSize(TypedValue.COMPLEX_UNIT_SP, DEFAULT_DIALOG_TITLE_TEXT_SIZE + offset)
     }
 }
 
 fun TextView.adjustSpinnerItemTextSize(fontId: Int) {
     when(fontId) {
         in smallFontFamilies ->
-            this.setTextSize(TypedValue.COMPLEX_UNIT_SP, BASIC_SPINNER_ITEM_TEXT_SIZE + 6)
+            this.setTextSize(TypedValue.COMPLEX_UNIT_SP, DEFAULT_SPINNER_ITEM_TEXT_SIZE + 6)
         in middleFontFamilies ->
-            this.setTextSize(TypedValue.COMPLEX_UNIT_SP, BASIC_SPINNER_ITEM_TEXT_SIZE + 2)
-        else -> this.setTextSize(TypedValue.COMPLEX_UNIT_SP, BASIC_SPINNER_ITEM_TEXT_SIZE)
+            this.setTextSize(TypedValue.COMPLEX_UNIT_SP, DEFAULT_SPINNER_ITEM_TEXT_SIZE + 2)
+        else -> this.setTextSize(TypedValue.COMPLEX_UNIT_SP, DEFAULT_SPINNER_ITEM_TEXT_SIZE)
     }
 }
 
 fun TextView.adjustDialogItemTextSize(fontId: Int, smallText: Boolean = false) {
-    var itemTextSize = BASIC_DIALOG_ITEM_TEXT_SIZE
+    var itemTextSize = DEFAULT_DIALOG_ITEM_TEXT_SIZE
     if (smallText)
         itemTextSize = SMALL_DIALOG_ITEM_TEXT_SIZE
 
@@ -158,27 +168,27 @@ fun TextView.adjustNoteTextSize(fontId: Int, item: NoteItem) {
 fun EditText.adjustDialogInputTextSize(fontId: Int) {
     when(fontId) {
         in smallFontFamilies ->
-            this.setTextSize(TypedValue.COMPLEX_UNIT_SP, BASIC_DIALOG_INPUT_TEXT_SIZE + 6)
+            this.setTextSize(TypedValue.COMPLEX_UNIT_SP, DEFAULT_DIALOG_INPUT_TEXT_SIZE + 6)
         in middleFontFamilies ->
-            this.setTextSize(TypedValue.COMPLEX_UNIT_SP, BASIC_DIALOG_INPUT_TEXT_SIZE + 2)
-        else -> this.setTextSize(TypedValue.COMPLEX_UNIT_SP, BASIC_DIALOG_INPUT_TEXT_SIZE)
+            this.setTextSize(TypedValue.COMPLEX_UNIT_SP, DEFAULT_DIALOG_INPUT_TEXT_SIZE + 2)
+        else -> this.setTextSize(TypedValue.COMPLEX_UNIT_SP, DEFAULT_DIALOG_INPUT_TEXT_SIZE)
     }
 }
 
 fun Button.adjustDialogButtonTextSize(fontId: Int) {
     when(fontId) {
         in smallFontFamilies ->
-            this.setTextSize(TypedValue.COMPLEX_UNIT_SP, BASIC_DIALOG_BUTTON_TEXT_SIZE + 6)
+            this.setTextSize(TypedValue.COMPLEX_UNIT_SP, DEFAULT_DIALOG_BUTTON_TEXT_SIZE + 6)
         in middleFontFamilies ->
-            this.setTextSize(TypedValue.COMPLEX_UNIT_SP, BASIC_DIALOG_BUTTON_TEXT_SIZE + 2)
-        else -> this.setTextSize(TypedValue.COMPLEX_UNIT_SP, BASIC_DIALOG_BUTTON_TEXT_SIZE)
+            this.setTextSize(TypedValue.COMPLEX_UNIT_SP, DEFAULT_DIALOG_BUTTON_TEXT_SIZE + 2)
+        else -> this.setTextSize(TypedValue.COMPLEX_UNIT_SP, DEFAULT_DIALOG_BUTTON_TEXT_SIZE)
     }
 }
 
-class LinearLayoutManagerWrapper: LinearLayoutManager {
-    constructor(context: Context) : super(context) {}
-    constructor(context: Context, orientation: Int, reverseLayout: Boolean) :
-            super(context, orientation, reverseLayout) {}
+class LayoutManagerWrapper: GridLayoutManager {
+    constructor(context: Context, spanCount: Int) : super(context, spanCount)
+    constructor(context: Context, spanCount: Int, orientation: Int, reverseLayout: Boolean) :
+            super(context, spanCount, orientation, reverseLayout) {}
     constructor(context: Context, attrs: AttributeSet, defStyleAttr: Int, defStyleRes: Int) :
             super(context, attrs, defStyleAttr, defStyleRes)
     override fun supportsPredictiveItemAnimations(): Boolean { return false }

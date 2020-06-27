@@ -7,14 +7,11 @@ import android.view.View
 import android.widget.*
 import androidx.core.view.children
 import androidx.fragment.app.DialogFragment
-import com.elliot.kim.kotlin.dimcatcamnote.DEFAULT_FOLDER_NAME
-import com.elliot.kim.kotlin.dimcatcamnote.R
+import com.elliot.kim.kotlin.dimcatcamnote.*
 import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity
 import com.elliot.kim.kotlin.dimcatcamnote.adapters.FolderAdapter
 import com.elliot.kim.kotlin.dimcatcamnote.adapters.FolderSpinnerAdapter
 import com.elliot.kim.kotlin.dimcatcamnote.adapters.NoteAdapter
-import com.elliot.kim.kotlin.dimcatcamnote.adjustDialogButtonTextSize
-import com.elliot.kim.kotlin.dimcatcamnote.adjustDialogTitleTextSize
 import com.elliot.kim.kotlin.dimcatcamnote.data.Folder
 
 
@@ -51,11 +48,15 @@ class MoveToFolderDialogFragment(private val folderAdapter: FolderAdapter,
         spinner.onItemSelectedListener = onItemSelectedListener
 
         dialog.findViewById<Button>(R.id.button).setOnClickListener {
-            // Folder names are not duplicated.
-            folderAdapter.moveNoteToFolder(noteAdapter.selectedNote!!,
-                folderAdapter.getFolderByName(selectedItemText))
+            // Folder names are not duplicated
+            val targetFolder = folderAdapter.getFolderByName(selectedItemText)
+            folderAdapter.moveNoteToFolder(noteAdapter.selectedNote!!, targetFolder)
             (activity as MainActivity).showToast(getString(R.string.folder_moved_notification))
-            (activity as MainActivity).refreshCurrentFolderItem()
+
+            if (((activity as MainActivity).currentFolder.id != DEFAULT_FOLDER_ID)
+                && ((activity as MainActivity).currentFolder.id != targetFolder.id))
+                (activity as MainActivity).refreshCurrentFolderItem()
+
             dialog.dismiss()
         }
 

@@ -60,6 +60,7 @@ class WriteFragment : Fragment() {
     private var isFirstOnResults = true
     private var isRecognizingSpeech = false
     private var existingUri: String? = null
+    private var noMatchCount = 0
     var isFromAlarmedNoteSelectionFragment = false
     var dateSelectedInCalender = 0L
     var uri: String? = null
@@ -428,6 +429,8 @@ class WriteFragment : Fragment() {
                     isRecognizingSpeech = false
                 }
             })
+        noMatchCount = 0
+
         setEditTextEnable()
     }
 
@@ -525,8 +528,10 @@ class WriteFragment : Fragment() {
     }
 
     private fun save() {
-        if (isFromAlarmedNoteSelectionFragment)
+        if (isFromAlarmedNoteSelectionFragment) {
             alarmedNoteAdapter!!.insert(newNote!!)
+            (activity as MainActivity).calendarFragment.updateCalendarAdapter(newNote!!)
+        }
 
         if (activity is MainActivity)
             (activity as MainActivity).viewModel.insert(newNote!!)
@@ -698,17 +703,23 @@ class WriteFragment : Fragment() {
                 SpeechRecognizer.ERROR_NO_MATCH -> {
                     Log.e(SPEECH_RECOGNIZER_ERROR_TAG, "No Match")
 
-                    if (isRecognizingSpeech) {
+                    if (noMatchCount >= 3) {
+                        finishSpeechRecognition()
+                        (activity as MainActivity).showToast("시간이 초과되었습니다.")
+                    }
+                    else if (isRecognizingSpeech) {
                         recognizer.stopListening()
                         recognizer.startListening(intent)
+                        noMatchCount += 1
                     }
+
                 }
                 SpeechRecognizer.ERROR_RECOGNIZER_BUSY ->
                     Log.e(SPEECH_RECOGNIZER_ERROR_TAG, "Recognizer Busy")
                 SpeechRecognizer.ERROR_SPEECH_TIMEOUT -> {
                     Log.e(SPEECH_RECOGNIZER_ERROR_TAG, "Speech Timeout")
                     finishSpeechRecognition()
-                    (requireActivity() as MainActivity).showToast("시간이 초과되었습니다.")
+                    (activity as MainActivity).showToast("시간이 초과되었습니다.")
                 }
             }
         }

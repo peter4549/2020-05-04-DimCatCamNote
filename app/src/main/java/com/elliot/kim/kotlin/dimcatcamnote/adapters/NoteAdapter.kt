@@ -23,11 +23,9 @@ import com.elliot.kim.kotlin.dimcatcamnote.data.Note
 import com.elliot.kim.kotlin.dimcatcamnote.databinding.CardViewBinding
 import com.elliot.kim.kotlin.dimcatcamnote.databinding.CardViewBinding.bind
 import com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments.ConfirmPasswordDialogFragment
-import com.elliot.kim.kotlin.dimcatcamnote.fragments.ConfigureFragment
 import com.elliot.kim.kotlin.dimcatcamnote.item_touch_helper.ItemMovedListener
 import java.util.*
 import kotlin.collections.ArrayList
-
 
 class NoteAdapter(private val context: Context?, private val notes: MutableList<Note>,
                   private val isAppWidgetConfigure: Boolean = false,
@@ -49,7 +47,6 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
 
     override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
         super.onAttachedToRecyclerView(recyclerView)
-
         this.recyclerView = recyclerView
     }
 
@@ -330,7 +327,8 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
     }
 
     fun delete(note: Note) {
-        if (isFirstBinding) isFirstBinding = false
+        if (isFirstBinding)
+            isFirstBinding = false
 
         val position: Int = notesFiltered.indexOf(note)
         notesFiltered.removeAt(position)
@@ -352,16 +350,30 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
 
         val filteredNotesIterator = notesFiltered.iterator()
         while(filteredNotesIterator.hasNext()) {
-            val note = filteredNotesIterator.next()
+            filteredNotesIterator.next()
             filteredNotesIterator.remove()
         }
 
-        if (notes.count() == 0) {
-            val message = (context as MainActivity).configureFragment.progressDialogHandler.obtainMessage()
-            message.what = ConfigureFragment.STOP_PROGRESS_DIALOG
-            context.configureFragment.progressDialogHandler.sendMessage(message)
-            context.showToast("모든 노트가 삭제되었습니다.")
+        if (notes.count() == 0)
             notifyDataSetChanged()
+    }
+
+    fun deleteNotesInFolder(folderId: Int) {
+        val notesIterator = notes.iterator()
+        while(notesIterator.hasNext()) {
+            val note = notesIterator.next()
+            if (note.folderId == folderId) {
+                (context as MainActivity).cancelAlarm(note, isDelete = true, isByUser = true)
+                if (note.uri != null) context.deleteFileFromUri(note.uri!!)
+                notesIterator.remove()
+            }
+        }
+
+        val filteredNotesIterator = notesFiltered.iterator()
+        while(filteredNotesIterator.hasNext()) {
+            val note = filteredNotesIterator.next()
+            if (note.folderId == folderId)
+                filteredNotesIterator.remove()
         }
     }
 
@@ -403,6 +415,8 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
     fun getNoteById(id: Int): Note {
         return notes.filter{ it.id == id }[0]
     }
+
+    fun getNotesInFolder(folderId: Int) = notes.filter{ it.folderId == folderId }
 
     fun getAllNotes() = notes
 

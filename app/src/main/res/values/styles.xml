@@ -91,6 +91,7 @@
         <item name="android:layoutDirection">rtl</item>
         <item name="android:gravity">center</item>
         <item name="android:textStyle">bold</item>
+        <item name="android:buttonTint">@color/colorStatusIcon</item>
     </style>
 
     <!-- Bottom Navigation View in fragment_write -->
@@ -156,10 +157,6 @@
 
     <style name="FontBmJua">
         <item name="android:fontFamily">@font/bmjua_font_family</item>
-    </style>
-
-    <style name="FontBmHanna">
-        <item name="android:fontFamily">@font/bmhanna_font_family</item>
     </style>
 
 </resources>

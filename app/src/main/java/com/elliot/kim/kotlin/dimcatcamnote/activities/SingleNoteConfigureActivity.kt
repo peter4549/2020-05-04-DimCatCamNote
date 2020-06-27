@@ -17,7 +17,7 @@ import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModelProvider
 import com.elliot.kim.kotlin.dimcatcamnote.*
 import com.elliot.kim.kotlin.dimcatcamnote.adapters.NoteAdapter
-import com.elliot.kim.kotlin.dimcatcamnote.databinding.ActivitySingleNoteConfigureBinding
+import com.elliot.kim.kotlin.dimcatcamnote.databinding.ActivityAppWidgetConfigureBinding
 import com.elliot.kim.kotlin.dimcatcamnote.fragments.CameraViewFragment
 import com.elliot.kim.kotlin.dimcatcamnote.fragments.WriteFragment
 import com.elliot.kim.kotlin.dimcatcamnote.view_model.MainViewModel
@@ -32,13 +32,13 @@ class SingleNoteConfigureActivity : AppCompatActivity() {
     lateinit var noteAdapter: NoteAdapter
     lateinit var viewModel: MainViewModel
 
-    private lateinit var binding: ActivitySingleNoteConfigureBinding
+    private lateinit var binding: ActivityAppWidgetConfigureBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         binding = DataBindingUtil.setContentView(this,
-            R.layout.activity_single_note_configure
+            R.layout.activity_app_widget_configure
         )
 
         binding.frameLayout.setOnClickListener {
@@ -86,7 +86,7 @@ class SingleNoteConfigureActivity : AppCompatActivity() {
                 setHasFixedSize(true)
                 adapter = noteAdapter
                 // Replaced from LinearLayoutManager to LinearLayoutManagerWrapper
-                layoutManager = LinearLayoutManagerWrapper(context)
+                layoutManager = LayoutManagerWrapper(context, 1)
             }
 
             noteAdapter.sort(SortingCriteria.EDIT_TIME.index)

@@ -3,7 +3,9 @@ package com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments
 import android.app.Dialog
 import android.content.Context
 import android.os.Bundle
+import android.view.View
 import android.widget.RadioGroup
+import android.widget.TextView
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.DialogFragment
 import com.elliot.kim.kotlin.dimcatcamnote.*
@@ -23,11 +25,19 @@ class SetThemeColorDialogFragment(private val toolbar: Toolbar?) : DialogFragmen
         val dialog = Dialog(context as MainActivity)
         dialog.setContentView(R.layout.dialog_fragment_set_color)
 
-        val radioGroup = dialog.findViewById<RadioGroup>(R.id.radio_group)
+        val titleTextView = dialog.findViewById<TextView>(R.id.text_view)
+        titleTextView.text = "테마 색상 설정"
+        titleTextView.setBackgroundColor(MainActivity.toolbarColor)
+        titleTextView.adjustDialogTitleTextSize(MainActivity.fontId, -2f)
+        titleTextView.typeface = MainActivity.font
+
         val checkedRadioButtonId =
             preferences.getInt(KEY_SET_THEME_COLOR_CHECKED_RADIO_BUTTON_ID, R.id.radio_button_set_in_purple)
-        radioGroup.check(checkedRadioButtonId)
 
+        val radioGroup = dialog.findViewById<RadioGroup>(R.id.radio_group)
+        // Theme color does not support white
+        radioGroup.getChildAt(0).visibility = View.GONE  // White
+        radioGroup.check(checkedRadioButtonId)
         radioGroup.setOnCheckedChangeListener { _, checkedId ->
             when(checkedId) {
                 R.id.radio_button_set_in_red -> {
@@ -127,6 +137,8 @@ class SetThemeColorDialogFragment(private val toolbar: Toolbar?) : DialogFragmen
                         (context as MainActivity).getColor(R.color.backgroundColorDeepOrange)
                 }
             }
+
+            titleTextView.setBackgroundColor(MainActivity.toolbarColor)
 
             toolbar!!.setBackgroundColor(MainActivity.toolbarColor)
             (activity as MainActivity).setViewColor()

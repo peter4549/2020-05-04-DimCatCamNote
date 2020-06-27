@@ -7,7 +7,6 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
-import android.util.Log
 import android.view.View
 import android.widget.RemoteViews
 import androidx.lifecycle.AndroidViewModel
@@ -17,6 +16,7 @@ import com.elliot.kim.kotlin.dimcatcamnote.*
 import com.elliot.kim.kotlin.dimcatcamnote.activities.EditActivity
 import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity
 import com.elliot.kim.kotlin.dimcatcamnote.activities.SingleNoteConfigureActivity
+import com.elliot.kim.kotlin.dimcatcamnote.adapters.FolderAdapter
 import com.elliot.kim.kotlin.dimcatcamnote.data.Note
 import com.elliot.kim.kotlin.dimcatcamnote.database.AppDatabase
 import kotlinx.coroutines.*
@@ -169,92 +169,122 @@ class MainViewModel(application: Application): AndroidViewModel(application) {
         }
     }
 
-    fun delete(note: Note) {
-        if (note.appWidgetIds.isNotEmpty()) {
-            val colorPreferences = context.getSharedPreferences(PREFERENCES_SET_COLOR,
-                Context.MODE_PRIVATE)
-            val opacityPreferences =
-                context.getSharedPreferences(PREFERENCES_OPACITY, Context.MODE_PRIVATE)
+    fun delete(note: Note, allowDelete: Boolean = false) {
+        MainActivity.allowAdapterDelete = allowDelete
+        scope.launch {
+            if (note.appWidgetIds.isNotEmpty()) {
+                val colorPreferences = context.getSharedPreferences(
+                    PREFERENCES_SET_COLOR,
+                    Context.MODE_PRIVATE
+                )
+                val opacityPreferences =
+                    context.getSharedPreferences(PREFERENCES_OPACITY, Context.MODE_PRIVATE)
 
-            // The color resource ID must be converted to a color value by the getColor method
-            // before being used.
-            // The value stored in the preference is a color value
-            // that has already been converted in SetNoteColorDialogFragment.
-            val appWidgetTitleColor = colorPreferences.getInt(KEY_COLOR_NOTE,
-                context.getColor(R.color.defaultColorNote))
-            val appWidgetBackgroundColor = colorPreferences.getInt(KEY_COLOR_APP_WIDGET_BACKGROUND,
-                context.getColor(R.color.defaultColorAppWidgetBackground))
-            val opacity = opacityPreferences.getString(KEY_OPACITY, DEFAULT_HEX_OPACITY.toString())
-            val argbChannelTitleColor =
-                String.format("#${opacity}%06X", 0xFFFFFF and appWidgetTitleColor)
-            val argbChannelBackgroundColor =
-                String.format("#${opacity}%06X", 0xFFFFFF and appWidgetBackgroundColor)
+                // The color resource ID must be converted to a color value by the getColor method
+                // before being used.
+                // The value stored in the preference is a color value
+                // that has already been converted in SetNoteColorDialogFragment.
+                val appWidgetTitleColor = colorPreferences.getInt(
+                    KEY_COLOR_NOTE,
+                    context.getColor(R.color.defaultColorNote)
+                )
+                val appWidgetBackgroundColor = colorPreferences.getInt(
+                    KEY_COLOR_APP_WIDGET_BACKGROUND,
+                    context.getColor(R.color.defaultColorAppWidgetBackground)
+                )
+                val opacity =
+                    opacityPreferences.getString(KEY_OPACITY, DEFAULT_HEX_OPACITY.toString())
+                val argbChannelTitleColor =
+                    String.format("#${opacity}%06X", 0xFFFFFF and appWidgetTitleColor)
+                val argbChannelBackgroundColor =
+                    String.format("#${opacity}%06X", 0xFFFFFF and appWidgetBackgroundColor)
 
-            note.appWidgetIds.forEach {
-                val preferences =
-                    context.getSharedPreferences(APP_WIDGET_PREFERENCES, Context.MODE_PRIVATE)
-                val editor = preferences.edit()
-                editor.remove(KEY_APP_WIDGET_NOTE_ID + it)
-                editor.remove(KEY_APP_WIDGET_NOTE_EXIST + it)
-                editor.remove(KEY_APP_WIDGET_NOTE_TITLE + it)
-                editor.remove(KEY_APP_WIDGET_NOTE_CONTENT + it)
-                editor.remove(KEY_APP_WIDGET_NOTE_URI + it)
-                editor.remove(KEY_APP_WIDGET_NOTE_CREATION_TIME + it)
-                editor.remove(KEY_APP_WIDGET_NOTE_EDIT_TIME + it)
-                editor.remove(KEY_APP_WIDGET_NOTE_ALARM_TIME + it)
-                editor.remove(KEY_APP_WIDGET_NOTE_IS_DONE + it)
-                editor.remove(KEY_APP_WIDGET_NOTE_IS_LOCKED + it)
-                editor.remove(KEY_APP_WIDGET_NOTE_PASSWORD + it)
-                editor.apply()
+                note.appWidgetIds.forEach {
+                    val preferences =
+                        context.getSharedPreferences(APP_WIDGET_PREFERENCES, Context.MODE_PRIVATE)
+                    val editor = preferences.edit()
+                    editor.remove(KEY_APP_WIDGET_NOTE_ID + it)
+                    editor.remove(KEY_APP_WIDGET_NOTE_EXIST + it)
+                    editor.remove(KEY_APP_WIDGET_NOTE_TITLE + it)
+                    editor.remove(KEY_APP_WIDGET_NOTE_CONTENT + it)
+                    editor.remove(KEY_APP_WIDGET_NOTE_URI + it)
+                    editor.remove(KEY_APP_WIDGET_NOTE_CREATION_TIME + it)
+                    editor.remove(KEY_APP_WIDGET_NOTE_EDIT_TIME + it)
+                    editor.remove(KEY_APP_WIDGET_NOTE_ALARM_TIME + it)
+                    editor.remove(KEY_APP_WIDGET_NOTE_IS_DONE + it)
+                    editor.remove(KEY_APP_WIDGET_NOTE_IS_LOCKED + it)
+                    editor.remove(KEY_APP_WIDGET_NOTE_PASSWORD + it)
+                    editor.apply()
 
-                val intent = Intent(context, SingleNoteConfigureActivity::class.java)
-                // App widget ID is sent to SingleNoteConfigureActivity through the action.
-                intent.action = ACTION_APP_WIDGET_ATTACHED + it
+                    val intent = Intent(context, SingleNoteConfigureActivity::class.java)
+                    // App widget ID is sent to SingleNoteConfigureActivity through the action.
+                    intent.action = ACTION_APP_WIDGET_ATTACHED + it
 
-                val pendingIntent = intent.let {
-                    PendingIntent.getActivity(context, 0, intent, 0)
+                    val pendingIntent = intent.let {
+                        PendingIntent.getActivity(context, 0, intent, 0)
+                    }
+
+                    // Get the layout for the App Widget and attach an on-click listener
+                    // to the button
+                    val views: RemoteViews = RemoteViews(
+                        context.packageName,
+                        R.layout.app_widget
+                    ).apply {
+                        setViewVisibility(R.id.image_view_done, View.GONE)
+                        setViewVisibility(R.id.image_view_lock, View.GONE)
+                        setViewVisibility(R.id.image_view_alarm, View.GONE)
+                        setViewVisibility(R.id.text_view_creation_time, View.GONE)
+                        setViewVisibility(R.id.text_view_edit_time, View.GONE)
+                        setViewVisibility(R.id.text_view_alarm_time, View.GONE)
+                        setViewVisibility(R.id.image_view_photo, View.GONE)
+                        setInt(
+                            R.id.title_container,
+                            "setBackgroundColor",
+                            Color.parseColor(argbChannelTitleColor)
+                        )
+                        setInt(
+                            R.id.text_view_content,
+                            "setBackgroundColor",
+                            Color.parseColor(argbChannelBackgroundColor)
+                        )
+                        setOnClickPendingIntent(R.id.text_view_content, pendingIntent)
+                        setOnClickPendingIntent(R.id.image_button_change, pendingIntent)
+                        setCharSequence(
+                            R.id.text_view_title,
+                            "setText",
+                            context.getString(R.string.no_attachment_message)
+                        )
+                        setCharSequence(
+                            R.id.text_view_content,
+                            "setText",
+                            context.getString(R.string.no_attachment_message)
+                        )
+                    }
+
+                    // Notify appWidgetManager of app widget updates.
+                    val appWidgetManager = AppWidgetManager.getInstance(context)
+                    appWidgetManager.updateAppWidget(it, views)
                 }
 
-                // Get the layout for the App Widget and attach an on-click listener
-                // to the button
-                val views: RemoteViews = RemoteViews(
-                    context.packageName,
-                    R.layout.app_widget
-                ).apply {
-                    setViewVisibility(R.id.image_view_done, View.GONE)
-                    setViewVisibility(R.id.image_view_lock, View.GONE)
-                    setViewVisibility(R.id.image_view_alarm, View.GONE)
-                    setViewVisibility(R.id.text_view_creation_time, View.GONE)
-                    setViewVisibility(R.id.text_view_edit_time, View.GONE)
-                    setViewVisibility(R.id.text_view_alarm_time, View.GONE)
-                    setViewVisibility(R.id.image_view_photo, View.GONE)
-                    setInt(R.id.title_container, "setBackgroundColor", Color.parseColor(argbChannelTitleColor))
-                    setInt(R.id.text_view_content, "setBackgroundColor", Color.parseColor(argbChannelBackgroundColor))
-                    setOnClickPendingIntent(R.id.text_view_content, pendingIntent)
-                    setOnClickPendingIntent(R.id.image_button_change, pendingIntent)
-                    setCharSequence(R.id.text_view_title, "setText", context.getString(R.string.no_attachment_message))
-                    setCharSequence(R.id.text_view_content, "setText", context.getString(R.string.no_attachment_message))
-                }
+                val intent = Intent(context, NoteAppWidgetProvider::class.java)
+                intent.action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
+                val ids = AppWidgetManager.getInstance(getApplication())
+                    .getAppWidgetIds(
+                        ComponentName(
+                            getApplication(),
+                            NoteAppWidgetProvider::class.java
+                        )
+                    )
 
-                // Notify appWidgetManager of app widget updates.
-                val appWidgetManager = AppWidgetManager.getInstance(context)
-                appWidgetManager.updateAppWidget(it, views)
+                intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids)
+                context.sendBroadcast(intent)
             }
 
-            val intent = Intent(context, NoteAppWidgetProvider::class.java)
-            intent.action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
-            val ids = AppWidgetManager.getInstance(getApplication())
-                .getAppWidgetIds(ComponentName(getApplication(),
-                    NoteAppWidgetProvider::class.java))
-
-            intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids)
-            context.sendBroadcast(intent)
-        }
-
-        scope.launch {
-            targetNote = note
-            database.dao().delete(note)
-            itemCount = getItemCount()
+            scope.launch {
+                targetNote = note
+                database.dao().delete(note)
+                itemCount = getItemCount()
+            }
         }
     }
 

@@ -8,7 +8,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.res.ColorStateList
 import android.graphics.Color
-import android.graphics.ColorFilter
 import android.graphics.PorterDuff
 import android.os.Bundle
 import android.os.Handler
@@ -29,7 +28,7 @@ import com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments.DialogFragments
 class ConfigureFragment : Fragment() {
 
     private lateinit var binding: FragmentConfigureBinding
-    private var hexStringOpacity = "80"
+    private var hexStringOpacity = "80"  // 50%
     private var seekBarProgress = DEFAULT_SEEK_BAR_PROGRESS
     lateinit var progressDialogHandler: Handler
 
@@ -104,7 +103,7 @@ class ConfigureFragment : Fragment() {
                     binding.progressContainer.visibility = View.VISIBLE
                 }
                 STOP_PROGRESS_DIALOG -> {
-                    binding.progressContainer.visibility = View.INVISIBLE
+                    binding.progressContainer.visibility = View.GONE
                 }
             }
             true
@@ -204,10 +203,14 @@ class ConfigureFragment : Fragment() {
                 val title = preferences.getString(
                     KEY_APP_WIDGET_NOTE_TITLE + appWidgetId, noAttachmentMessage
                 )
+
+                /*
                 val content = preferences.getString(
                     KEY_APP_WIDGET_NOTE_CONTENT + appWidgetId, noAttachmentMessage
                 )
-                val uri = preferences.getString(KEY_APP_WIDGET_NOTE_URI + appWidgetId, "")
+                 */
+
+                // val uri = preferences.getString(KEY_APP_WIDGET_NOTE_URI + appWidgetId, "")
                 val creationTime =
                     preferences.getLong(KEY_APP_WIDGET_NOTE_CREATION_TIME + appWidgetId, 0L)
                 val alarmTime =
@@ -218,8 +221,11 @@ class ConfigureFragment : Fragment() {
                     preferences.getBoolean(KEY_APP_WIDGET_NOTE_IS_DONE + appWidgetId, false)
                 val isLocked =
                     preferences.getBoolean(KEY_APP_WIDGET_NOTE_IS_LOCKED + appWidgetId, false)
+
+                /*
                 val password =
                     preferences.getString(KEY_APP_WIDGET_NOTE_PASSWORD + appWidgetId, "")
+                 */
 
                 // Create an Intent to launch EditActivity.
                 val intent = Intent(context, EditActivity::class.java)

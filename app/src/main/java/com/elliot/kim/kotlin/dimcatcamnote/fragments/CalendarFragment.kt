@@ -56,12 +56,9 @@ class CalendarFragment : Fragment() {
         val stringCurrentMonth = if (currentMonth + 1 > 9) "${currentMonth + 1}"
         else "0${currentMonth + 1}"
 
-        // Initialize noteIdAlarmDatePairs.
-        getAlarmTimeFromNotes()
-
         calendar.time = dateFormat.parse("${currentYear}년 ${stringCurrentMonth}월 01일")!!
-        calendarAdapter = CalendarAdapter(activity, R.layout.calendar_view_row, calendar,
-            noteIdAlarmDatePairs, alarmedNotes, todayDate)
+        calendarAdapter =
+            CalendarAdapter(activity, R.layout.calendar_view_row, calendar, alarmedNotes, todayDate)
 
         return inflater.inflate(R.layout.fragment_calendar, container, false)
     }
@@ -86,9 +83,9 @@ class CalendarFragment : Fragment() {
             else
                 calendar.set(currentYear, ++currentMonth, 1)
 
-            calendarAdapter = CalendarAdapter(activity, R.layout.calendar_view_row, calendar,
-                noteIdAlarmDatePairs, alarmedNotes, todayDate)
-            binding.gridView.adapter = calendarAdapter
+            calendarAdapter.setCalendar(calendar)
+            calendarAdapter.notifyDataSetChanged()
+            // binding.gridView.adapter = calendarAdapter
             currentYearMonthText = "${currentYear}년 ${currentMonth + 1}월"
             setYearMonthText(currentYearMonthText)
         }
@@ -101,9 +98,8 @@ class CalendarFragment : Fragment() {
                 calendar.set(currentYear, --currentMonth, 1)
             }
 
-            calendarAdapter = CalendarAdapter(activity, R.layout.calendar_view_row, calendar,
-                noteIdAlarmDatePairs, alarmedNotes, todayDate)
-            binding.gridView.adapter = calendarAdapter
+            calendarAdapter.setCalendar(calendar)
+            calendarAdapter.notifyDataSetChanged()
             currentYearMonthText = "${currentYear}년 ${currentMonth + 1}월"
             setYearMonthText(currentYearMonthText)
 
@@ -158,25 +154,13 @@ class CalendarFragment : Fragment() {
         return super.onOptionsItemSelected(item)
     }
 
+    fun updateCalendarAdapter(note: Note) {
+        calendarAdapter.addAlarmedNote(note)
+    }
+
     private fun setYearMonthText(text: String) {
         binding.toolbar.title = text
         binding.calendarHeader.text = text
-    }
-
-    private fun getAlarmTimeFromNotes() {
-        // year, month랑 date 추출하여... 튜플에 저장???
-        // 알람 기능부에 전부 알림 어레이에 더할 수 있도록..
-        // 키 데이트 얻으면,, 키로 접근 삽 가능.
-
-        val simpleDateFormat = SimpleDateFormat(
-            PATTERN_YYYY_MM_dd, Locale.getDefault())
-
-        for (alarmedNote in alarmedNotes) {
-            val alarmedDate = simpleDateFormat.format(alarmedNote.alarmTime)
-            val date = simpleDateFormat.parse(alarmedDate)?.time!!
-
-            noteIdAlarmDatePairs.add(Pair(alarmedNote.id, date))
-        }
     }
 
     companion object {

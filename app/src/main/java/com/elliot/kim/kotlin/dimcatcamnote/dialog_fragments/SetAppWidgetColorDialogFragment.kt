@@ -4,6 +4,7 @@ import android.app.Dialog
 import android.content.Context
 import android.os.Bundle
 import android.widget.RadioGroup
+import android.widget.TextView
 import androidx.fragment.app.DialogFragment
 import com.elliot.kim.kotlin.dimcatcamnote.*
 import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity
@@ -19,6 +20,12 @@ class SetAppWidgetColorDialogFragment : DialogFragment(){
 
         val dialog = Dialog(context as MainActivity)
         dialog.setContentView(R.layout.dialog_fragment_set_color)
+
+        val titleTextView = dialog.findViewById<TextView>(R.id.text_view)
+        titleTextView.text = "앱 위젯 색상 설정"
+        titleTextView.setBackgroundColor(MainActivity.toolbarColor)
+        titleTextView.adjustDialogTitleTextSize(MainActivity.fontId, -2f)
+        titleTextView.typeface = MainActivity.font
 
         val checkedRadioButtonId =
             preferences.getInt(KEY_SET_APP_WIDGET_COLOR_CHECKED_RADIO_BUTTON_ID, R.id.radio_button_set_in_yellow)

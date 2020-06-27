@@ -8,7 +8,7 @@ import android.view.ViewGroup
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.widget.ImageView
-import com.elliot.kim.kotlin.dimcatcamnote.LinearLayoutManagerWrapper
+import com.elliot.kim.kotlin.dimcatcamnote.LayoutManagerWrapper
 import com.elliot.kim.kotlin.dimcatcamnote.PATTERN_YYYY_MM_dd
 
 import com.elliot.kim.kotlin.dimcatcamnote.R
@@ -71,7 +71,7 @@ class AlarmedNoteSelectionFragment : Fragment() {
             setHasFixedSize(true)
             adapter = alarmedNoteAdapter
             // Replaced from LinearLayoutManager to LinearLayoutManagerWrapper
-            layoutManager = LinearLayoutManagerWrapper(context)
+            layoutManager = LayoutManagerWrapper(context, 1)
         }
     }
 

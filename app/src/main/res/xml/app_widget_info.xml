@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
-    android:minWidth="160dp"
+    android:minWidth="120dp"
     android:minHeight="160dp"
     android:minResizeWidth="40dp"
     android:minResizeHeight="40dp"

@@ -135,4 +135,7 @@
     <color name="defaultTextColor">#212121</color>
     <color name="defaultTextColorHint">#808080</color>
 
+    <!-- Progress bar -->
+    <color name="colorBlueGrey263238AlphaB3">#B3263238</color>
+
 </resources>

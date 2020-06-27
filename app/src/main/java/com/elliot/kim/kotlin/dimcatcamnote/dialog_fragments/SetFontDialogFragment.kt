@@ -5,6 +5,7 @@ import android.content.Context
 import android.os.Build
 import android.os.Bundle
 import android.widget.RadioGroup
+import android.widget.TextView
 import androidx.appcompat.widget.Toolbar
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.DialogFragment
@@ -23,6 +24,11 @@ class SetFontDialogFragment(private val toolbar: Toolbar?) : DialogFragment() {
             Context.MODE_PRIVATE
         )
         val editor = preferences.edit()
+
+        val titleTextView = dialog.findViewById<TextView>(R.id.text_view)
+        titleTextView.setBackgroundColor(MainActivity.toolbarColor)
+        titleTextView.adjustDialogTitleTextSize(MainActivity.fontId, -2f)
+        titleTextView.typeface = MainActivity.font
 
         val checkedRadioButtonId =
             preferences.getInt(KEY_SET_FONT_CHECKED_RADIO_BUTTON_ID, defaultCheckedRadioButtonId)
@@ -71,14 +77,14 @@ class SetFontDialogFragment(private val toolbar: Toolbar?) : DialogFragment() {
                     MainActivity.fontStyleId = R.style.FontBmJua
                     MainActivity.fontId = R.font.bmjua_font_family
                 }
-                R.id.radio_button_bmhanna -> {
-                    MainActivity.fontStyleId = R.style.FontBmHanna
-                    MainActivity.fontId = R.font.bmhanna_font_family
-                }
             }
+
             MainActivity.font = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
                 resources.getFont(MainActivity.fontId)
             else ResourcesCompat.getFont(requireContext(), MainActivity.fontId)
+
+            titleTextView.adjustDialogTitleTextSize(MainActivity.fontId, -2f)
+            titleTextView.typeface = MainActivity.font
 
             editor.putInt(KEY_FONT_ID, MainActivity.fontId)
             editor.putInt(KEY_FONT_STYLE_ID, MainActivity.fontStyleId)

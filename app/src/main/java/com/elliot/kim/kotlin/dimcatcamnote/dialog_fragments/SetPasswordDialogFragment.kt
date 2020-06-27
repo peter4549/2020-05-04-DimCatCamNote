@@ -114,6 +114,9 @@ class SetPasswordDialogFragment(private val adapter: Any) : DialogFragment() {
         (adapter as FolderAdapter).selectedFolder?.isLocked = true
         adapter.selectedFolder?.password = password
         adapter.updateFolderPassword(adapter.selectedFolder!!)
+
+        if ((activity as MainActivity).currentFolder.id == DEFAULT_FOLDER_ID)
+            (activity as MainActivity).refreshCurrentFolderItem()
     }
 
     private fun setNotePassword(password: String) {

@@ -7,7 +7,7 @@
     <TextView
         android:id="@+id/text_view"
         android:layout_width="match_parent"
-        android:layout_height="40dp"
+        android:layout_height="42dp"
         android:background="@color/defaultColorToolbar"
         android:gravity="center"
         android:text="폰트 선택"
@@ -96,13 +96,6 @@
                 style="@style/ColorSelectionRadioButtonTheme"
                 android:fontFamily="@font/bmjua_font_family"
                 android:text="배민주아 BmJua"
-                android:textSize="@dimen/text_size_small_middle"/>
-
-            <RadioButton
-                android:id="@+id/radio_button_bmhanna"
-                style="@style/ColorSelectionRadioButtonTheme"
-                android:fontFamily="@font/bmhanna_font_family"
-                android:text="배민한나 BmHanna"
                 android:textSize="@dimen/text_size_small_middle"/>
 
         </RadioGroup>

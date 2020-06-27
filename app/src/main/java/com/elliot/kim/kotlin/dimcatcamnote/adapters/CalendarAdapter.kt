@@ -1,6 +1,5 @@
 package com.elliot.kim.kotlin.dimcatcamnote.adapters
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
@@ -19,26 +18,42 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 class CalendarAdapter(private val activity: MainActivity, private val convertViewId: Int,
-                      private val calendar: Calendar, private var noteIdAlarmDatePairs : ArrayList<Pair<Int, Long>>,
-                      private val alarmedNotes: MutableList<Note>, private val todayDate: Int): BaseAdapter() {
+                      private var calendar: Calendar, private var alarmedNotes: MutableList<Note>,
+                      private val todayDate: Int): BaseAdapter() {
 
+    private var noteIdAlarmDatePairs : ArrayList<Pair<Int, Long>> = arrayListOf()
     private lateinit var inflater: LayoutInflater
     private val itemCount = 42
-    private var alarmedNoteSelectionFragment: AlarmedNoteSelectionFragment
+    private var alarmedNoteSelectionFragment = AlarmedNoteSelectionFragment()
 
     private var lastDay = 0
 
     private var dateArray = arrayOfNulls<Number>(itemCount)
 
     init {
+        getNoteIdAlarmDatePair()
         // Day of the week on which the calendar starts
         val calendarStartDay = calendar.get(Calendar.DAY_OF_WEEK) - 1
         var j = 1
         for(i in calendarStartDay until itemCount) {
             dateArray[i] = j++
         }
+    }
 
-        alarmedNoteSelectionFragment = AlarmedNoteSelectionFragment()
+    fun addAlarmedNote(note: Note) {
+        alarmedNotes.add(note)
+        getNoteIdAlarmDatePair()
+    }
+
+    fun setCalendar(calendar: Calendar) {
+        this.calendar = calendar
+
+        // Day of the week on which the calendar starts
+        val calendarStartDay = calendar.get(Calendar.DAY_OF_WEEK) - 1
+        var j = 1
+        for(i in calendarStartDay until itemCount) {
+            dateArray[i] = j++
+        }
     }
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
@@ -107,17 +122,22 @@ class CalendarAdapter(private val activity: MainActivity, private val convertVie
 
     override fun getCount(): Int = itemCount
 
-    fun updateCalendar() {
-        // 얘가 노트 추가나 변경시 호출될 차기 에이스
-        // 데이터셋 정리하고,
-
-        notifyDataSetChanged()
-    }
-
     class ViewHolder {
         lateinit var container: RelativeLayout
         lateinit var textView: TextView
         lateinit var  imageView: ImageView
+    }
+
+    private fun getNoteIdAlarmDatePair() {
+        val simpleDateFormat = SimpleDateFormat(
+            PATTERN_YYYY_MM_dd, Locale.getDefault())
+
+        for (alarmedNote in alarmedNotes) {
+            val alarmedDate = simpleDateFormat.format(alarmedNote.alarmTime)
+            val date = simpleDateFormat.parse(alarmedDate)?.time!!
+
+            noteIdAlarmDatePairs.add(Pair(alarmedNote.id, date))
+        }
     }
 
    private fun convertDateIntToLong(year: Int, month: Int, date: Int): Long {

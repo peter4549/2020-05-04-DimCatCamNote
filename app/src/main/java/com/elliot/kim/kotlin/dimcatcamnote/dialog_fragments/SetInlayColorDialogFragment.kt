@@ -2,11 +2,17 @@ package com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments
 
 import android.app.Dialog
 import android.content.Context
+import android.content.res.ColorStateList
 import android.os.Bundle
+import android.view.View
+import android.widget.RadioButton
 import android.widget.RadioGroup
+import android.widget.TextView
+import androidx.appcompat.widget.AppCompatRadioButton
 import androidx.fragment.app.DialogFragment
 import com.elliot.kim.kotlin.dimcatcamnote.*
 import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity
+
 
 class SetInlayColorDialogFragment : DialogFragment() {
 
@@ -21,14 +27,22 @@ class SetInlayColorDialogFragment : DialogFragment() {
         )
         val editor = preferences.edit()
 
+        val titleTextView = dialog.findViewById<TextView>(R.id.text_view)
+        titleTextView.text = "속지 색상 설정"
+        titleTextView.setBackgroundColor(MainActivity.toolbarColor)
+        titleTextView.adjustDialogTitleTextSize(MainActivity.fontId, -2f)
+        titleTextView.typeface = MainActivity.font
+
         val checkedRadioButtonId =
             preferences.getInt(KEY_SET_INLAY_COLOR_CHECKED_RADIO_BUTTON_ID, R.id.radio_button_set_in_yellow)
 
         val radioGroup = dialog.findViewById<RadioGroup>(R.id.radio_group)
+        radioGroup.getChildAt(0).visibility = View.VISIBLE  // White
         radioGroup.check(checkedRadioButtonId)
-
-        dialog.findViewById<RadioGroup>(R.id.radio_group).setOnCheckedChangeListener { _, checkedId ->
+        radioGroup.setOnCheckedChangeListener { _, checkedId ->
             when(checkedId) {
+                R.id.radio_button_set_in_white ->
+                    MainActivity.inlayColor = (context as MainActivity).getColor(android.R.color.white)
                 R.id.radio_button_set_in_red ->
                     MainActivity.inlayColor = (context as MainActivity).getColor(R.color.backgroundColorRed)
                 R.id.radio_button_set_in_pink ->
@@ -62,6 +76,7 @@ class SetInlayColorDialogFragment : DialogFragment() {
                 R.id.radio_button_set_in_deep_orange ->
                     MainActivity.inlayColor = (context as MainActivity).getColor(R.color.backgroundColorDeepOrange)
             }
+
             editor.putInt(KEY_COLOR_INLAY, MainActivity.backgroundColor)
             editor.putInt(KEY_SET_INLAY_COLOR_CHECKED_RADIO_BUTTON_ID, radioGroup.checkedRadioButtonId)
             editor.apply()

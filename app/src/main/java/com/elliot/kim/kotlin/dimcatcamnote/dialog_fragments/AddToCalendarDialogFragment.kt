@@ -3,13 +3,16 @@ package com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments
 import android.app.DatePickerDialog
 import android.app.Dialog
 import android.content.Intent
+import android.graphics.Typeface
 import android.os.Bundle
 import android.provider.CalendarContract
 import android.widget.Button
 import android.widget.DatePicker
+import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.fragment.app.DialogFragment
 import com.elliot.kim.kotlin.dimcatcamnote.*
+import com.elliot.kim.kotlin.dimcatcamnote.activities.EditActivity
 import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity
 import com.elliot.kim.kotlin.dimcatcamnote.data.Note
 import java.text.SimpleDateFormat
@@ -17,7 +20,6 @@ import java.util.*
 
 class AddToCalendarDialogFragment(private val note: Note) : DialogFragment() {
 
-    private lateinit var activity: MainActivity
     private lateinit var setDateButton: Button
     private var year = 0
     private var month = 0
@@ -27,18 +29,44 @@ class AddToCalendarDialogFragment(private val note: Note) : DialogFragment() {
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
 
-        activity = requireActivity() as MainActivity
-
-        val dialog = Dialog(activity)
+        val dialog = Dialog(requireContext())
         dialog.setContentView(R.layout.dialog_fragment_add_to_calendar)
 
+        val container = dialog.findViewById<RelativeLayout>(R.id.add_to_calendar_container)
         val textViewTitle = dialog.findViewById<TextView>(R.id.text_view_title)
         val registerButton = dialog.findViewById<Button>(R.id.button_register)
         setDateButton = dialog.findViewById(R.id.button_set_date)
 
-        textViewTitle.setBackgroundColor(MainActivity.toolbarColor)
-        registerButton.setBackgroundColor(MainActivity.toolbarColor)
-        setDateButton.setBackgroundColor(MainActivity.toolbarColor)
+
+        var toolbarColor = 0
+        var backgroundColor = 0
+        var font: Typeface? = null
+        var fontId = 0
+
+        if (activity is MainActivity) {
+            toolbarColor = MainActivity.toolbarColor
+            backgroundColor = MainActivity.backgroundColor
+            font = MainActivity.font
+            fontId = MainActivity.fontId
+        } else if (activity is EditActivity) {
+            toolbarColor = EditActivity.toolbarColor
+            backgroundColor = EditActivity.backgroundColor
+            font = EditActivity.font
+            fontId = EditActivity.fontId
+        }
+
+        container.setBackgroundColor(backgroundColor)
+        textViewTitle.setBackgroundColor(toolbarColor)
+        registerButton.setBackgroundColor(toolbarColor)
+        setDateButton.setBackgroundColor(toolbarColor)
+
+        textViewTitle.adjustDialogTitleTextSize(fontId)
+        registerButton.adjustDialogButtonTextSize(fontId)
+        setDateButton.adjustDialogButtonTextSize(fontId)
+
+        textViewTitle.typeface = font
+        registerButton.typeface = font
+        setDateButton.typeface = font
 
         initializeButtonText(setDateButton)
 
@@ -56,7 +84,7 @@ class AddToCalendarDialogFragment(private val note: Note) : DialogFragment() {
 
         val calendar = Calendar.getInstance()
         val dialog = DatePickerDialog(
-            activity,
+            requireContext(),
             DatePickerDialog.OnDateSetListener { _: DatePicker?, year: Int,
                                                  month: Int, dayOfMonth: Int ->
                 setButtonText(setDateButton,
@@ -84,7 +112,6 @@ class AddToCalendarDialogFragment(private val note: Note) : DialogFragment() {
     }
 
     private fun initializeButtonText(button: Button) {
-
         if (note.alarmTime == null) initializeButtonTextToCurrentDate(button)
         else initializeButtonTextToAlarmTime(button)
     }
@@ -150,7 +177,7 @@ class AddToCalendarDialogFragment(private val note: Note) : DialogFragment() {
                 CalendarContract.Events.AVAILABILITY_BUSY
             )
 
-        if (intent.resolveActivity(activity.packageManager) != null)
-            activity.startActivity(intent)
+        if (intent.resolveActivity(requireContext().packageManager) != null)
+            requireContext().startActivity(intent)
     }
 }

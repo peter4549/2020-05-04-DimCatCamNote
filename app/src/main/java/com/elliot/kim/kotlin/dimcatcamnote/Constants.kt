@@ -61,18 +61,6 @@ enum class SortingCriteria(val index: Int) {
     NAME(2)
 }
 
-// Text Size
-// sp
-const val BASIC_DIALOG_TITLE_TEXT_SIZE = 20.0f
-const val BASIC_DIALOG_BUTTON_TEXT_SIZE = 16.0f
-const val BASIC_DIALOG_INPUT_TEXT_SIZE = 14.0f
-const val BASIC_SPINNER_ITEM_TEXT_SIZE = 16.0f
-const val BASIC_DIALOG_ITEM_TEXT_SIZE = 16.0f
-const val SMALL_DIALOG_ITEM_TEXT_SIZE = 12.0f
-const val NOTE_TITLE_TEXT_SIZE = 16.0f
-const val NOTE_TIME_TEXT_SIZE = 14.0f
-const val NOTE_CONTENT_TEXT_SIZE = 12.0f
-
 enum class CurrentFragment {
     ALARM_FRAGMENT,
     CALENDAR_FRAGMENT,

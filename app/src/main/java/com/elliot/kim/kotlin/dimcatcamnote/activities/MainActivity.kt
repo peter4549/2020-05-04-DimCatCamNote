@@ -10,11 +10,15 @@ import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.content.res.ColorStateList
 import android.content.res.Configuration
+import android.graphics.Color
 import android.graphics.Typeface
 import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.text.SpannableString
+import android.text.style.ForegroundColorSpan
+import android.text.style.TextAppearanceSpan
 import android.util.Log
 import android.view.KeyEvent
 import android.view.Menu
@@ -28,6 +32,7 @@ import androidx.appcompat.widget.SearchView
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.GravityCompat
+import androidx.core.view.forEachIndexed
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
@@ -75,9 +80,9 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
     lateinit var fragmentManager: FragmentManager
 
     val alarmFragment = AlarmFragment(this)
-    private val calendarFragment = CalendarFragment()
+    val calendarFragment = CalendarFragment()
     val cameraFragment = CameraViewFragment()
-    val configureFragment = ConfigureFragment()
+    private val configureFragment = ConfigureFragment()
     val editFragment = EditFragment(this)
     val writeFragment = WriteFragment()
 
@@ -85,6 +90,7 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
     private var isCalendarClicked = false
     private var pressedTime = 0L
     private var isClearing = false
+    var allowDelete = true
 
     private lateinit var dialogFragmentManager: DialogFragmentManager
 
@@ -132,6 +138,7 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
             dialogFragmentManager.showDialogFragment(DialogFragments.SORT)
         }
         setSupportActionBar(binding.toolbar)
+        supportActionBar!!.setDisplayShowTitleEnabled(false);
 
         initSortingCriteria()
         initColor()
@@ -143,6 +150,7 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         viewModel.setContext(this)
 
         var notesSize = 0
+
         viewModel.getAll().observe(this, androidx.lifecycle.Observer { notes ->
             if (initialization) {// 초기화 로직 정리할 것.
                 initialize(notes)
@@ -154,13 +162,21 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
                     notesSize < notes.size -> noteAdapter.insert(notes[notes.size - 1])
                     notesSize == notes.size -> noteAdapter.update(viewModel.targetNote!!)
                     notesSize > notes.size -> {
-                        if (isClearing && viewModel.itemCount == 0) isClearing = false
-                        else {
+                        if(allowAdapterDelete){
                             if (editFragment.isFromAlarmedNoteSelectionFragment)
                                 alarmedNoteAdapter!!.delete(alarmedNoteAdapter!!
                                             .getSelectedNoteByCreationTime(viewModel.targetNote!!.creationTime)
                                 )
                             noteAdapter.delete(viewModel.targetNote!!)
+                        } else {
+                            if (viewModel.itemCount == 0) {
+                                val message =
+                                    configureFragment.progressDialogHandler.obtainMessage()
+                                message.what = ConfigureFragment.STOP_PROGRESS_DIALOG
+                                configureFragment.progressDialogHandler.sendMessage(message)
+                            }
+                            showToast("모든 노트가 삭제되었습니다.")
+                            allowAdapterDelete = true
                         }
                     }
                 }
@@ -383,6 +399,33 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
             false
         }
         searchView.queryHint = "찾을 노트 제목을 입력해주세요."
+        return true
+    }
+
+    override fun onPrepareOptionsMenu(menu: Menu): Boolean {
+        // Apply font
+        menu.forEachIndexed { index, _ ->
+            if (index != 0) {
+                val menuItem = menu.getItem(index)
+                val spanString = SpannableString(menuItem.title.toString())
+                spanString.setSpan(
+                    TextAppearanceSpan(this, fontStyleId),
+                    0,
+                    spanString.length,
+                    0
+                )
+
+                spanString.setSpan(
+                    ForegroundColorSpan(Color.BLACK),
+                    0,
+                    spanString.length,
+                    0
+                )
+
+                menuItem.title = (spanString)
+            }
+        }
+
         return true
     }
 
@@ -646,7 +689,7 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
             setHasFixedSize(true)
             adapter = noteAdapter
             // Replaced from LinearLayoutManager to LinearLayoutManagerWrapper
-            layoutManager = LinearLayoutManagerWrapper(context)
+            layoutManager = LayoutManagerWrapper(context, 1)
             layoutAnimation = layoutAnimationController
         }
 
@@ -765,10 +808,11 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
     }
 
     fun setFont() {
+        binding.textViewToolbarTitle.adjustDialogTitleTextSize(fontId)
         binding.textViewCurrentFolderName.adjustDialogTitleTextSize(fontId)
         binding.textViewSort.adjustDialogItemTextSize(fontId)
 
-        binding.toolbar.setTitleTextAppearance(this, fontStyleId)
+        binding.textViewToolbarTitle.typeface = font
         binding.textViewCurrentFolderName.typeface = font
         binding.textViewSort.typeface = font
     }
@@ -779,7 +823,7 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         message.what = ConfigureFragment.START_PROGRESS_DIALOG
         configureFragment.progressDialogHandler.sendMessage(message)
         for(note in noteAdapter.getAllNotes())
-            viewModel.delete(note)
+            viewModel.delete(note, false)
         noteAdapter.clear()
     }
 
@@ -799,8 +843,11 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         var inlayColor = 0
         var appWidgetTitleColor = 0
         var appWidgetBackgroundColor = 0
+        var calendarTitleColor = 0
+        var calendarBackgroundColor = 0
 
         var isAppRunning = false
+        var allowAdapterDelete = true
 
         const val DATABASE_NAME = "dim_cat_cam_notes_14"
 

@@ -39,12 +39,12 @@ class ConfirmDeleteFolderDialogFragment(private val folderAdapter: FolderAdapter
         buttonDelete.typeface = MainActivity.font
 
         dialog.findViewById<Button>(R.id.button_remain).setOnClickListener {
-            folderAdapter.removeSelectedFolder()
+            folderAdapter.removeSelectedFolder(FolderAdapter.MOVE)
             dialog.dismiss()
         }
 
         dialog.findViewById<Button>(R.id.button_delete).setOnClickListener {
-            folderAdapter.removeSelectedFolder()
+            folderAdapter.removeSelectedFolder(FolderAdapter.DELETE)
             dialog.dismiss()
         }
 

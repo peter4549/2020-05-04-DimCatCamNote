@@ -3,11 +3,21 @@ package com.elliot.kim.kotlin.dimcatcamnote.fragments
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.annotation.SuppressLint
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.content.Context
 import android.content.DialogInterface
+import android.content.Intent
+import android.graphics.Color
 import android.graphics.Rect
 import android.graphics.drawable.Drawable
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.text.SpannableString
+import android.text.style.ForegroundColorSpan
+import android.text.style.TextAppearanceSpan
 import android.view.*
 import android.view.GestureDetector.SimpleOnGestureListener
 import android.view.View.OnTouchListener
@@ -17,6 +27,8 @@ import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.core.app.NotificationCompat
+import androidx.core.view.forEachIndexed
 import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
@@ -26,10 +38,13 @@ import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
 import com.elliot.kim.kotlin.dimcatcamnote.*
+import com.elliot.kim.kotlin.dimcatcamnote.activities.EditActivity
 import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity
 import com.elliot.kim.kotlin.dimcatcamnote.data.Note
 import com.elliot.kim.kotlin.dimcatcamnote.databinding.FragmentEditBinding
+import com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments.AddToCalendarDialogFragment
 import com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments.DialogFragments
+import com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments.MoreOptionsDialogFragment
 import com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments.SetPasswordDialogFragment
 import com.elliot.kim.kotlin.dimcatcamnote.view_model.MainViewModel
 
@@ -88,8 +103,6 @@ class EditFragment(private val activity: MainActivity) : Fragment() {
 
         showImage()
 
-        binding.imageView.setOnClickListener { startPhotoFragment() }
-
         binding.focusBlock.setOnTouchListener(object : OnTouchListener {
             private val gestureDetector = GestureDetector(activity,
                 object : SimpleOnGestureListener() {
@@ -110,6 +123,10 @@ class EditFragment(private val activity: MainActivity) : Fragment() {
                 return true
             }
         })
+
+        binding.imageView.setOnClickListener {
+            startPhotoFragment()
+        }
 
         binding.editTextContent.viewTreeObserver.addOnGlobalLayoutListener {
             if (keyboardShown(binding.editTextContent.rootView) && isEditMode) crossFadeImageView(false)
@@ -182,7 +199,34 @@ class EditFragment(private val activity: MainActivity) : Fragment() {
             menuChangeAlarm.isVisible = true
         }
 
-        if (note.isLocked) menuLock.title = "잠금해제" else menuLock.title = "잠금설정"
+        if (note.isLocked)
+            menuLock.title = "잠금해제"
+        else
+            menuLock.title = "잠금설정"
+
+        // Apply font
+        menu.forEachIndexed { index, _ ->
+            // Except mode menu
+            if (index != 0) {
+                val menuItem = menu.getItem(index)
+                val spanString = SpannableString(menuItem.title.toString())
+                spanString.setSpan(
+                    TextAppearanceSpan(context, MainActivity.fontStyleId),
+                    0,
+                    spanString.length,
+                    0
+                )
+
+                spanString.setSpan(
+                    ForegroundColorSpan(Color.BLACK),
+                    0,
+                    spanString.length,
+                    0
+                )
+
+                menuItem.title = (spanString)
+            }
+        }
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -225,6 +269,11 @@ class EditFragment(private val activity: MainActivity) : Fragment() {
                 activity.closeOptionsMenu()
                 activity.showDialogFragment(DialogFragments.CONFIRM_DELETE)
             }
+            R.id.menu_add_to_status_bar -> addToStatusBar(note)
+            R.id.menu_add_to_calendar -> AddToCalendarDialogFragment(note)
+                .show((requireActivity() as MainActivity).fragmentManager, tag)
+            R.id.menu_move_to_folder -> (requireActivity() as MainActivity)
+                .showDialogFragment(DialogFragments.MOVE_TO_FOLDER)
         }
         return super.onOptionsItemSelected(item)
     }
@@ -277,6 +326,50 @@ class EditFragment(private val activity: MainActivity) : Fragment() {
                 R.anim.anim_slide_out_right_enter,
                 R.anim.anim_slide_out_right_exit)
             .replace(R.id.edit_note_container, photoFragment).commit()
+    }
+
+    private fun addToStatusBar(note: Note) {
+        val builder = NotificationCompat.Builder(requireContext(),
+            MoreOptionsDialogFragment.CHANNEL_ID
+        )
+        val notificationManager =
+            requireContext().getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val notificationIntent = Intent(context, EditActivity::class.java)
+        val id = note.id
+        val title = note.title
+        val content = note.content
+
+        notificationIntent.action = ACTION_ALARM_NOTIFICATION_CLICKED + id
+        notificationIntent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                Intent.FLAG_ACTIVITY_SINGLE_TOP
+        notificationIntent.putExtra(KEY_NOTE_ID, id)
+
+        val pendingIntent = PendingIntent.getActivity(
+            context,
+            id,
+            notificationIntent,
+            PendingIntent.FLAG_ONE_SHOT
+        )
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val importance = NotificationManager.IMPORTANCE_LOW
+            val channel = NotificationChannel(MoreOptionsDialogFragment.CHANNEL_ID, MoreOptionsDialogFragment.CHANNEL_NAME, importance)
+
+            builder.setSmallIcon(R.drawable.ic_cat_00_orange_32dp)
+            channel.description = MoreOptionsDialogFragment.CHANNEL_DESCRIPTION
+            notificationManager.createNotificationChannel(channel)
+        } else builder.setSmallIcon(R.mipmap.ic_cat_00_orange_128px)
+
+        builder.setAutoCancel(true)
+            .setDefaults(NotificationCompat.DEFAULT_ALL)
+            .setWhen(System.currentTimeMillis())
+            .setContentTitle(title)
+            .setContentText(content)
+            .setContentInfo(MoreOptionsDialogFragment.CONTENT_INFO)
+            .setContentIntent(pendingIntent)
+        notificationManager.notify(id, builder.build())
+
+        (requireActivity() as MainActivity).showToast("상태바에 등록되었습니다.")
     }
 
     private fun showCheckMessage() {
