@@ -16,11 +16,9 @@ import com.elliot.kim.kotlin.dimcatcamnote.*
 import com.elliot.kim.kotlin.dimcatcamnote.activities.EditActivity
 import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity
 import com.elliot.kim.kotlin.dimcatcamnote.activities.SingleNoteConfigureActivity
-import com.elliot.kim.kotlin.dimcatcamnote.adapters.FolderAdapter
 import com.elliot.kim.kotlin.dimcatcamnote.data.Note
 import com.elliot.kim.kotlin.dimcatcamnote.database.AppDatabase
 import kotlinx.coroutines.*
-
 
 class MainViewModel(application: Application): AndroidViewModel(application) {
 
@@ -112,6 +110,8 @@ class MainViewModel(application: Application): AndroidViewModel(application) {
                         R.layout.app_widget
                     ).apply {
                         setInt(R.id.title_container, "setBackgroundColor", Color.parseColor(argbChannelTitleColor))
+                        setInt(R.id.text_view_content, "setBackgroundColor",
+                            Color.parseColor(argbChannelBackgroundColor))
                         setOnClickPendingIntent(R.id.text_view_content, pendingIntent)
                         setOnClickPendingIntent(R.id.image_button_change, noteConfigurePendingIntent)
                         setCharSequence(R.id.text_view_title, "setText", note.title)
@@ -145,13 +145,12 @@ class MainViewModel(application: Application): AndroidViewModel(application) {
                                 " " + MainActivity.longTimeToString(note.editTime, PATTERN_UP_TO_MINUTES))
                         }
 
+                        setInt(R.id.text_view_alarm_time, "setBackgroundColor", Color.parseColor(argbChannelBackgroundColor))
+                        setInt(R.id.text_view_creation_time, "setBackgroundColor", Color.parseColor(argbChannelBackgroundColor))
+                        setInt(R.id.text_view_edit_time, "setBackgroundColor", Color.parseColor(argbChannelBackgroundColor))
+
                         if (note.uri == null) setViewVisibility(R.id.image_view_photo, View.GONE)
                         else setViewVisibility(R.id.image_view_photo, View.VISIBLE)
-
-                        // Finally, set the background color.
-                        // Fix an issue where the background color of a time text view is not assigned.
-                        setInt(R.id.content_container, "setBackgroundColor",
-                            Color.parseColor(argbChannelBackgroundColor))
                     }
 
                     // Notify appWidgetManager of app widget updates.
@@ -169,7 +168,7 @@ class MainViewModel(application: Application): AndroidViewModel(application) {
         }
     }
 
-    fun delete(note: Note, allowDelete: Boolean = false) {
+    fun delete(note: Note, allowDelete: Boolean = true) {
         MainActivity.allowAdapterDelete = allowDelete
         scope.launch {
             if (note.appWidgetIds.isNotEmpty()) {

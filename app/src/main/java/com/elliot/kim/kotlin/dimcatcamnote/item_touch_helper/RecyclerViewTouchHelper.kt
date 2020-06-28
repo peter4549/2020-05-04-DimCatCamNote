@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity
 import com.elliot.kim.kotlin.dimcatcamnote.adapters.NoteAdapter
 import com.elliot.kim.kotlin.dimcatcamnote.R
+import com.elliot.kim.kotlin.dimcatcamnote.adapters.AlarmedNoteAdapter
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
@@ -276,13 +277,15 @@ abstract class RecyclerViewTouchHelper(val context: Context, private val recycle
         // The icon changes even if without the else clause,
         // but this is the code added for a quick change.
         if (((recyclerView.adapter as NoteAdapter).getNoteByPosition(position).alarmTime != null)
-            && button.id == MainActivity.Companion.UnderlayButtonIds.ALARM) {
+            && button.id == MainActivity.Companion.UnderlayButtonIds.ALARM
+        ) {
             button.imageResourceId = R.drawable.ic_alarm_off_white_24dp
         } else if (button.id == MainActivity.Companion.UnderlayButtonIds.ALARM)
             button.imageResourceId = R.drawable.ic_add_alarm_white_24dp
 
         if ((recyclerView.adapter as NoteAdapter).getNoteByPosition(position).isDone
-            && button.id == MainActivity.Companion.UnderlayButtonIds.DONE) {
+            && button.id == MainActivity.Companion.UnderlayButtonIds.DONE
+        ) {
             button.imageResourceId = R.drawable.ic_done_all_white_24dp
         } else if (button.id == MainActivity.Companion.UnderlayButtonIds.DONE)
             button.imageResourceId = R.drawable.ic_done_white_24dp

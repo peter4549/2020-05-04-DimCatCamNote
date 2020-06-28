@@ -41,7 +41,7 @@ const val DEFAULT_DIALOG_BUTTON_TEXT_SIZE = 16.0f
 const val DEFAULT_DIALOG_INPUT_TEXT_SIZE = 14.0f
 const val DEFAULT_SPINNER_ITEM_TEXT_SIZE = 16.0f
 const val DEFAULT_DIALOG_ITEM_TEXT_SIZE = 16.0f
-const val SMALL_DIALOG_ITEM_TEXT_SIZE = 12.0f
+const val SMALL_DIALOG_ITEM_TEXT_SIZE = 14.0f
 const val NOTE_TITLE_TEXT_SIZE = 16.0f
 const val NOTE_TIME_TEXT_SIZE = 14.0f
 const val NOTE_CONTENT_TEXT_SIZE = 12.0f
@@ -165,13 +165,13 @@ fun TextView.adjustNoteTextSize(fontId: Int, item: NoteItem) {
     }
 }
 
-fun EditText.adjustDialogInputTextSize(fontId: Int) {
+fun EditText.adjustDialogInputTextSize(fontId: Int, offset: Float = 0f) {
     when(fontId) {
         in smallFontFamilies ->
-            this.setTextSize(TypedValue.COMPLEX_UNIT_SP, DEFAULT_DIALOG_INPUT_TEXT_SIZE + 6)
+            this.setTextSize(TypedValue.COMPLEX_UNIT_SP, DEFAULT_DIALOG_INPUT_TEXT_SIZE + offset + 6)
         in middleFontFamilies ->
-            this.setTextSize(TypedValue.COMPLEX_UNIT_SP, DEFAULT_DIALOG_INPUT_TEXT_SIZE + 2)
-        else -> this.setTextSize(TypedValue.COMPLEX_UNIT_SP, DEFAULT_DIALOG_INPUT_TEXT_SIZE)
+            this.setTextSize(TypedValue.COMPLEX_UNIT_SP, DEFAULT_DIALOG_INPUT_TEXT_SIZE + offset + 2)
+        else -> this.setTextSize(TypedValue.COMPLEX_UNIT_SP, DEFAULT_DIALOG_INPUT_TEXT_SIZE + offset)
     }
 }
 

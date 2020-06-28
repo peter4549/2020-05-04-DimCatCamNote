@@ -24,11 +24,12 @@ class CalendarAdapter(private val activity: MainActivity, private val convertVie
     private var noteIdAlarmDatePairs : ArrayList<Pair<Int, Long>> = arrayListOf()
     private lateinit var inflater: LayoutInflater
     private val itemCount = 42
-    private var alarmedNoteSelectionFragment = AlarmedNoteSelectionFragment()
+    var alarmedNoteSelectionFragment = AlarmedNoteSelectionFragment()
 
     private var lastDay = 0
 
     private var dateArray = arrayOfNulls<Number>(itemCount)
+    private val whiteColor: Int
 
     init {
         getNoteIdAlarmDatePair()
@@ -38,6 +39,8 @@ class CalendarAdapter(private val activity: MainActivity, private val convertVie
         for(i in calendarStartDay until itemCount) {
             dateArray[i] = j++
         }
+
+        whiteColor = activity.getColor(android.R.color.white)
     }
 
     fun addAlarmedNote(note: Note) {
@@ -47,6 +50,9 @@ class CalendarAdapter(private val activity: MainActivity, private val convertVie
 
     fun setCalendar(calendar: Calendar) {
         this.calendar = calendar
+
+        // Init dateArray
+        dateArray = arrayOfNulls(itemCount)
 
         // Day of the week on which the calendar starts
         val calendarStartDay = calendar.get(Calendar.DAY_OF_WEEK) - 1
@@ -66,9 +72,9 @@ class CalendarAdapter(private val activity: MainActivity, private val convertVie
         inflater = activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
 
         if (convertView == null) {
-            holder = ViewHolder()
             view = inflater.inflate(convertViewId, null)
 
+            holder = ViewHolder()
             holder.container = view.findViewById(R.id.container)
             holder.textView = view.findViewById(R.id.text_view)
             holder.imageView = view.findViewById(R.id.image_view)
@@ -79,12 +85,12 @@ class CalendarAdapter(private val activity: MainActivity, private val convertVie
 
         holder.imageView.visibility = View.INVISIBLE
 
+        holder.container.setBackgroundColor(whiteColor)
         if (dateArray[position] == null || dateArray[position]!!.toInt() > lastDay)
         {
             holder.textView.text = null
             holder.container.foreground = null
-        }
-        else {
+        } else {
             // Date displayed
             val currentDate = convertDateIntToLong(currentYear, currentMonth, dateArray[position] as Int)
             val today = convertDateIntToLong(currentYear, currentMonth, todayDate)

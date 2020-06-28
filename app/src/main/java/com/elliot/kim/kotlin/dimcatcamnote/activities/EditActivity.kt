@@ -588,7 +588,7 @@ class EditActivity: AppCompatActivity() {
 
         // Set font
         binding.textViewTime.adjustDialogItemTextSize(fontId, true)
-        binding.editTextContent.adjustDialogInputTextSize(fontId)
+        binding.editTextContent.adjustDialogInputTextSize(fontId, 4f)
 
         binding.toolbar.setTitleTextAppearance(this, fontStyleId)
         binding.textViewTime.typeface = font

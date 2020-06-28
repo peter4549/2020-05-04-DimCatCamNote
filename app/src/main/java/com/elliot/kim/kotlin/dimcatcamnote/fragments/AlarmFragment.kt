@@ -140,7 +140,8 @@ class AlarmFragment(private val activity: AppCompatActivity) : Fragment() {
                         when(activity) {
                             is EditActivity -> activity.onBackPressed()
                             is MainActivity -> {
-                                if (isFromEditFragment) EditFragment.setTimeText(note)
+                                if (isFromEditFragment)
+                                    activity.editFragment.setTimeText(note)
                                 activity.backPressed()
                             }
                         }
@@ -162,7 +163,7 @@ class AlarmFragment(private val activity: AppCompatActivity) : Fragment() {
         super.onStop()
         if (activity is MainActivity) {
             if (isFromEditFragment) {
-                activity.editFragment.setContent(note)
+                activity.editFragment.setTimeText(note)
                 activity.setCurrentFragment(CurrentFragment.EDIT_FRAGMENT)
             } else {
                 activity.setCurrentFragment(null)

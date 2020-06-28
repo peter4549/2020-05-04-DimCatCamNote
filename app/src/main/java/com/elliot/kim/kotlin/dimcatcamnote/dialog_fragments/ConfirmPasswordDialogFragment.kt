@@ -15,6 +15,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.elliot.kim.kotlin.dimcatcamnote.*
 import com.elliot.kim.kotlin.dimcatcamnote.activities.EditActivity
 import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity
+import com.elliot.kim.kotlin.dimcatcamnote.adapters.AlarmedNoteAdapter
 import com.elliot.kim.kotlin.dimcatcamnote.adapters.FolderAdapter
 import com.elliot.kim.kotlin.dimcatcamnote.adapters.NoteAdapter
 
@@ -112,6 +113,17 @@ class ConfirmPasswordDialogFragment(private val adapter: Any,
                         // MainActivity
                         (activity as MainActivity).startEditFragment()
                     }
+                    dialog.dismiss()
+                }
+                else {
+                    showToast(getString(R.string.password_mismatch))
+                    editText.text = null
+                }
+            }
+            is AlarmedNoteAdapter -> {
+                if (adapter.selectedNote!!.password == password) {
+                    (activity as MainActivity).calendarFragment
+                        .getAlarmedNoteAdapter().startEditFragment(adapter.selectedNote!!)
                     dialog.dismiss()
                 }
                 else {

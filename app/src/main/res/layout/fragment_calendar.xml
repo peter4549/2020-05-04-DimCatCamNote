@@ -25,22 +25,23 @@
             android:layout_width="match_parent"
             android:layout_height="64dp"
             android:layout_below="@+id/toolbar"
-            android:background="@color/backgroundColorCalendar"
+            android:background="@android:color/white"
             android:clickable="true"
             android:focusable="true"
             android:orientation="horizontal"
             android:weightSum="1">
 
-            <ImageButton
+            <ImageView
                 android:id="@+id/image_button_previous"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_gravity="center_vertical"
                 android:layout_weight="0.2"
                 android:src="@drawable/ic_chevron_left_white_80dp"
-                android:background="@color/backgroundColorCalendar"
                 android:contentDescription="Button to move to previous month"
-                android:tint="@color/colorCalenderHeaderContent"/>
+                android:tint="@color/colorCalenderHeaderContent"
+                android:clickable="true"
+                android:focusable="true"/>
 
             <androidx.appcompat.widget.AppCompatTextView
                 android:id="@+id/calendar_header"
@@ -48,23 +49,23 @@
                 android:layout_height="match_parent"
                 android:layout_weight="0.6"
                 android:layout_gravity="center"
-                android:background="@color/backgroundColorLime"
                 android:gravity="center"
                 android:text="test"
                 android:textSize="28sp"
                 android:textStyle="bold"
                 android:textColor="@color/colorCalenderHeaderContent"/>
 
-            <ImageButton
+            <ImageView
                 android:id="@+id/image_button_next"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_gravity="center_vertical"
                 android:layout_weight="0.2"
                 android:src="@drawable/ic_chevron_right_white_80dp"
-                android:background="@color/backgroundColorCalendar"
                 android:contentDescription="Button to move to next month"
-                android:tint="@color/colorCalenderHeaderContent"/>
+                android:tint="@color/colorCalenderHeaderContent"
+                android:clickable="true"
+                android:focusable="true"/>
 
         </LinearLayout>
 
@@ -76,24 +77,31 @@
             android:background="@color/colorDivider">
 
             <TextView
+                android:tag="0"
                 style="@style/DayOfWeekTextViewStyle"
                 android:text="일"/>
             <TextView
+                android:tag="1"
                 style="@style/DayOfWeekTextViewStyle"
                 android:text="월"/>
             <TextView
+                android:tag="2"
                 style="@style/DayOfWeekTextViewStyle"
                 android:text="화"/>
             <TextView
+                android:tag="3"
                 style="@style/DayOfWeekTextViewStyle"
                 android:text="수"/>
             <TextView
+                android:tag="4"
                 style="@style/DayOfWeekTextViewStyle"
                 android:text="목"/>
             <TextView
+                android:tag="5"
                 style="@style/DayOfWeekTextViewStyle"
                 android:text="금"/>
             <TextView
+                android:tag="6"
                 style="@style/DayOfWeekTextViewStyle"
                 android:text="토" />
 

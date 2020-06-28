@@ -90,7 +90,6 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
     private var isCalendarClicked = false
     private var pressedTime = 0L
     private var isClearing = false
-    var allowDelete = true
 
     private lateinit var dialogFragmentManager: DialogFragmentManager
 
@@ -154,7 +153,7 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         viewModel.getAll().observe(this, androidx.lifecycle.Observer { notes ->
             if (initialization) {// 초기화 로직 정리할 것.
                 initialize(notes)
-                createUnderlayButtons()
+                createUnderlayButtons(binding.recyclerView)
                 viewModel.itemCount = notes.count()
                 initialization = false
             } else {
@@ -174,8 +173,8 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
                                     configureFragment.progressDialogHandler.obtainMessage()
                                 message.what = ConfigureFragment.STOP_PROGRESS_DIALOG
                                 configureFragment.progressDialogHandler.sendMessage(message)
+                                showToast("모든 노트가 삭제되었습니다.")
                             }
-                            showToast("모든 노트가 삭제되었습니다.")
                             allowAdapterDelete = true
                         }
                     }
@@ -205,9 +204,9 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         super.onDestroy()
     }
 
-    private fun createUnderlayButtons() {
+    fun createUnderlayButtons(recyclerView: RecyclerView) {
         recyclerViewTouchHelper = object: RecyclerViewTouchHelper(this,
-            binding.recyclerView, 240, 640, noteAdapter) {
+            recyclerView, 240, 640, noteAdapter) {
             override fun instantiateRightUnderlayButton(
                 viewHolder: RecyclerView.ViewHolder,
                 rightButtonBuffer: MutableList<UnderlayButton>
@@ -847,6 +846,7 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         var calendarBackgroundColor = 0
 
         var isAppRunning = false
+
         var allowAdapterDelete = true
 
         const val DATABASE_NAME = "dim_cat_cam_notes_14"

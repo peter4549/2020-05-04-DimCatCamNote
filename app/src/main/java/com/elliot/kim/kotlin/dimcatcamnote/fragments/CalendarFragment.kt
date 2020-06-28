@@ -1,5 +1,7 @@
 package com.elliot.kim.kotlin.dimcatcamnote.fragments
 
+import android.graphics.Color
+import android.graphics.PorterDuff
 import android.os.Bundle
 import android.view.*
 import android.view.animation.Animation
@@ -9,7 +11,9 @@ import com.elliot.kim.kotlin.dimcatcamnote.CurrentFragment
 import com.elliot.kim.kotlin.dimcatcamnote.PATTERN_YYYY_MM_dd
 import com.elliot.kim.kotlin.dimcatcamnote.R
 import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity
+import com.elliot.kim.kotlin.dimcatcamnote.adapters.AlarmedNoteAdapter
 import com.elliot.kim.kotlin.dimcatcamnote.adapters.CalendarAdapter
+import com.elliot.kim.kotlin.dimcatcamnote.adjustDialogTitleTextSize
 import com.elliot.kim.kotlin.dimcatcamnote.data.Note
 import com.elliot.kim.kotlin.dimcatcamnote.databinding.FragmentCalendarBinding
 import java.text.SimpleDateFormat
@@ -73,6 +77,23 @@ class CalendarFragment : Fragment() {
         setHasOptionsMenu(true)
         setYearMonthText(currentYearMonthText)
 
+        // Apply design
+        binding.calendarContainer.setBackgroundColor(MainActivity.backgroundColor)
+
+        binding.imageButtonNext.setColorFilter(Color.argb(255, 255, 255, 255))
+        binding.imageButtonPrevious.setColorFilter(Color.argb(255, 255, 255, 255))
+
+        binding.imageButtonNext.setColorFilter(MainActivity.toolbarColor, PorterDuff.Mode.SRC_IN)
+        binding.imageButtonPrevious.setColorFilter(MainActivity.toolbarColor, PorterDuff.Mode.SRC_IN)
+        binding.calendarHeader.setTextColor(MainActivity.toolbarColor)
+
+        binding.calendarHeader.adjustDialogTitleTextSize(MainActivity.fontId, 8f)
+        binding.calendarHeader.typeface = MainActivity.font
+
+        for(i in 0 until binding.dayOfWeekContainer.childCount){
+            binding.dayOfWeekContainer.getChildAt(i).setBackgroundColor(MainActivity.toolbarColor)
+        }
+
         val calendar = Calendar.getInstance()
 
         binding.imageButtonNext.setOnClickListener {
@@ -85,7 +106,6 @@ class CalendarFragment : Fragment() {
 
             calendarAdapter.setCalendar(calendar)
             calendarAdapter.notifyDataSetChanged()
-            // binding.gridView.adapter = calendarAdapter
             currentYearMonthText = "${currentYear}년 ${currentMonth + 1}월"
             setYearMonthText(currentYearMonthText)
         }
@@ -109,6 +129,7 @@ class CalendarFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         binding.toolbar.setBackgroundColor(MainActivity.toolbarColor)
+        binding.toolbar.setTitleTextAppearance(activity, MainActivity.fontStyleId)
         activity.setCurrentFragment(CurrentFragment.CALENDAR_FRAGMENT)
     }
 
@@ -162,6 +183,9 @@ class CalendarFragment : Fragment() {
         binding.toolbar.title = text
         binding.calendarHeader.text = text
     }
+
+    fun getAlarmedNoteAdapter() : AlarmedNoteAdapter =
+        calendarAdapter.alarmedNoteSelectionFragment.alarmedNoteAdapter
 
     companion object {
         var thisYear = 0

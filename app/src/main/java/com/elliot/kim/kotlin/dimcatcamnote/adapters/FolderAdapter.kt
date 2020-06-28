@@ -263,7 +263,6 @@ class FolderAdapter(private val context: Context?):
 
         // Delete notes in the folder
         if (action == DELETE) {
-            context.allowDelete = false
             targetFolderItemCount = folder.noteIdSet.count()
 
             CoroutineScope(Dispatchers.Main).launch {

@@ -166,7 +166,7 @@ class AlarmedNoteAdapter(private val activity: MainActivity,
     }
 
 
-    private fun startEditFragment(note: Note) {
+    fun startEditFragment(note: Note) {
         activity.editFragment.setNote(note)
         activity.editFragment.isFromAlarmedNoteSelectionFragment = true
         activity.fragmentManager.beginTransaction()
@@ -175,7 +175,7 @@ class AlarmedNoteAdapter(private val activity: MainActivity,
                 R.anim.anim_slide_in_left_exit,
                 R.anim.anim_slide_out_right_enter,
                 R.anim.anim_slide_out_right_exit)
-            .replace(R.id.calendar_container, activity.editFragment).commit()
+            .replace(R.id.alarmed_note_selection_container, activity.editFragment).commit()
     }
 
     fun insert(note: Note) {

@@ -47,6 +47,7 @@ import com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments.DialogFragments
 import com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments.MoreOptionsDialogFragment
 import com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments.SetPasswordDialogFragment
 import com.elliot.kim.kotlin.dimcatcamnote.view_model.MainViewModel
+import kotlinx.coroutines.delay
 
 class EditFragment(private val activity: MainActivity) : Fragment() {
 
@@ -66,11 +67,11 @@ class EditFragment(private val activity: MainActivity) : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         viewModel = activity.viewModel
-        init()
+        setOriginalData()
         return inflater.inflate(R.layout.fragment_edit, container, false)
     }
 
-    private fun init() {
+    private fun setOriginalData() {
         originAlarmTime = note.alarmTime
         originContent = note.content
         shortAnimationDuration = resources.getInteger(android.R.integer.config_shortAnimTime)
@@ -87,7 +88,8 @@ class EditFragment(private val activity: MainActivity) : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding = FragmentEditBinding.bind(view)
-        textViewTime = binding.textViewTime
+
+        setViewDesign()
 
         activity.setSupportActionBar(binding.toolbar)
         activity.supportActionBar?.setDisplayHomeAsUpEnabled(true)
@@ -95,7 +97,7 @@ class EditFragment(private val activity: MainActivity) : Fragment() {
 
         // Apply the design.
         binding.textViewTime.adjustDialogItemTextSize(MainActivity.fontId, true)
-        binding.editTextContent.adjustDialogInputTextSize(MainActivity.fontId)
+        binding.editTextContent.adjustDialogInputTextSize(MainActivity.fontId, 4f)
 
         binding.toolbar.setTitleTextAppearance(activity, MainActivity.fontStyleId)
         binding.textViewTime.typeface = MainActivity.font
@@ -103,24 +105,39 @@ class EditFragment(private val activity: MainActivity) : Fragment() {
 
         showImage()
 
-        binding.focusBlock.setOnTouchListener(object : OnTouchListener {
+        binding.editTextContent.setOnTouchListener(object : OnTouchListener {
             private val gestureDetector = GestureDetector(activity,
                 object : SimpleOnGestureListener() {
                     override fun onSingleTapUp(e: MotionEvent): Boolean {
-                        activity.showToast("더블 탭하여 노트를 편집하세요.")
+                        if (!isEditMode) {
+                            activity.showToast("더블 탭하여 노트를 편집하세요.")
+                        }
+
                         return super.onSingleTapUp(e)
                     }
 
                     override fun onDoubleTap(e: MotionEvent): Boolean {
-                        isEditMode = true
-                        getFocus()
+                        if (!isEditMode) {
+                            binding.editTextContent.highlightColor = activity.getColor(android.R.color.transparent)
+                        }
+
                         return super.onDoubleTap(e)
+                    }
+
+                    override fun onDoubleTapEvent(e: MotionEvent?): Boolean {
+                        if (e!!.action == MotionEvent.ACTION_UP && !isEditMode) {
+                            getFocus()
+                            val cursorPosition = binding.editTextContent.selectionEnd
+                            binding.editTextContent.setSelection(cursorPosition, cursorPosition)
+                            binding.editTextContent.highlightColor = activity.getColor(R.color.colorAccent)
+                        }
+
+                        return super.onDoubleTapEvent(e)
                     }
                 })
 
             override fun onTouch(v: View, event: MotionEvent): Boolean {
-                gestureDetector.onTouchEvent(event)
-                return true
+                return gestureDetector.onTouchEvent(event)
             }
         })
 
@@ -129,7 +146,8 @@ class EditFragment(private val activity: MainActivity) : Fragment() {
         }
 
         binding.editTextContent.viewTreeObserver.addOnGlobalLayoutListener {
-            if (keyboardShown(binding.editTextContent.rootView) && isEditMode) crossFadeImageView(false)
+            if (keyboardShown(binding.editTextContent.rootView) && isEditMode)
+                crossFadeImageView(false)
             else if (binding.imageView.visibility != View.VISIBLE)
                 showImage()
         }
@@ -158,22 +176,31 @@ class EditFragment(private val activity: MainActivity) : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        setViewDesign()
-        uri = note.uri
-        setContent(note)
+        setNoteText(note)
         activity.setCurrentFragment(CurrentFragment.EDIT_FRAGMENT)
     }
 
-    override fun onStop() {
-        super.onStop()
-        isEditMode = false
+    override fun onPause() {
+        note.content = binding.editTextContent.text.toString()
+        super.onPause()
+    }
 
-        if (isFromAlarmedNoteSelectionFragment)
+    override fun onDestroyView() {
+        isEditMode = false
+        binding.editTextContent.clearFocus()
+        binding.editTextContent.isFocusable = false
+        binding.editTextContent.isFocusableInTouchMode = false
+
+        if (isFromAlarmedNoteSelectionFragment) {
             activity.setCurrentFragment(CurrentFragment.CALENDAR_FRAGMENT)
+            isFromAlarmedNoteSelectionFragment = false
+        }
         else {
             activity.setCurrentFragment(null)
             activity.showFloatingActionButton()
         }
+
+        super.onDestroyView()
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -189,7 +216,8 @@ class EditFragment(private val activity: MainActivity) : Fragment() {
         val menuChangeAlarm = menu.findItem(R.id.menu_change_alarm)
         val menuLock = menu.findItem(R.id.menu_lock)
 
-        if (note.isDone) menuDone.title = "완료해제" else menuDone.title = "완료체크"
+        if (note.isDone) menuDone.title = "완료해제"
+        else menuDone.title = "완료체크"
 
         if (note.alarmTime == null) {
             menuAlarm.title = "알림설정"
@@ -238,14 +266,21 @@ class EditFragment(private val activity: MainActivity) : Fragment() {
                 if (isEditMode) {
                     item.setIcon(R.drawable.ic_edit_white_24dp)
 
-                    binding.focusBlock.visibility = View.VISIBLE
+                    binding.editTextContent.clearFocus()
                     binding.editTextContent.isFocusable = false
+                    binding.editTextContent.isFocusableInTouchMode = false
 
-                    if (isContentChanged()) finishWithSaving()
-                    else Toast.makeText(context, "변경사항이 없습니다.", Toast.LENGTH_SHORT).show()
-                } else getFocus()
+                    if (isContentChanged())
+                        finishWithSaving()
+                    else
+                        Toast.makeText(context, "변경사항이 없습니다.", Toast.LENGTH_SHORT).show()
 
-                isEditMode = !isEditMode
+                    if (keyboardShown(binding.editTextContent.rootView))
+                        MainActivity.hideKeyboard(activity, binding.editTextContent)
+
+                    isEditMode = !isEditMode
+                } else
+                    getFocus()
             }
             R.id.menu_alarm -> {
                 if (note.alarmTime == null)
@@ -258,6 +293,10 @@ class EditFragment(private val activity: MainActivity) : Fragment() {
             R.id.menu_change_alarm -> startAlarmFragment(note)
             R.id.menu_share -> MainActivity.share(activity, note)
             R.id.menu_done -> {
+                if (note.isDone)
+                    Toast.makeText(requireContext(), "완료처리를 해제하셨습니다.", Toast.LENGTH_SHORT).show()
+                else
+                    Toast.makeText(requireContext(), "완료처리 되었습니다.", Toast.LENGTH_SHORT).show()
                 note.isDone = !note.isDone
                 viewModel.update(note)
             }
@@ -289,15 +328,27 @@ class EditFragment(private val activity: MainActivity) : Fragment() {
         activity.showToast("잠금이 해제되었습니다.")
     }
 
-    fun setContent(note: Note) {
-        setText(note)
+    private fun setNoteText(note: Note) {
+        binding.toolbar.title = note.title
+        binding.editTextContent.text.clear()
+        binding.editTextContent.setText(note.content)
+        setTimeText(note)
     }
 
-    private fun setText(note: Note) {
-        binding.toolbar.title = note.title
-        binding.editTextContent.setText(note.content)
-        binding.editTextContent.isEnabled = false
-        setTimeText(note)
+    fun setTimeText(note: Note) {
+        var timeText = "최초 작성일: " + MainActivity.longTimeToString(
+            note.creationTime, PATTERN_UP_TO_SECONDS
+        )
+
+        if (note.editTime != null) timeText += "\n최근 수정일: ${MainActivity.longTimeToString(
+            note.editTime, PATTERN_UP_TO_SECONDS
+        )}"
+
+        if (note.alarmTime != null) timeText += "\n알림 시간: ${MainActivity.longTimeToString(
+            note.alarmTime, PATTERN_UP_TO_SECONDS
+        )}"
+
+        binding.textViewTime.text = timeText
     }
 
     private fun setViewDesign() {
@@ -439,14 +490,16 @@ class EditFragment(private val activity: MainActivity) : Fragment() {
     }
 
     private fun getFocus() {
+        isEditMode = true
         modeIcon.setIcon(R.drawable.ic_done_white_24dp)
-
-        binding.focusBlock.visibility = View.GONE
-        binding.editTextContent.isEnabled = true
+        binding.editTextContent.isFocusable = true
+        binding.editTextContent.isFocusableInTouchMode = true
         binding.editTextContent.requestFocus()
-        binding.editTextContent.setSelection(binding.editTextContent.text.length)
+        activity.showToast("노트를 수정하세요.")
 
-        MainActivity.showKeyboard(context, binding.editTextContent)
+        if (!keyboardShown(binding.editTextContent.rootView)) {
+            MainActivity.showKeyboard(binding.editTextContent.context, binding.editTextContent)
+        }
     }
 
     private fun isContentChanged() = originContent != binding.editTextContent.text.toString()
@@ -510,7 +563,6 @@ class EditFragment(private val activity: MainActivity) : Fragment() {
         ): Boolean {
             binding.imageView.isClickable = false
             binding.imageView.isFocusable = false
-
             return false
         }
 
@@ -531,23 +583,5 @@ class EditFragment(private val activity: MainActivity) : Fragment() {
     companion object {
         const val SAVE = 0
         const val BACK_PRESSED = 1
-
-        lateinit var textViewTime: TextView
-
-        fun setTimeText(note: Note) {
-            var timeText = "최초 작성일: " + MainActivity.longTimeToString(
-                note.creationTime, PATTERN_UP_TO_SECONDS
-            )
-
-            if (note.editTime != null) timeText += "\n최근 수정일: ${MainActivity.longTimeToString(
-                note.editTime, PATTERN_UP_TO_SECONDS
-            )}"
-
-            if (note.alarmTime != null) timeText += "\n알림 시간: ${MainActivity.longTimeToString(
-                note.alarmTime, PATTERN_UP_TO_SECONDS
-            )}"
-
-            textViewTime.text = timeText
-        }
     }
 }

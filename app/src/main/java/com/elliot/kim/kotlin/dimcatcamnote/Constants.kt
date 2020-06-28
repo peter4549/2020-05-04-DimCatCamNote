@@ -87,5 +87,4 @@ const val ACTION_APP_WIDGET_ATTACHED = "action_app_widget_attached"
 // Alarm notification click action.
 const val ACTION_ALARM_NOTIFICATION_CLICKED = "action_alarm_notification_clicked"
 
-// 유틸리티 클래스나 파일 만들것.
 fun dateToText(year: Int, month: Int, dayOfMonth: Int) = "${year}년 ${month + 1}월 ${dayOfMonth}일"

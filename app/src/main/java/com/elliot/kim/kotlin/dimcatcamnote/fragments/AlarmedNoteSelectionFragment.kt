@@ -28,7 +28,7 @@ class AlarmedNoteSelectionFragment : Fragment() {
 
     private lateinit var activity: MainActivity
     private lateinit var binding: FragmentAlarmedNoteSelectionBinding
-    private lateinit var alarmedNoteAdapter: AlarmedNoteAdapter
+    lateinit var alarmedNoteAdapter: AlarmedNoteAdapter
     private var selectedDate = 0L
 
     fun setData(alarmedNotes: ArrayList<Note>, currentDate: Long, imageView: ImageView) {

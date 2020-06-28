@@ -93,6 +93,8 @@ class NoteAppWidgetProvider: AppWidgetProvider() {
                     R.layout.app_widget
                 ).apply {
                     setInt(R.id.title_container, "setBackgroundColor", Color.parseColor(argbChannelTitleColor))
+                    setInt(R.id.text_view_content, "setBackgroundColor",
+                        Color.parseColor(argbChannelBackgroundColor))
                     setOnClickPendingIntent(R.id.text_view_content, pendingIntent)
                     setOnClickPendingIntent(R.id.image_button_change, noteConfigurePendingIntent)
                     setCharSequence(R.id.text_view_title, "setText", title)
@@ -126,13 +128,12 @@ class NoteAppWidgetProvider: AppWidgetProvider() {
                             " " + MainActivity.longTimeToString(editTime, PATTERN_UP_TO_MINUTES))
                     }
 
+                    setInt(R.id.text_view_alarm_time, "setBackgroundColor", Color.parseColor(argbChannelBackgroundColor))
+                    setInt(R.id.text_view_creation_time, "setBackgroundColor", Color.parseColor(argbChannelBackgroundColor))
+                    setInt(R.id.text_view_edit_time, "setBackgroundColor", Color.parseColor(argbChannelBackgroundColor))
+
                     if (uri == "") setViewVisibility(R.id.image_view_photo, View.GONE)
                     else setViewVisibility(R.id.image_view_photo, View.VISIBLE)
-
-                    // Finally, set the background color.
-                    // Fix an issue where the background color of a time text view is not assigned.
-                    setInt(R.id.content_container, "setBackgroundColor",
-                        Color.parseColor(argbChannelBackgroundColor))
                 }
 
                 // Notify appWidgetManager of app widget updates.

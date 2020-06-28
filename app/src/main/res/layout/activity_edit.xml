@@ -34,7 +34,7 @@
             android:layout_marginBottom="2dp"
             android:background="@color/defaultColorInlay"
             android:gravity="center_vertical"
-            android:textSize="@dimen/text_size_small"/>
+            android:textSize="@dimen/text_size_small_middle"/>
 
         <RelativeLayout
             android:id="@+id/edit_text_container"

@@ -40,12 +40,14 @@ class ConfigureFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding = FragmentConfigureBinding.bind(view)
-        binding.toolbar.title = "환경설정"
-        binding.toolbar.setBackgroundColor(MainActivity.toolbarColor)
 
         (activity as MainActivity).setSupportActionBar(binding.toolbar)
         (activity as MainActivity).supportActionBar?.setDisplayHomeAsUpEnabled(true)
         setHasOptionsMenu(true)
+
+        binding.toolbar.setTitleTextAppearance(requireContext(), MainActivity.fontStyleId)
+        binding.toolbar.title = "환경설정"
+        binding.toolbar.setBackgroundColor(MainActivity.toolbarColor)
 
         initOpacitySeekBar()
 
@@ -238,16 +240,11 @@ class ConfigureFragment : Fragment() {
                     requireContext().packageName,
                     R.layout.app_widget
                 ).apply {
-                    setInt(
-                        R.id.title_container,
-                        "setBackgroundColor",
-                        Color.parseColor(argbChannelTitleColor)
-                    )
-                    setInt(
-                        R.id.content_container,
-                        "setBackgroundColor",
-                        Color.parseColor(argbChannelBackgroundColor)
-                    )
+                    setInt(R.id.title_container, "setBackgroundColor",
+                        Color.parseColor(argbChannelTitleColor))
+                    setInt(R.id.text_view_content, "setBackgroundColor",
+                        Color.parseColor(argbChannelBackgroundColor))
+
                     setOnClickPendingIntent(R.id.text_view_content, pendingIntent)
                     setCharSequence(R.id.text_view_title, "setText", title)
 
@@ -285,9 +282,11 @@ class ConfigureFragment : Fragment() {
                         )
                     }
 
-                    // Finally, set the background color.
-                    // Fix an issue where the background color of a time text view is not assigned.
-                    setInt(R.id.content_container, "setBackgroundColor",
+                    setInt(R.id.text_view_alarm_time, "setBackgroundColor",
+                        Color.parseColor(argbChannelBackgroundColor))
+                    setInt(R.id.text_view_creation_time, "setBackgroundColor",
+                        Color.parseColor(argbChannelBackgroundColor))
+                    setInt(R.id.text_view_edit_time, "setBackgroundColor",
                         Color.parseColor(argbChannelBackgroundColor))
                 }
 

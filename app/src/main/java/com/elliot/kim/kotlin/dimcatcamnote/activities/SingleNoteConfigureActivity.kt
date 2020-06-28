@@ -9,6 +9,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.res.ResourcesCompat
 import androidx.databinding.DataBindingUtil
@@ -71,12 +72,18 @@ class SingleNoteConfigureActivity : AppCompatActivity() {
         if (appWidgetId == AppWidgetManager.INVALID_APPWIDGET_ID) finish()
 
         initDesignOptions()
+        applyDesign()
 
         val viewModelFactory = ViewModelProvider.AndroidViewModelFactory.getInstance(application)
         viewModel = ViewModelProvider(this, viewModelFactory)[MainViewModel::class.java]
 
         viewModel.setContext(this)
         viewModel.getAll().observe(this, androidx.lifecycle.Observer { notes ->
+            if (notes.isEmpty())
+                binding.textViewEmptyMessage.visibility = View.VISIBLE
+            else
+                binding.textViewEmptyMessage.visibility = View.GONE
+
             noteAdapter = NoteAdapter(
                 this@SingleNoteConfigureActivity, notes,
                 true, appWidgetId
@@ -103,12 +110,27 @@ class SingleNoteConfigureActivity : AppCompatActivity() {
         val fontPreferences =
             getSharedPreferences(PREFERENCES_FONT, Context.MODE_PRIVATE)
 
+        toolbarColor = colorPreferences.getInt(KEY_COLOR_TOOLBAR, getColor(R.color.defaultColorToolbar))
+        backgroundColor = colorPreferences.getInt(KEY_COLOR_BACKGROUND, getColor(R.color.defaultColorBackground))
         noteColor = colorPreferences.getInt(KEY_COLOR_NOTE, getColor(R.color.defaultColorNote))
         fontId = fontPreferences.getInt(KEY_FONT_ID, R.font.nanum_gothic_font_family)
         font = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
             resources.getFont(fontId)
         else
             ResourcesCompat.getFont(this, fontId)
+    }
+
+    private fun applyDesign() {
+        binding.textViewTitle.setBackgroundColor(backgroundColor)
+        binding.textViewAddNote.setBackgroundColor(toolbarColor)
+
+        binding.textViewTitle.adjustDialogTitleTextSize(fontId)
+        binding.textViewAddNote.adjustDialogItemTextSize(fontId)
+        binding.textViewEmptyMessage.adjustDialogItemTextSize(fontId)
+
+        binding.textViewTitle.typeface = font
+        binding.textViewAddNote.typeface = font
+        binding.textViewEmptyMessage.typeface = font
     }
 
     private fun startFragment(fragment: Fragment) {
@@ -204,6 +226,8 @@ class SingleNoteConfigureActivity : AppCompatActivity() {
     }
 
     companion object {
+        var toolbarColor = 0
+        var backgroundColor = 0
         var noteColor = 0
         var font: Typeface? = null
         var fontId = 0

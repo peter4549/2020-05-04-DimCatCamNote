@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.appwidget.AppWidgetManager
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color
 import android.graphics.Paint
 import android.net.Uri
 import android.view.LayoutInflater
@@ -40,6 +41,8 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
     var selectedNote: Note? = null
     var sortingCriteria = SortingCriteria.EDIT_TIME.index
     var isFirstBinding = true
+
+    private var noteColor = 0
 
     class ViewHolder(v: View) : RecyclerView.ViewHolder(v) {
         val binding: CardViewBinding = bind(v)
@@ -89,7 +92,8 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
 
         // Apply design
         if (context is MainActivity) {
-            holder.binding.colorContainer.setBackgroundColor(MainActivity.noteColor)
+            noteColor = MainActivity.noteColor
+            holder.binding.colorContainer.setBackgroundColor(noteColor)
 
             holder.binding.textViewTitle.adjustNoteTextSize(MainActivity.fontId, NoteItem.TITLE)
             holder.binding.textViewTime.adjustNoteTextSize(MainActivity.fontId, NoteItem.TIME)
@@ -101,7 +105,8 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
             holder.binding.textViewAlarmTime.typeface = MainActivity.font
             holder.binding.textViewContent.typeface = MainActivity.font
         } else if (context is SingleNoteConfigureActivity) {
-            holder.binding.colorContainer.setBackgroundColor(SingleNoteConfigureActivity.noteColor)
+            noteColor = MainActivity.noteColor
+            holder.binding.colorContainer.setBackgroundColor(noteColor)
 
             holder.binding.textViewTitle.adjustNoteTextSize(SingleNoteConfigureActivity.fontId, NoteItem.TITLE)
             holder.binding.textViewTime.adjustNoteTextSize(SingleNoteConfigureActivity.fontId, NoteItem.TIME)
@@ -131,23 +136,6 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
                 .into(holder.binding.imageViewThumbnail)
         }
 
-        if (note.isDone) {
-            holder.binding.textViewTitle.paintFlags = holder.binding.textViewTitle.paintFlags or
-                    Paint.STRIKE_THRU_TEXT_FLAG
-            holder.binding.textViewTime.paintFlags = holder.binding.textViewTime.paintFlags or
-                    Paint.STRIKE_THRU_TEXT_FLAG
-            holder.binding.textViewContent.paintFlags = holder.binding.textViewContent.paintFlags or
-                    Paint.STRIKE_THRU_TEXT_FLAG
-            //holder.binding.imageViewLogo.setImageResource(R.drawable.ic_cat_footprint)
-            holder.binding.imageViewDone.visibility = View.VISIBLE
-        } else {
-            holder.binding.textViewTitle.paintFlags = 0
-            holder.binding.textViewTime.paintFlags = 0
-            holder.binding.textViewContent.paintFlags = 0
-            //holder.binding.imageViewLogo.setImageResource(R.drawable.ic_cat_card_view_00)
-            holder.binding.imageViewDone.visibility = View.INVISIBLE
-        }
-
         if (note.alarmTime == null) {
             holder.binding.textViewAlarmTime.visibility = View.GONE
             holder.binding.imageViewAlarm.visibility = View.GONE
@@ -156,17 +144,40 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
 
             currentTime = MainActivity.getCurrentTime()
             var text = context?.getString(R.string.alarm_time)
+            holder.binding.imageViewAlarm
+                .setImageDrawable(context!!.getDrawable(R.drawable.ic_alarm_on_white_24dp))
             if (note.alarmTime!! < currentTime) {
                 text = "캘린더 등록시간"
                 holder.binding.imageViewAlarm
                     .setImageDrawable(context!!.getDrawable(R.drawable.ic_today_white_24dp))
             }
+
             val alarmTimeText =
                 "$text: ${MainActivity.longTimeToString(alarmTime,
                     PATTERN_UP_TO_MINUTES
                 )}"
             holder.binding.textViewAlarmTime.visibility = View.VISIBLE
             holder.binding.textViewAlarmTime.text = alarmTimeText
+        }
+
+        if (note.isDone) {
+            holder.binding.textViewTitle.paintFlags = holder.binding.textViewTitle.paintFlags or
+                    Paint.STRIKE_THRU_TEXT_FLAG
+            holder.binding.textViewTime.paintFlags = holder.binding.textViewTime.paintFlags or
+                    Paint.STRIKE_THRU_TEXT_FLAG
+            holder.binding.textViewAlarmTime.paintFlags = holder.binding.textViewAlarmTime.paintFlags or
+                    Paint.STRIKE_THRU_TEXT_FLAG
+            holder.binding.textViewContent.paintFlags = holder.binding.textViewContent.paintFlags or
+                    Paint.STRIKE_THRU_TEXT_FLAG
+            holder.binding.imageViewDone.visibility = View.VISIBLE
+            holder.binding.colorContainer.background.setColorFilter(Color.rgb(225, 225, 225), Mode.MULTIPLY)
+        } else {
+            holder.binding.textViewTitle.paintFlags = 0
+            holder.binding.textViewTime.paintFlags = 0
+            holder.binding.textViewAlarmTime.paintFlags = 0
+            holder.binding.textViewContent.paintFlags = 0
+            holder.binding.imageViewDone.visibility = View.INVISIBLE
+            holder.binding.colorContainer.background.setColorFilter(Color.rgb(255, 255, 255), Mode.MULTIPLY)
         }
 
         if (note.isLocked) {

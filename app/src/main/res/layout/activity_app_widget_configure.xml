@@ -13,10 +13,11 @@
         android:focusable="true">
 
         <LinearLayout
+            android:id="@+id/container"
             android:layout_width="300dp"
             android:layout_height="540dp"
             android:orientation="vertical"
-            android:background="@color/defaultColorBackground"
+            android:background="@android:color/white"
             android:layout_gravity="center"
             android:clickable="true"
             android:focusable="true">
@@ -25,17 +26,17 @@
                 android:id="@+id/text_view_title"
                 android:layout_width="match_parent"
                 android:layout_height="40dp"
-                android:background="@color/defaultColorToolbar"
+                android:background="@color/defaultColorBackground"
                 android:gravity="center"
-                android:text="노트 등록"
-                android:textColor="@android:color/white"
+                android:text="노트 목록"
+                android:textColor="@color/colorStatusIcon"
                 android:textSize="@dimen/text_size_large"
                 android:textStyle="bold"/>
 
             <RelativeLayout
                 android:id="@+id/add_note_container"
                 android:layout_width="match_parent"
-                android:layout_height="40dp"
+                android:layout_height="36dp"
                 android:layout_marginTop="2dp"
                 android:clickable="true"
                 android:focusable="true">
@@ -46,16 +47,16 @@
                     android:layout_height="match_parent"
                     android:text="노트 추가"
                     android:textColor="@android:color/white"
-                    android:textSize="@dimen/text_size_large"
+                    android:textSize="@dimen/text_size_middle"
                     android:textStyle="bold"
                     android:gravity="center"
                     android:textAlignment="center"
-                    android:background="@color/backgroundColorDayOfWeek" />
+                    android:background="@color/defaultColorToolbar" />
 
                 <ImageView
                     android:layout_width="32dp"
                     android:layout_height="32dp"
-                    android:layout_margin="2dp"
+                    android:layout_centerVertical="true"
                     android:src="@drawable/ic_add_circle_white_24dp"/>
 
             </RelativeLayout>
@@ -63,9 +64,10 @@
             <TextView
                 android:id="@+id/text_view_empty_message"
                 android:layout_width="match_parent"
-                android:layout_height="40dp"
+                android:layout_height="36dp"
                 android:gravity="center"
                 android:text="작성된 노트가 없습니다."
+                android:textColor="@color/colorStatusIcon"
                 android:textSize="@dimen/text_size_middle"
                 android:textStyle="bold" />
 
