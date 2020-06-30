@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
+import android.content.pm.ResolveInfo
 import android.content.res.ColorStateList
 import android.content.res.Configuration
 import android.graphics.Color
@@ -30,6 +31,7 @@ import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.GravityCompat
 import androidx.core.view.forEachIndexed
@@ -137,7 +139,7 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
             dialogFragmentManager.showDialogFragment(DialogFragments.SORT)
         }
         setSupportActionBar(binding.toolbar)
-        supportActionBar!!.setDisplayShowTitleEnabled(false);
+        supportActionBar!!.setDisplayShowTitleEnabled(false)
 
         initSortingCriteria()
         initColor()
@@ -151,7 +153,7 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         var notesSize = 0
 
         viewModel.getAll().observe(this, androidx.lifecycle.Observer { notes ->
-            if (initialization) {// 초기화 로직 정리할 것.
+            if (initialization) {
                 initialize(notes)
                 createUnderlayButtons(binding.recyclerView)
                 viewModel.itemCount = notes.count()
@@ -168,12 +170,13 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
                                 )
                             noteAdapter.delete(viewModel.targetNote!!)
                         } else {
-                            if (viewModel.itemCount == 0) {
+                            if (isClearing && viewModel.itemCount == 0) {
                                 val message =
                                     configureFragment.progressDialogHandler.obtainMessage()
                                 message.what = ConfigureFragment.STOP_PROGRESS_DIALOG
                                 configureFragment.progressDialogHandler.sendMessage(message)
                                 showToast("모든 노트가 삭제되었습니다.")
+                                isClearing = false
                             }
                             allowAdapterDelete = true
                         }
@@ -204,7 +207,7 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         super.onDestroy()
     }
 
-    fun createUnderlayButtons(recyclerView: RecyclerView) {
+    private fun createUnderlayButtons(recyclerView: RecyclerView) {
         recyclerViewTouchHelper = object: RecyclerViewTouchHelper(this,
             recyclerView, 240, 640, noteAdapter) {
             override fun instantiateRightUnderlayButton(
@@ -321,6 +324,8 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
                     CurrentFragment.EDIT_FRAGMENT -> editFragment.finish(EditFragment.BACK_PRESSED)
                     CurrentFragment.PHOTO_FRAGMENT -> super.onBackPressed()
                     CurrentFragment.WRITE_FRAGMENT -> writeFragment.finish(WriteFragment.BACK_PRESSED)
+                    CurrentFragment.LICENSE_FRAGMENT -> super.onBackPressed()
+                    CurrentFragment.MANUAL_FRAGMENT -> super.onBackPressed()
                 }
             }
         }
@@ -333,27 +338,21 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == PERMISSIONS_REQUEST_CODE) {
             if (PackageManager.PERMISSION_GRANTED == grantResults.firstOrNull()) {
-                if (hasCameraPermissions(
-                        this
-                    )
-                )
-                    Toast.makeText(this, "CAM permission request granted", Toast.LENGTH_LONG).show()
-                if (hasRecordAudioPermission(
-                        this
-                    )
-                )
-                    Toast.makeText(this, "Audio permission request granted", Toast.LENGTH_LONG).show()
+                if (hasCameraPermissions(this))
+                    println("Camera permission granted")
+                if (hasRecordAudioPermission(this))
+                    println("Audio permission granted")
             } else {
                 if (!hasCameraPermissions(
                         this
                     )
                 )
-                    Toast.makeText(this, "카메라를 승인해야 쓸수잇음 ㅋ", Toast.LENGTH_LONG).show()
+                    Toast.makeText(this, "카메라 권한을 승인하셔야 해당 기능을 사용할 수 있습니다.", Toast.LENGTH_LONG).show()
                 if (!hasRecordAudioPermission(
                         this
                     )
                 )
-                    Toast.makeText(this, "음성 녹음을 승인해야 쓸수잇다네 소년", Toast.LENGTH_LONG).show()
+                    Toast.makeText(this, "음성녹음 권한을 승인하셔야 해당 기능을 사용할 수 있습니다.", Toast.LENGTH_LONG).show()
             }
         }
     }
@@ -397,7 +396,7 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
             binding.imageViewLogo.visibility = View.VISIBLE
             false
         }
-        searchView.queryHint = "찾을 노트 제목을 입력해주세요."
+        searchView.queryHint = "노트 제목을 입력해주세요."
         return true
     }
 
@@ -457,9 +456,6 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
     }
 
     private fun startCalendarFragment() {
-        // 여기에 알람 설정된 애들.. 담아서 던지고,,
-        // 달력뷰는 바인딩 하는 중에, 날짜 당일 비교,, 어떤식으로.. current month와 current date를 비교해서.
-        // 뭐랑 비교 => 각 노트의 알람시간으로부터 추출.
         isCalendarClicked = true
         calendarFragment.setAlarmedNotes(noteAdapter.getAlarmedNotes() as MutableList<Note>)
 
@@ -486,7 +482,7 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         startFragment(writeFragment)
     }
 
-    private fun startFragment(fragment: Fragment) {
+    fun startFragment(fragment: Fragment, containerId: Int = R.id.main_container) {
         fragmentManager.beginTransaction()
             .setCustomAnimations(
                 R.anim.anim_slide_in_left_enter,
@@ -495,7 +491,7 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
                 R.anim.anim_slide_out_right_exit
             )
             .addToBackStack(null)
-            .replace(R.id.main_container, fragment).commit()
+            .replace(containerId, fragment).commit()
         hideFloatingActionButton()
     }
 
@@ -660,6 +656,10 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
             startFragment(configureFragment)
         }
 
+        binding.navigationManual.setOnClickListener {
+            startFragment(ManualFragment())
+        }
+
         binding.navigationCalendarContainer.setOnClickListener {
             startCalendarFragment()
         }
@@ -672,6 +672,7 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         binding.navigationConfigureContainer.setBackgroundColor(toolbarColor)
         binding.navigationCalendarContainer.setBackgroundColor(toolbarColor)
         binding.navigationAddFolderContainer.setBackgroundColor(toolbarColor)
+        binding.navigationManual.setBackgroundColor(toolbarColor)
         folderAdapter.notifyDataSetChanged()
     }
 
@@ -832,6 +833,10 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
             cameraFragment.reopenCamera()
     }
 
+    fun hideKeyboardInDrawerLayout() {
+        hideKeyboard(this, binding.drawerLayout)
+    }
+
     companion object {
         var font: Typeface? = null
         var fontId = 0
@@ -842,8 +847,6 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         var inlayColor = 0
         var appWidgetTitleColor = 0
         var appWidgetBackgroundColor = 0
-        var calendarTitleColor = 0
-        var calendarBackgroundColor = 0
 
         var isAppRunning = false
 
@@ -945,9 +948,19 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
             val intent = Intent(Intent.ACTION_SEND)
             val text: String = note.toSharedString()
 
-            intent.type = "text/plain"
-            intent.putExtra(Intent.EXTRA_SUBJECT, "Cat Note\n")
+            intent.putExtra(Intent.EXTRA_SUBJECT, "슈슈노트\n")
             intent.putExtra(Intent.EXTRA_TEXT, text)
+
+            if (note.uri != null) {
+
+                val uri = FileProvider.getUriForFile(
+                    context,
+                    BuildConfig.APPLICATION_ID + ".fileprovider", File(Uri.parse(note.uri!!).path!!)
+                )
+                intent.putExtra(Intent.EXTRA_STREAM, uri)
+            }
+
+            intent.type = "image/*"
 
             val chooser = Intent.createChooser(intent, "공유하기")
             context.startActivity(chooser)

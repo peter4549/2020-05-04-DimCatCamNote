@@ -133,6 +133,9 @@ class WriteFragment : Fragment() {
         binding.editTextContent.setBackgroundColor(MainActivity.inlayColor)
         binding.speechRecognitionContainer.setBackgroundColor(MainActivity.toolbarColor)
 
+        binding.editTextTitle.adjustDialogInputTextSize(MainActivity.fontId, 4f)
+        binding.editTextContent.adjustDialogInputTextSize(MainActivity.fontId, 4f)
+
         binding.toolbar.setTitleTextAppearance(activity, MainActivity.fontStyleId)
         binding.toolbar.invalidate()
         binding.editTextTitle.typeface = MainActivity.font
@@ -531,6 +534,9 @@ class WriteFragment : Fragment() {
         if (isFromAlarmedNoteSelectionFragment) {
             alarmedNoteAdapter!!.insert(newNote!!)
             (activity as MainActivity).calendarFragment.updateCalendarAdapter(newNote!!)
+            if (dateSelectedInCalender > getCurrentTime())
+                saveAlarmPreferences(newNote!!.id, newNote!!.alarmTime!!,
+                    newNote!!.title, newNote!!.content)
         }
 
         if (activity is MainActivity)
@@ -801,5 +807,23 @@ class WriteFragment : Fragment() {
                     activity.backPressed()
             }, 120)
         }
+    }
+
+    private fun saveAlarmPreferences(
+        number: Int,
+        alarmTime: Long,
+        title: String,
+        content: String
+    ) {
+        val sharedPreferences = requireContext().getSharedPreferences(
+            PREFERENCES_NAME_ALARM,
+            Context.MODE_PRIVATE
+        )
+        val editor = sharedPreferences.edit()
+        editor.putInt("${number}0", number)
+        editor.putLong("${number}1", alarmTime)
+        editor.putString("${number}2", title)
+        editor.putString("${number}3", content)
+        editor.apply()
     }
 }

@@ -157,6 +157,8 @@ class AlarmFragment(private val activity: AppCompatActivity) : Fragment() {
         super.onResume()
         if (activity is MainActivity)
             activity.setCurrentFragment(CurrentFragment.ALARM_FRAGMENT)
+        else if (activity is EditActivity)
+            activity.currentFragment = CurrentFragment.ALARM_FRAGMENT
     }
 
     override fun onStop() {
@@ -169,6 +171,8 @@ class AlarmFragment(private val activity: AppCompatActivity) : Fragment() {
                 activity.setCurrentFragment(null)
                 activity.showFloatingActionButton()
             }
+        } else {
+            (activity as EditActivity).currentFragment = null
         }
     }
 

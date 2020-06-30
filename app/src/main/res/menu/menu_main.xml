@@ -4,10 +4,10 @@
 
     <item android:id="@+id/menu_search"
         android:title="search"
-        app:showAsAction="always"
+        app:showAsAction="ifRoom"
         android:icon="@android:drawable/ic_menu_search"
         app:actionViewClass="androidx.appcompat.widget.SearchView"
-        app:defaultQueryHint="찾을 노트 제목을 입력해주세요."/>
+        app:defaultQueryHint="노트 제목을 입력해주세요."/>
 
     <item android:id="@+id/menu_write"
         android:title="노트추가"

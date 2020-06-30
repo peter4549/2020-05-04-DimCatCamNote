@@ -9,6 +9,8 @@ import androidx.fragment.app.DialogFragment
 import com.elliot.kim.kotlin.dimcatcamnote.*
 import com.elliot.kim.kotlin.dimcatcamnote.adapters.FolderAdapter
 import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity
+import kotlinx.coroutines.*
+import kotlin.coroutines.CoroutineContext
 
 class AddFolderDialogFragment(private val folderAdapter: FolderAdapter) : DialogFragment() {
 
@@ -47,8 +49,21 @@ class AddFolderDialogFragment(private val folderAdapter: FolderAdapter) : Dialog
                 folderName in folderAdapter.getAllFolderNames() ->
                     activity.showToast("중복된 폴더이름을 사용할 수 없습니다.")
                 else -> {
-                    folderAdapter.addFolder(folderName)
-                    dialog.dismiss()
+                    val scope = CoroutineScope(Dispatchers.Main)
+                    scope.launch {
+                        folderAdapter.addFolder(folderName)
+
+                        scope.launch {
+                            MainActivity.hideKeyboard(
+                                addFolderContainer.context,
+                                addFolderContainer
+                            )
+                        }.join()
+
+                        delay(200)
+
+                        dialog.dismiss()
+                    }
                 }
             }
         }

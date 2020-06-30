@@ -77,7 +77,7 @@
             android:layout_width="match_parent"
             android:layout_height="24dp"
             android:layout_marginStart="2dp"
-            android:drawableStart="@drawable/ic_add_circle_outline_white_24dp"
+            android:drawableStart="@drawable/ic_add_white_24dp"
             android:drawableTint="@color/colorStatusIcon"
             android:gravity="center_vertical"
             android:ellipsize="end"
@@ -103,7 +103,7 @@
             android:layout_width="match_parent"
             android:layout_height="24dp"
             android:layout_marginStart="2dp"
-            android:layout_marginTop="4dp"
+            android:layout_marginTop="1dp"
             android:drawableStart="@drawable/ic_alarm_on_white_24dp"
             android:drawableTint="@color/colorStatusIcon"
             android:ellipsize="end"
@@ -115,6 +115,9 @@
             android:id="@+id/text_view_content"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_marginTop="1dp"
+            android:padding="6dp"
+            android:lineSpacingExtra="4dp"
             android:clickable="true"
             android:focusable="true" />
 

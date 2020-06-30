@@ -107,7 +107,18 @@
 
         </LinearLayout>
 
+        <ImageView
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_centerHorizontal="true"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentStart="true"
+            android:layout_margin="8dp"
+            android:src="@drawable/ic_kitty_02"
+            android:contentDescription="icon" />
+
         <!-- The color set in attribute "background" will be the color of the dividing line. -->
+        <!-- layout_height 288dp is calculated value -->
         <GridView
             android:id="@+id/grid_view"
             android:layout_width="match_parent"
@@ -117,6 +128,12 @@
             android:background="@color/colorDivider"
             android:horizontalSpacing="1dp"
             android:verticalSpacing="1dp"/>
+
+        <View
+            android:layout_height="2dp"
+            android:layout_width="match_parent"
+            android:layout_below="@id/grid_view"
+            android:background="@color/colorDivider" />
 
     </RelativeLayout>
 

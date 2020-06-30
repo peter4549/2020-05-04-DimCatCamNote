@@ -68,6 +68,7 @@ class EditActivity: AppCompatActivity() {
     private var dataLoadingComplete = false
     private var passwordConfirmationResult = false
     private var shortAnimationDuration = 0
+    var currentFragment: CurrentFragment? = null
 
     private val receiver: BroadcastReceiver = object: BroadcastReceiver(){
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -80,6 +81,7 @@ class EditActivity: AppCompatActivity() {
         }
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -155,25 +157,38 @@ class EditActivity: AppCompatActivity() {
             startPhotoFragment()
         }
 
-        binding.focusBlock.setOnTouchListener(object : View.OnTouchListener {
+        binding.editTextContent.setOnTouchListener(object : View.OnTouchListener {
             private val gestureDetector = GestureDetector(applicationContext,
                 object : GestureDetector.SimpleOnGestureListener() {
                     override fun onSingleTapUp(e: MotionEvent): Boolean {
-                        showToast("더블 탭하여 노트를 편집하세요.")
+                        if (!isEditMode)
+                            showToast("더블 탭하여 노트를 편집하세요.")
+
                         return super.onSingleTapUp(e)
                     }
 
                     override fun onDoubleTap(e: MotionEvent): Boolean {
-                        isEditMode = true
-                        getFocus()
+                        if (!isEditMode) {
+                            binding.editTextContent.highlightColor = getColor(android.R.color.transparent)
+                        }
+
                         return super.onDoubleTap(e)
+                    }
+
+                    override fun onDoubleTapEvent(e: MotionEvent?): Boolean {
+                        if (e!!.action == MotionEvent.ACTION_UP && !isEditMode) {
+                            getFocus()
+                            val cursorPosition = binding.editTextContent.selectionEnd
+                            binding.editTextContent.setSelection(cursorPosition, cursorPosition)
+                            binding.editTextContent.highlightColor = getColor(R.color.colorAccent)
+                        }
+
+                        return super.onDoubleTapEvent(e)
                     }
                 })
 
-            @SuppressLint("ClickableViewAccessibility")
             override fun onTouch(v: View, event: MotionEvent): Boolean {
-                gestureDetector.onTouchEvent(event)
-                return true
+                return gestureDetector.onTouchEvent(event)
             }
         })
     }
@@ -184,7 +199,10 @@ class EditActivity: AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        finish(BACK_PRESSED)
+        if (currentFragment == null)
+            finish(BACK_PRESSED)
+        else
+            super.onBackPressed()
     }
 
     private fun keyboardShown(rootView: View): Boolean {
@@ -270,15 +288,21 @@ class EditActivity: AppCompatActivity() {
                 if (isEditMode) {
                     item.setIcon(R.drawable.ic_edit_white_24dp)
 
-                    binding.focusBlock.visibility = View.VISIBLE
-                    binding.editTextContent.isEnabled = false
+                    binding.editTextContent.clearFocus()
+                    binding.editTextContent.isFocusable = false
+                    binding.editTextContent.isFocusableInTouchMode = false
 
-                    if (isContentChanged()) finishWithSaving()
-                    else showToast("변경사항이 없습니다.")
-                    MainActivity.hideKeyboard(this, binding.editTextContent)
-                } else getFocus()
+                    if (isContentChanged())
+                        finishWithSaving()
+                    else
+                        Toast.makeText(this, "변경사항이 없습니다.", Toast.LENGTH_SHORT).show()
 
-                isEditMode = !isEditMode
+                    if (keyboardShown(binding.editTextContent.rootView))
+                        MainActivity.hideKeyboard(this, binding.editTextContent)
+
+                    isEditMode = !isEditMode
+                } else
+                    getFocus()
             }
             R.id.menu_alarm -> {
                 if (note.alarmTime == null)
@@ -350,12 +374,13 @@ class EditActivity: AppCompatActivity() {
 
     private fun setText(note: Note) {
         binding.toolbar.title = note.title
+        binding.editTextContent.text.clear()
         binding.editTextContent.setText(note.content)
-        binding.editTextContent.isEnabled = false
         setTimeText(note)
     }
 
     private fun startAlarmFragment(note: Note) {
+        MainActivity.hideKeyboard(binding.editTextContent.context, binding.editTextContent)
         alarmFragment.isFromEditFragment = false
         alarmFragment.setNote(note)
         fragmentManager.beginTransaction()
@@ -366,6 +391,7 @@ class EditActivity: AppCompatActivity() {
     }
 
     private fun startPhotoFragment() {
+        MainActivity.hideKeyboard(binding.editTextContent.context, binding.editTextContent)
         val photoFragment = PhotoFragment()
         photoFragment.setParameters(this, note.uri!!)
         fragmentManager.beginTransaction()
@@ -443,7 +469,7 @@ class EditActivity: AppCompatActivity() {
         )
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val importance = NotificationManager.IMPORTANCE_LOW
+            val importance = NotificationManager.IMPORTANCE_HIGH
             val channel = NotificationChannel(MoreOptionsDialogFragment.CHANNEL_ID, MoreOptionsDialogFragment.CHANNEL_NAME, importance)
 
             builder.setSmallIcon(R.drawable.ic_cat_00_orange_32dp)
@@ -488,14 +514,16 @@ class EditActivity: AppCompatActivity() {
     }
 
     private fun getFocus() {
+        isEditMode = true
         modeIcon.setIcon(R.drawable.ic_done_white_24dp)
-
-        binding.focusBlock.visibility = View.GONE
-        binding.editTextContent.isEnabled = true
+        binding.editTextContent.isFocusable = true
+        binding.editTextContent.isFocusableInTouchMode = true
         binding.editTextContent.requestFocus()
-        binding.editTextContent.setSelection(binding.editTextContent.text.length)
+        showToast("노트를 수정하세요.")
 
-        MainActivity.showKeyboard(this, binding.editTextContent)
+        if (!keyboardShown(binding.editTextContent.rootView)) {
+            MainActivity.showKeyboard(binding.editTextContent.context, binding.editTextContent)
+        }
     }
 
     private fun isContentChanged() = originContent != binding.editTextContent.text.toString()
@@ -582,7 +610,6 @@ class EditActivity: AppCompatActivity() {
         // Set color
         binding.toolbar.setBackgroundColor(toolbarColor)
         binding.textViewTime.setBackgroundColor(inlayColor)
-        binding.editTextContainer.setBackgroundColor(getColor(R.color.backgroundColorBase))
         binding.editTextContent.setBackgroundColor(inlayColor)
         binding.viewLock.setBackgroundColor(backgroundColor)
 

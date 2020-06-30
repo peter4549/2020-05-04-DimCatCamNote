@@ -57,6 +57,7 @@
             android:gravity="top"
             android:padding="8dp"
             android:background="@color/defaultColorInlay"
+            android:lineSpacingExtra="4dp"
             android:hint="여기에 노트를 작성해주세요."
             android:textColor="@color/defaultTextColor"
             android:textColorHint="@color/defaultTextColorHint"

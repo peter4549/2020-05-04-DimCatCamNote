@@ -88,7 +88,7 @@ class AddToCalendarDialogFragment(private val note: Note) : DialogFragment() {
             DatePickerDialog.OnDateSetListener { _: DatePicker?, year: Int,
                                                  month: Int, dayOfMonth: Int ->
                 setButtonText(setDateButton,
-                    String.format(dateToText(year, month + 1, dayOfMonth)))
+                    String.format(dateToText(year, month, dayOfMonth)))
                 setTime(year, month, dayOfMonth)
             },
             calendar[Calendar.YEAR],
@@ -103,7 +103,6 @@ class AddToCalendarDialogFragment(private val note: Note) : DialogFragment() {
 
     private fun setTime(year: Int, month: Int, dayOfMonth: Int,
                         hourOfDay: Int = 8, minute: Int = 0) {
-
         this.year = year
         this.month = month
         this.dayOfMonth = dayOfMonth

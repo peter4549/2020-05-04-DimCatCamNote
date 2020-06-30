@@ -31,6 +31,9 @@
     <color name="icFocused">#DDFFFFFF</color>
     <color name="icPressed">#AAFFFFFF</color>
 
+    <color name="colorBlueGrey">#eceff1</color>
+    <color name="colorLightGrey">#fafafa</color>
+
     <!-- Underlay Button -->
     <color name="colorUnderlayButtonDelete">#ef5350</color>
     <color name="colorUnderlayButtonDone">#90caf9</color>
@@ -52,7 +55,7 @@
     <color name="colorMoreOptionsMenuItemIcon">#ce93d8</color>
 
     <!-- Calendar -->
-    <color name="colorDivider">#e5e5e5</color>
+    <color name="colorDivider">#CCe5e5e5</color>
     <color name="backgroundColorDayOfWeek">#ab47bc</color>
     <color name="colorCalenderHeaderContent">#ab47bc</color>
     <color name="backgroundColorCalendar">#f9fbe7</color>
@@ -137,5 +140,8 @@
 
     <!-- Progress bar -->
     <color name="colorBlueGrey263238AlphaB3">#B3263238</color>
+
+    <!-- Calendar background color -->
+    <color name="colorWhiteAlpha">#99FFFFFF</color>
 
 </resources>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/white">
+
+    <TextView
+        android:id="@+id/text_view_manual"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:text="@string/manual"
+        android:textColor="@color/defaultTextColor"
+        android:textStyle="bold"
+        android:textSize="@dimen/text_size_middle"
+        android:lineSpacingExtra="6dp"
+        android:padding="8dp"
+        android:scrollbars="vertical"
+        android:overScrollMode="always"
+        android:clickable="true"
+        android:focusable="true"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

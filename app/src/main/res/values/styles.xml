@@ -118,6 +118,35 @@
         <item name="android:dropDownSelector">@null</item>
     </style>
 
+    <style name="ConfigureFragmentSubtitleStyle">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">40dp</item>
+        <item name="android:layout_marginBottom">1dp</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:paddingEnd">8dp</item>
+        <item name="android:paddingStart">8dp</item>
+        <item name="android:textSize">@dimen/text_size_middle_large</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
+        <item name="android:background">@color/colorLightGrey</item>
+    </style>
+
+    <style name="ConfigureFragmentItemStyle">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">40dp</item>
+        <item name="android:layout_marginBottom">1dp</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:paddingEnd">8dp</item>
+        <item name="android:paddingStart">8dp</item>
+        <item name="android:textSize">@dimen/text_size_middle_large</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
+        <item name="android:background">@android:color/white</item>
+        <item name="android:foreground">?attr/selectableItemBackground</item>
+    </style>
+
     <!-- Font -->
     <style name="FontNanumGothic">
         <item name="android:fontFamily">@font/nanum_gothic_font_family</item>

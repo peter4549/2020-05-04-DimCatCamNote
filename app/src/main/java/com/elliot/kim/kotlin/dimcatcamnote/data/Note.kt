@@ -3,6 +3,8 @@ package com.elliot.kim.kotlin.dimcatcamnote.data
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.elliot.kim.kotlin.dimcatcamnote.DEFAULT_FOLDER_ID
+import com.elliot.kim.kotlin.dimcatcamnote.PATTERN_UP_TO_MINUTES
+import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity
 
 @Entity
 data class Note(var title: String = "", var creationTime: Long, var uri: String?) {
@@ -18,12 +20,10 @@ data class Note(var title: String = "", var creationTime: Long, var uri: String?
     var password: String? = null
     var appWidgetIds: Array<Int> = arrayOf() // Dummy
 
-    fun toSharedString(): String =
-        """
+    fun toSharedString(): String {
+        return """
         $title
-        최초 작성일: $creationTime
-        ${if (editTime == null) "" else "최근 수정일: $editTime"}
-        내용:
         $content
         """.trimIndent()
+    }
 }

@@ -36,44 +36,35 @@
             android:gravity="center_vertical"
             android:textSize="@dimen/text_size_small_middle"/>
 
-        <RelativeLayout
-            android:id="@+id/edit_text_container"
+        <ImageView
+            android:id="@+id/image_view"
+            android:layout_width="match_parent"
+            android:layout_height="224dp"
+            android:layout_below="@id/text_view_time"
+            android:layout_margin="2dp"
+            android:background="@android:color/white"
+            android:clickable="true"
+            android:focusable="true"
+            android:visibility="visible"/>
+
+        <EditText
+            android:id="@+id/edit_text_content"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_below="@id/text_view_time"
-            android:clickable="true"
-            android:focusable="true">
-
-            <ImageView
-                android:id="@+id/image_view"
-                android:layout_width="match_parent"
-                android:layout_height="224dp"
-                android:layout_margin="2dp"
-                android:clickable="true"
-                android:focusable="true"/>
-
-            <EditText
-                android:id="@+id/edit_text_content"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_below="@id/image_view"
-                android:layout_marginTop="2dp"
-                android:background="@color/defaultColorInlay"
-                android:padding="8dp"
-                android:gravity="top"
-                android:autofillHints=""
-                android:scrollbars="vertical"
-                android:textColor="@color/defaultTextColor"
-                android:textColorHint="@color/defaultTextColorHint"/>
-
-            <View
-                android:id="@+id/focus_block"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_below="@id/image_view"
-                android:focusable="true"/>
-
-        </RelativeLayout>
+            android:layout_below="@id/image_view"
+            android:layout_marginTop="2dp"
+            android:padding="8dp"
+            android:gravity="top"
+            android:autofillHints=""
+            android:lineSpacingExtra="4dp"
+            android:scrollbars="vertical"
+            android:overScrollMode="always"
+            android:textColor="@color/defaultTextColor"
+            android:textColorHint="@color/defaultTextColorHint"
+            android:focusable="false"
+            android:focusableInTouchMode="false"
+            android:enabled="true"
+            android:inputType="textMultiLine" />
 
         <View
             android:id="@+id/view_lock"
@@ -82,7 +73,7 @@
             android:background="@color/defaultColorBackground"
             android:visibility="visible"
             android:clickable="true"
-            android:focusable="true"/>
+            android:focusable="true" />
 
     </RelativeLayout>
 

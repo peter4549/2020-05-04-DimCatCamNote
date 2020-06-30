@@ -35,33 +35,33 @@
             android:textColor="@color/defaultTextColor" />
 
 
-            <ImageView
-                android:id="@+id/imageView"
-                android:layout_width="match_parent"
-                android:layout_height="224dp"
-                android:layout_below="@id/text_view_time"
-                android:layout_margin="2dp"
-                android:clickable="true"
-                android:focusable="true"
-                android:visibility="gone"/>
+        <ImageView
+            android:id="@+id/imageView"
+            android:layout_width="match_parent"
+            android:layout_height="224dp"
+            android:layout_below="@id/text_view_time"
+            android:layout_margin="2dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:visibility="gone"/>
 
-            <EditText
-                android:id="@+id/edit_text_content"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_below="@id/imageView"
-                android:layout_marginTop="2dp"
-                android:padding="8dp"
-                android:gravity="top"
-                android:autofillHints=""
-                android:lineSpacingExtra="4dp"
-                android:scrollbars="vertical"
-                android:overScrollMode="always"
-                android:textColor="@color/defaultTextColor"
-                android:textColorHint="@color/defaultTextColorHint"
-                android:focusable="false"
-                android:focusableInTouchMode="false"
-                android:inputType="textMultiLine" />
+        <EditText
+            android:id="@+id/edit_text_content"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_below="@id/imageView"
+            android:layout_marginTop="2dp"
+            android:padding="8dp"
+            android:gravity="top"
+            android:autofillHints=""
+            android:lineSpacingExtra="4dp"
+            android:scrollbars="vertical"
+            android:overScrollMode="always"
+            android:textColor="@color/defaultTextColor"
+            android:textColorHint="@color/defaultTextColorHint"
+            android:focusable="false"
+            android:focusableInTouchMode="false"
+            android:inputType="textMultiLine" />
 
     </RelativeLayout>
 

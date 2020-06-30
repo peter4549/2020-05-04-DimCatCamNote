@@ -47,7 +47,6 @@ import com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments.DialogFragments
 import com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments.MoreOptionsDialogFragment
 import com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments.SetPasswordDialogFragment
 import com.elliot.kim.kotlin.dimcatcamnote.view_model.MainViewModel
-import kotlinx.coroutines.delay
 
 class EditFragment(private val activity: MainActivity) : Fragment() {
 
@@ -99,7 +98,7 @@ class EditFragment(private val activity: MainActivity) : Fragment() {
         binding.textViewTime.adjustDialogItemTextSize(MainActivity.fontId, true)
         binding.editTextContent.adjustDialogInputTextSize(MainActivity.fontId, 4f)
 
-        binding.toolbar.setTitleTextAppearance(activity, MainActivity.fontStyleId)
+        binding.toolbar.setTitleTextAppearance(requireContext(), MainActivity.fontStyleId)
         binding.textViewTime.typeface = MainActivity.font
         binding.editTextContent.typeface = MainActivity.font
 
@@ -358,6 +357,7 @@ class EditFragment(private val activity: MainActivity) : Fragment() {
     }
 
     private fun startAlarmFragment(note: Note) {
+        MainActivity.hideKeyboard(binding.editTextContent.context, binding.editTextContent)
         activity.alarmFragment.isFromEditFragment = true
         activity.alarmFragment.setNote(note)
         activity.fragmentManager.beginTransaction()
@@ -368,6 +368,7 @@ class EditFragment(private val activity: MainActivity) : Fragment() {
     }
 
     private fun startPhotoFragment() {
+        MainActivity.hideKeyboard(binding.editTextContent.context, binding.editTextContent)
         val photoFragment = PhotoFragment()
         photoFragment.setParameters(this, note.uri!!)
         activity.fragmentManager.beginTransaction()
@@ -403,7 +404,7 @@ class EditFragment(private val activity: MainActivity) : Fragment() {
         )
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val importance = NotificationManager.IMPORTANCE_LOW
+            val importance = NotificationManager.IMPORTANCE_HIGH
             val channel = NotificationChannel(MoreOptionsDialogFragment.CHANNEL_ID, MoreOptionsDialogFragment.CHANNEL_NAME, importance)
 
             builder.setSmallIcon(R.drawable.ic_cat_00_orange_32dp)

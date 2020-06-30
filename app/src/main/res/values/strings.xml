@@ -62,6 +62,43 @@
     <string name="no_attachment_message">삭제된 노트입니다.</string>
     <string name="request_title_message">제목을 입력해주세요.</string>
     <string name="cancel">취소</string>
-    <string name="close_button">Close button</string>>
+    <string name="close_button">Close button</string>
+    <string name="add_note">노트 추가</string>
+
+    <!-- Licenses -->
+    <string name="camera_view_license">https://github.com/natario1/CameraView/blob/master/LICENSE</string>
+    <string name="flaticon_license">https://file000.flaticon.com/downloads/license/license.pdf</string>
+    <string name="nanum_font_license">https://help.naver.com/support/contents/contents.help?serviceNo=1074&amp;categoryNo=3497</string>
+    <string name="reko_font_license">http://recipekorea.com/bbs/board.php?bo_table=ld_0308&amp;wr_id=2479</string>
+    <string name="bm_font_license">https://www.woowahan.com/#/fonts</string>
+
+    <!-- Manual -->
+    <string name="manual">
+        1. 노트 생성\n
+        화면 우측 하단의 + 버튼을 클릭하시거나 툴바 우측 상단의 옵션에서 노트추가 항목을 선택하시면 노트를 작성하는 화면으로 이동합니다.\n
+        제목과 내용을 입력하실 수 있으며, 하단의 네비게이션 바의 카메라 모양을 선택하시면 사진을 촬영하여 추가할 수 있습니다.\n
+        우측의 마이크 모양을 클릭하시면 음성인식을 이용하여 노트를 작성하실 수 있습니다.\n\n
+
+        2. 디자인 변경\n
+        메인 화면 좌측 상단의 햄버거 버튼을 클릭하시면 추가 메뉴를 확인하실 수 있습니다.\n
+        그 중 환경설정 탭에 들어가셔서 색상 및 폰트를 변경하실 수 있습니다.\n\n
+
+        3. 폴더 생성\n
+        메인화면 좌측 상단의 햄버거 버튼을 클릭하시면 폴더 추가 항목을 확인하실 수 있습니다.\n
+        폴더에 비밀번호를 설정하여 관리할 수 있습니다.\n\n
+
+        4. 알림 설정\n
+        작성된 노트에 대해 메인 화면에서 스와이프 동작으로 시계 모양 버튼을 클릭하시면 설정할 수 있습니다.\n\n
+
+        5. 캘린더\n
+        메인 화면 좌측 상단의 햄버거 버튼을 클릭하시면 캘린더를 확인하실 수 있으며, 원하는 날짜에 노트를 추가하실 수 있습니다.\n
+        캘린더에서 등록한 노트는 자동 알림 설정됩니다.\n
+        또한 본 앱이 생성한 캘린더 이외에 기기에서 제공하는 캘린더에 내용을 등록할 수 있습니다.\n\n
+
+        6. 앱 위젯\n
+        본 어플리케이션은 앱 위젯 기능을 제공합니다.\n
+        다른 앱의 위젯 등록 방식과 같으며, 환경설정에서 디자인을 선택할 수 있습니다.\n\n
+
+    </string>
 
 </resources>

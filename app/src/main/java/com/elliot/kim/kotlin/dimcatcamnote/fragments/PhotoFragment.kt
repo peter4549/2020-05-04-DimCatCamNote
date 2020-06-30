@@ -49,6 +49,8 @@ class PhotoFragment : Fragment() {
             (activity as MainActivity).setCurrentFragment(CurrentFragment.PHOTO_FRAGMENT)
         else if (activity is SingleNoteConfigureActivity)
             (activity as SingleNoteConfigureActivity).setCurrentFragment(CurrentFragment.PHOTO_FRAGMENT)
+        else if (activity is EditActivity)
+            (activity as EditActivity).currentFragment = CurrentFragment.PHOTO_FRAGMENT
     }
 
     override fun onDestroyView() {
@@ -66,7 +68,7 @@ class PhotoFragment : Fragment() {
             }
             is EditActivity -> {
                 // PhotoFragment can also be executed from a EditActivity.
-                // Blank
+                (activity as EditActivity).currentFragment = null
             }
         }
         super.onDestroyView()

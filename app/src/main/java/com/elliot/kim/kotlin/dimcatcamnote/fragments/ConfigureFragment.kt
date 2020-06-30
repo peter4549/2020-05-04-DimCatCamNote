@@ -25,12 +25,13 @@ import com.elliot.kim.kotlin.dimcatcamnote.databinding.FragmentConfigureBinding
 import com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments.DialogFragments
 
 
-class ConfigureFragment : Fragment() {
+class ConfigureFragment : Fragment(), VersionAndLicenseFragment.OnFragmentFinished {
 
     private lateinit var binding: FragmentConfigureBinding
     private var hexStringOpacity = "80"  // 50%
     private var seekBarProgress = DEFAULT_SEEK_BAR_PROGRESS
     lateinit var progressDialogHandler: Handler
+    private var startLicenseFragment = false
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -74,6 +75,14 @@ class ConfigureFragment : Fragment() {
         binding.textViewSetAppWidgetColor.setOnClickListener {
             (activity as MainActivity).showDialogFragment(DialogFragments.SET_APP_WIDGET_COLOR)
         }
+
+        binding.textViewVersionLicense.setOnClickListener {
+            startLicenseFragment = true
+            val versionAndLicenseFragment = VersionAndLicenseFragment()
+            versionAndLicenseFragment.setConfigureFragment(this)
+            (activity as MainActivity).startFragment(versionAndLicenseFragment, R.id.fragment_configure_container)
+        }
+
         @Suppress("DEPRECATION")
         binding.seekBar.thumb.setColorFilter(requireContext().getColor(R.color.colorStatusIcon), PorterDuff.Mode.SRC_ATOP)
         binding.seekBar.progressTintList = ColorStateList.valueOf(requireContext().getColor(R.color.colorStatusIcon))
@@ -130,7 +139,8 @@ class ConfigureFragment : Fragment() {
         editor.apply()
 
         MainActivity.currentFragment = null
-        (requireActivity() as MainActivity).showFloatingActionButton()
+        if (!startLicenseFragment)
+            (requireActivity() as MainActivity).showFloatingActionButton()
     }
 
     override fun onCreateAnimation(transit: Int, enter: Boolean, nextAnim: Int): Animation? {
@@ -331,6 +341,11 @@ class ConfigureFragment : Fragment() {
     companion object {
         const val STOP_PROGRESS_DIALOG = 0
         const val START_PROGRESS_DIALOG = 1
+    }
+
+    override fun setCurrentFragment() {
+        MainActivity.currentFragment = CurrentFragment.CONFIGURE_FRAGMENT
+        startLicenseFragment = false
     }
 }
 

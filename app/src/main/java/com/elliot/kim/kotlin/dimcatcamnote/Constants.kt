@@ -41,8 +41,6 @@ const val DEFAULT_VALUE_NOTE_ID = -1
 const val DEFAULT_FOLDER_ID = 0
 const val DEFAULT_FOLDER_NAME = "모든 노트"
 
-const val DEFAULT_FONT_ID = R.font.nanum_gothic_font_family
-
 const val DEFAULT_HEX_OPACITY = 80
 const val DEFAULT_SEEK_BAR_PROGRESS = 50
 
@@ -67,8 +65,10 @@ enum class CurrentFragment {
     CAMERA_FRAGMENT,
     CONFIGURE_FRAGMENT,
     EDIT_FRAGMENT,
+    LICENSE_FRAGMENT,
     PHOTO_FRAGMENT,
-    WRITE_FRAGMENT
+    WRITE_FRAGMENT,
+    MANUAL_FRAGMENT
 }
 
 enum class NoteItem {

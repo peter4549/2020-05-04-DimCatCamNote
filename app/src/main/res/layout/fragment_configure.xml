@@ -8,7 +8,7 @@
         android:id="@+id/fragment_configure_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@android:color/white"
+        android:background="@color/colorBlueGrey"
         tools:context=".fragments.ConfigureFragment">
 
         <androidx.appcompat.widget.Toolbar
@@ -22,7 +22,7 @@
         <TextView
             android:id="@+id/text_view_design_title"
             android:layout_width="match_parent"
-            android:layout_height="36dp"
+            android:layout_height="42dp"
             android:layout_below="@id/toolbar"
             android:layout_marginTop="2dp"
             android:layout_marginBottom="4dp"
@@ -35,73 +35,44 @@
 
         <TextView
             android:id="@+id/text_view_set_theme_color"
-            android:layout_width="match_parent"
-            android:layout_height="36dp"
+            style="@style/ConfigureFragmentItemStyle"
             android:layout_below="@id/text_view_design_title"
-            android:gravity="center_vertical"
-            android:paddingEnd="8dp"
-            android:paddingStart="8dp"
-            android:text="테마 색상 설정"
-            android:textSize="@dimen/text_size_middle"
-            android:textStyle="bold"
-            android:clickable="true"
-            android:focusable="true"/>
+            android:text="테마 색상 설정" />
 
         <TextView
             android:id="@+id/text_view_set_note_color"
-            android:layout_width="match_parent"
-            android:layout_height="36dp"
+            style="@style/ConfigureFragmentItemStyle"
             android:layout_below="@id/text_view_set_theme_color"
-            android:gravity="center_vertical"
-            android:paddingEnd="8dp"
-            android:paddingStart="8dp"
-            android:text="노트 색상 설정"
-            android:textSize="@dimen/text_size_middle"
-            android:textStyle="bold"
-            android:clickable="true"
-            android:focusable="true"/>
+            android:text="노트 색상 설정" />
 
         <TextView
             android:id="@+id/text_view_set_font"
-            android:layout_width="match_parent"
-            android:layout_height="36dp"
+            style="@style/ConfigureFragmentItemStyle"
             android:layout_below="@id/text_view_set_note_color"
-            android:gravity="center_vertical"
-            android:paddingEnd="8dp"
-            android:paddingStart="8dp"
-            android:text="폰트 설정"
-            android:textSize="@dimen/text_size_middle"
-            android:textStyle="bold"
-            android:clickable="true"
-            android:focusable="true"/>
+            android:text="폰트 설정" />
 
         <TextView
             android:id="@+id/text_view_set_inlay_color"
-            android:layout_width="match_parent"
-            android:layout_height="36dp"
+            style="@style/ConfigureFragmentItemStyle"
             android:layout_below="@id/text_view_set_font"
-            android:gravity="center_vertical"
-            android:paddingEnd="8dp"
-            android:paddingStart="8dp"
-            android:text="속지 색상 설정"
-            android:textSize="@dimen/text_size_middle"
-            android:textStyle="bold"
-            android:clickable="true"
-            android:focusable="true"/>
+            android:text="속지 색상 설정" />
 
         <TextView
             android:id="@+id/text_view_set_app_widget_color"
             android:layout_width="match_parent"
-            android:layout_height="36dp"
+            android:layout_height="40dp"
             android:layout_below="@id/text_view_set_inlay_color"
+            android:layout_marginBottom="2dp"
             android:gravity="center_vertical"
             android:paddingEnd="8dp"
             android:paddingStart="8dp"
             android:text="앱 위젯 색상 설정"
-            android:textSize="@dimen/text_size_middle"
+            android:textSize="@dimen/text_size_middle_large"
             android:textStyle="bold"
             android:clickable="true"
-            android:focusable="true"/>
+            android:focusable="true"
+            android:background="@android:color/white"
+            android:foreground="?attr/selectableItemBackground"/>
 
 
         <LinearLayout
@@ -109,23 +80,25 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/text_view_set_app_widget_color"
+            android:layout_marginBottom="1dp"
             android:orientation="vertical"
+            android:background="@android:color/white"
             android:clickable="true"
             android:focusable="true">
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="40dp"
                 android:orientation="horizontal">
 
                 <TextView
                     android:layout_width="wrap_content"
-                    android:layout_height="36dp"
+                    android:layout_height="40dp"
                     android:gravity="center_vertical"
                     android:paddingEnd="8dp"
                     android:paddingStart="8dp"
                     android:text="앱 위젯 불투명도 설정"
-                    android:textSize="@dimen/text_size_middle"
+                    android:textSize="@dimen/text_size_middle_large"
                     android:textStyle="bold"/>
 
                 <TextView
@@ -157,7 +130,7 @@
         <TextView
             android:id="@+id/text_view_data_title"
             android:layout_width="match_parent"
-            android:layout_height="36dp"
+            android:layout_height="42dp"
             android:layout_below="@id/set_app_widget_opacity_container"
             android:layout_marginTop="2dp"
             android:layout_marginBottom="4dp"
@@ -170,15 +143,29 @@
 
         <TextView
             android:id="@+id/text_view_clear"
-            android:layout_width="match_parent"
-            android:layout_height="36dp"
+            style="@style/ConfigureFragmentItemStyle"
             android:layout_below="@id/text_view_data_title"
+            android:text="노트 전체 삭제" />
+
+        <TextView
+            android:id="@+id/text_view_app_info"
+            android:layout_width="match_parent"
+            android:layout_height="42dp"
+            android:layout_below="@id/text_view_clear"
+            android:layout_marginTop="2dp"
+            android:layout_marginBottom="4dp"
             android:gravity="center_vertical"
-            android:paddingEnd="8dp"
-            android:paddingStart="8dp"
-            android:text="노트 전체 삭제"
-            android:textSize="@dimen/text_size_middle"
-            android:textStyle="bold"/>
+            android:paddingEnd="12dp"
+            android:paddingStart="12dp"
+            android:text="앱 정보"
+            android:textSize="@dimen/text_size_large"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/text_view_version_license"
+            style="@style/ConfigureFragmentItemStyle"
+            android:layout_below="@id/text_view_app_info"
+            android:text="버전 및 라이센스" />
 
         <LinearLayout
             android:id="@+id/progress_container"

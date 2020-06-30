@@ -82,6 +82,9 @@ class FolderAdapter(private val context: Context?):
                     else lock()
                 }
                 MenuItemId.REMOVE.id -> {
+                    if (selectedFolder!!.noteIdSet.isEmpty())
+                        removeSelectedFolder(2)  // argument 2 means no work for notes.
+                    else
                     (context as MainActivity)
                         .showDialogFragment(DialogFragments.CONFIRM_DELETE_FOLDER)
                 }

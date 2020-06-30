@@ -8,16 +8,15 @@ import android.view.ViewGroup
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.widget.ImageView
-import com.elliot.kim.kotlin.dimcatcamnote.LayoutManagerWrapper
-import com.elliot.kim.kotlin.dimcatcamnote.PATTERN_YYYY_MM_dd
+import com.elliot.kim.kotlin.dimcatcamnote.*
 
-import com.elliot.kim.kotlin.dimcatcamnote.R
 import com.elliot.kim.kotlin.dimcatcamnote.activities.MainActivity
 import com.elliot.kim.kotlin.dimcatcamnote.adapters.AlarmedNoteAdapter
 import com.elliot.kim.kotlin.dimcatcamnote.data.Note
 import com.elliot.kim.kotlin.dimcatcamnote.databinding.FragmentAlarmedNoteSelectionBinding
 import java.text.SimpleDateFormat
 import java.util.*
+import java.util.jar.Manifest
 import kotlin.collections.ArrayList
 
 class AlarmedNoteSelectionFragment : Fragment() {
@@ -53,6 +52,14 @@ class AlarmedNoteSelectionFragment : Fragment() {
 
         binding = FragmentAlarmedNoteSelectionBinding.bind(view)
         binding.textViewDate.text =  MainActivity.longTimeToString(currentDate, PATTERN_YYYY_MM_dd)
+
+        binding.textViewDate.setBackgroundColor(MainActivity.backgroundColor)
+        binding.textViewAdd.setBackgroundColor(MainActivity.toolbarColor)
+
+        binding.textViewDate.adjustDialogTitleTextSize(MainActivity.fontId)
+        binding.textViewAdd.adjustDialogItemTextSize(MainActivity.fontId)
+        binding.textViewDate.typeface = MainActivity.font
+        binding.textViewAdd.typeface = MainActivity.font
 
         val year = SimpleDateFormat("yyyy",
             Locale.getDefault()).format(currentDate).toInt()
