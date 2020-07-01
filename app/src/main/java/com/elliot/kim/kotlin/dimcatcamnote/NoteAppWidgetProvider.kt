@@ -71,8 +71,11 @@ class NoteAppWidgetProvider: AppWidgetProvider() {
                     preferences.getBoolean(KEY_APP_WIDGET_NOTE_IS_DONE + appWidgetId, false)
                 val isLocked =
                     preferences.getBoolean(KEY_APP_WIDGET_NOTE_IS_LOCKED + appWidgetId, false)
+                /*
                 val password =
                     preferences.getString(KEY_APP_WIDGET_NOTE_PASSWORD + appWidgetId, "")
+
+                 */
 
                 // Create an Intent to launch EditActivity.
                 val intent = Intent(context, EditActivity::class.java)

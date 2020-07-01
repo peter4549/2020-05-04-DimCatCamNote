@@ -98,6 +98,9 @@ class EditFragment(private val activity: MainActivity) : Fragment() {
         binding.textViewTime.adjustDialogItemTextSize(MainActivity.fontId, true)
         binding.editTextContent.adjustDialogInputTextSize(MainActivity.fontId, 4f)
 
+        binding.textViewTime.setTextColor(MainActivity.fontColor)
+        binding.editTextContent.setTextColor(MainActivity.fontColor)
+
         binding.toolbar.setTitleTextAppearance(requireContext(), MainActivity.fontStyleId)
         binding.textViewTime.typeface = MainActivity.font
         binding.editTextContent.typeface = MainActivity.font

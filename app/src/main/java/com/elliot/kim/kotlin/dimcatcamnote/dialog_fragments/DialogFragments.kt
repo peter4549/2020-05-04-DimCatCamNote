@@ -13,5 +13,7 @@ enum class DialogFragments {
     SET_FONT,
     SET_INLAY_COLOR,
     SET_NOTE_COLOR,
-    SET_THEME_COLOR
+    SET_THEME_COLOR,
+    SET_FONT_COLOR,
+    SET_YEAR_MONTH
 }

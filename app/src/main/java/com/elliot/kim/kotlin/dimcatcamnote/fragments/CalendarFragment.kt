@@ -16,6 +16,11 @@ import com.elliot.kim.kotlin.dimcatcamnote.adapters.CalendarAdapter
 import com.elliot.kim.kotlin.dimcatcamnote.adjustDialogTitleTextSize
 import com.elliot.kim.kotlin.dimcatcamnote.data.Note
 import com.elliot.kim.kotlin.dimcatcamnote.databinding.FragmentCalendarBinding
+import com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments.DialogFragments
+import com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments.SetYearMonthDialogFragment
+import com.google.android.gms.ads.AdListener
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.MobileAds
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -29,11 +34,16 @@ class CalendarFragment : Fragment() {
     private var currentMonth = 0
     private var todayDate = 0
     private var currentYearMonthText = ""
-    private var noteIdAlarmDatePairs = arrayListOf<Pair<Int, Long>>()
+    // private var noteIdAlarmDatePairs = arrayListOf<Pair<Int, Long>>()
     lateinit var calendarAdapter: CalendarAdapter
 
     fun setAlarmedNotes(alarmedNotes: MutableList<Note>) {
         this.alarmedNotes = alarmedNotes
+    }
+
+    fun setCurrentYearMonth(year: Int, month: Int) {
+        currentYear = year
+        currentMonth = month
     }
 
     override fun onCreateView(
@@ -63,6 +73,41 @@ class CalendarFragment : Fragment() {
         calendar.time = dateFormat.parse("${currentYear}년 ${stringCurrentMonth}월 01일")!!
         calendarAdapter =
             CalendarAdapter(activity, R.layout.calendar_view_row, calendar, alarmedNotes, todayDate)
+
+        // Ad
+        MobileAds.initialize(requireContext())
+        binding.adView.loadAd(AdRequest.Builder().build())
+        val adListener = object : AdListener() {
+            override fun onAdImpression() {
+                super.onAdImpression()
+            }
+
+            override fun onAdLeftApplication() {
+                super.onAdLeftApplication()
+            }
+
+            override fun onAdClicked() {
+                super.onAdClicked()
+            }
+
+            override fun onAdFailedToLoad(p0: Int) {
+                super.onAdFailedToLoad(p0)
+            }
+
+            override fun onAdClosed() {
+                super.onAdClosed()
+            }
+
+            override fun onAdOpened() {
+                super.onAdOpened()
+            }
+
+            override fun onAdLoaded() {
+                super.onAdLoaded()
+            }
+        }
+
+        binding.adView.adListener = adListener
 
         return inflater.inflate(R.layout.fragment_calendar, container, false)
     }
@@ -95,6 +140,13 @@ class CalendarFragment : Fragment() {
         }
 
         val calendar = Calendar.getInstance()
+
+        binding.calendarHeader.setOnClickListener {
+            // activity.showDialogFragment(DialogFragments.SET_YEAR_MONTH)
+            val setYearMonthDialogFragment = SetYearMonthDialogFragment()
+            setYearMonthDialogFragment.setCurrentYearMonth(currentYear, currentMonth)
+            setYearMonthDialogFragment.show(activity.fragmentManager, tag)
+        }
 
         binding.imageButtonNext.setOnClickListener {
             if (currentMonth > 10) {
@@ -179,7 +231,7 @@ class CalendarFragment : Fragment() {
         calendarAdapter.addAlarmedNote(note)
     }
 
-    private fun setYearMonthText(text: String) {
+    fun setYearMonthText(text: String) {
         binding.toolbar.title = text
         binding.calendarHeader.text = text
     }

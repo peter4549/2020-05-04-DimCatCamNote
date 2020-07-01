@@ -127,24 +127,26 @@
                 app:layout_constraintHorizontal_bias="0.496"
                 app:layout_constraintStart_toStartOf="parent" />
 
+            <!-- https://stackoverflow.com/questions/30969455/android-changing-floating-action-button-color -->
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recycler_view"
+                android:background="@null"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:layout_marginTop="1dp"
                 android:scrollbars="vertical"
 
-                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintBottom_toTopOf="@+id/ad_view"
                 app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/sort_container" />
+                app:layout_constraintTop_toBottomOf="@+id/sort_container"
+                app:layout_constraintVertical_bias="0.0" />
 
-            <!-- https://stackoverflow.com/questions/30969455/android-changing-floating-action-button-color -->
             <com.google.android.material.floatingactionbutton.FloatingActionButton
                 android:id="@+id/write_floating_action_button"
                 android:layout_width="60dp"
                 android:layout_height="60dp"
-                android:layout_marginBottom="30dp"
+                android:layout_marginBottom="70dp"
                 android:layout_marginEnd="30dp"
                 android:src="@drawable/ic_add_white_48dp"
                 app:layout_constraintBottom_toBottomOf="parent"
@@ -153,6 +155,17 @@
                 app:borderWidth="0dp"
                 app:fabCustomSize="60dp"
                 app:fabSize="auto" />
+
+            <com.google.android.gms.ads.AdView
+                xmlns:ads="http://schemas.android.com/apk/res-auto"
+                android:id="@+id/ad_view"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                ads:adSize="BANNER"
+                ads:adUnitId="@string/banner_ad_unit_id"/>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 

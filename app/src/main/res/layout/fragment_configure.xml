@@ -52,9 +52,15 @@
             android:text="폰트 설정" />
 
         <TextView
-            android:id="@+id/text_view_set_inlay_color"
+            android:id="@+id/text_view_set_font_color"
             style="@style/ConfigureFragmentItemStyle"
             android:layout_below="@id/text_view_set_font"
+            android:text="폰트 색상 설정" />
+
+        <TextView
+            android:id="@+id/text_view_set_inlay_color"
+            style="@style/ConfigureFragmentItemStyle"
+            android:layout_below="@id/text_view_set_font_color"
             android:text="속지 색상 설정" />
 
         <TextView
@@ -122,7 +128,6 @@
                 android:layout_marginEnd="16dp"
                 android:layout_marginStart="16dp"
                 android:max="100"
-                android:min="10"
                 android:progress="10" />
 
         </LinearLayout>

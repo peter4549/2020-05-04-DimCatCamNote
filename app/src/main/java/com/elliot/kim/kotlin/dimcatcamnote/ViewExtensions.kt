@@ -24,17 +24,12 @@ import android.graphics.drawable.Drawable
 import android.os.Build
 import android.util.AttributeSet
 import android.util.TypedValue
-import android.view.DisplayCutout
-import android.view.View
-import android.view.WindowManager
 import android.widget.Button
 import android.widget.EditText
-import android.widget.ImageButton
 import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.LinearLayoutManager
 
 const val DEFAULT_DIALOG_TITLE_TEXT_SIZE = 20.0f
 const val DEFAULT_DIALOG_BUTTON_TEXT_SIZE = 16.0f
@@ -46,6 +41,7 @@ const val NOTE_TITLE_TEXT_SIZE = 16.0f
 const val NOTE_TIME_TEXT_SIZE = 14.0f
 const val NOTE_CONTENT_TEXT_SIZE = 12.0f
 
+/*
 /** Combination of all flags required to put activity into immersive mode */
 const val FLAGS_FULLSCREEN =
     View.SYSTEM_UI_FLAG_LOW_PROFILE or
@@ -54,6 +50,7 @@ const val FLAGS_FULLSCREEN =
             View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or
             View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
             View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+
 
 /** Milliseconds used for UI animations */
 const val ANIMATION_FAST_MILLIS = 50L
@@ -72,7 +69,9 @@ fun ImageButton.simulateClick(delay: Long = ANIMATION_FAST_MILLIS) {
         isPressed = false
     }, delay)
 }
+ */
 
+/*
 /** Pad this view with the insets provided by the device cutout (i.e. notch) */
 @RequiresApi(Build.VERSION_CODES.P)
 fun View.padWithDisplayCutout() {
@@ -93,8 +92,10 @@ fun View.padWithDisplayCutout() {
         insets
     }
 }
+ */
 
 /** Same as [AlertDialog.show] but setting immersive mode in the dialog's window */
+/*
 fun AlertDialog.showImmersive() {
     // Set the dialog to not focusable
     window?.setFlags(
@@ -110,6 +111,7 @@ fun AlertDialog.showImmersive() {
     // Set the dialog to focusable again
     window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE)
 }
+ */
 
 val smallFontFamilies = listOf(R.font.nanum_brush_font_family, R.font.nanum_pen_font_family)
 val middleFontFamilies = listOf(R.font.bmyeonsung_font_family)
@@ -151,7 +153,7 @@ fun TextView.adjustDialogItemTextSize(fontId: Int, smallText: Boolean = false) {
 fun TextView.adjustNoteTextSize(fontId: Int, item: NoteItem) {
     var itemTextSize = NOTE_TITLE_TEXT_SIZE
     when (item) {
-        NoteItem.TIME -> itemTextSize = NOTE_TIME_TEXT_SIZE
+        NoteItem.TIME -> itemTextSize = NOTE_TIME_TEXT_SIZE - 2f
         NoteItem.CONTENT -> itemTextSize = NOTE_CONTENT_TEXT_SIZE
         else -> {}
     }
@@ -185,6 +187,7 @@ fun Button.adjustDialogButtonTextSize(fontId: Int) {
     }
 }
 
+// Use this class for adapter view
 class LayoutManagerWrapper: GridLayoutManager {
     constructor(context: Context, spanCount: Int) : super(context, spanCount)
     constructor(context: Context, spanCount: Int, orientation: Int, reverseLayout: Boolean) :

@@ -46,6 +46,10 @@ class DialogFragmentManager(private val activity: MainActivity,
                 .show(activity.fragmentManager, tag)
             DialogFragments.SET_FONT -> SetFontDialogFragment(toolbar)
                 .show(activity.fragmentManager, tag)
+            DialogFragments.SET_FONT_COLOR -> SetTextColorDialogFragment()
+                .show(activity.fragmentManager, tag)
+            DialogFragments.SET_YEAR_MONTH -> SetYearMonthDialogFragment()
+                .show(activity.fragmentManager, tag)
         }
     }
 }

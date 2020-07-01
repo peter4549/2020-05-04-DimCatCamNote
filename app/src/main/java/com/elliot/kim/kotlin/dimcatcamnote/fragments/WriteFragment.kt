@@ -8,6 +8,7 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Rect
+import android.graphics.Typeface
 import android.graphics.drawable.AnimationDrawable
 import android.media.AudioManager
 import android.net.Uri
@@ -64,6 +65,13 @@ class WriteFragment : Fragment() {
     var isFromAlarmedNoteSelectionFragment = false
     var dateSelectedInCalender = 0L
     var uri: String? = null
+
+    private var toolbarColor = 0
+    private var inlayColor = 0
+    private var fontColor = 0
+    private var fontId = 0
+    private var font: Typeface? = null
+    private var fontStyleId = 0
 
     fun setAlarmedNoteAdapter(alarmedNoteAdapter: AlarmedNoteAdapter) {
         this.alarmedNoteAdapter = alarmedNoteAdapter
@@ -127,22 +135,43 @@ class WriteFragment : Fragment() {
         }
 
         // Apply design
-        binding.toolbar.setBackgroundColor(MainActivity.toolbarColor)
-        binding.bottomNavigationView.setBackgroundColor(MainActivity.toolbarColor)
-        binding.editTextTitle.setBackgroundColor(MainActivity.inlayColor)
-        binding.editTextContent.setBackgroundColor(MainActivity.inlayColor)
-        binding.speechRecognitionContainer.setBackgroundColor(MainActivity.toolbarColor)
+        if (requireActivity() is MainActivity) {
+            toolbarColor = MainActivity.toolbarColor
+            inlayColor = MainActivity.inlayColor
+            fontColor = MainActivity.fontColor
+            fontId = MainActivity.fontId
+            font = MainActivity.font
+            fontStyleId = MainActivity.fontStyleId
+        } else if (requireActivity() is SingleNoteConfigureActivity) {
+            toolbarColor = SingleNoteConfigureActivity.toolbarColor
+            inlayColor = SingleNoteConfigureActivity.inlayColor
+            fontColor = SingleNoteConfigureActivity.fontColor
+            fontId = SingleNoteConfigureActivity.fontId
+            font = SingleNoteConfigureActivity.font
+            fontStyleId = SingleNoteConfigureActivity.fontStyleId
+        }
 
-        binding.editTextTitle.adjustDialogInputTextSize(MainActivity.fontId, 4f)
-        binding.editTextContent.adjustDialogInputTextSize(MainActivity.fontId, 4f)
+        binding.toolbar.setBackgroundColor(toolbarColor)
+        binding.bottomNavigationView.setBackgroundColor(toolbarColor)
+        binding.editTextTitle.setBackgroundColor(inlayColor)
+        binding.editTextContent.setBackgroundColor(inlayColor)
+        binding.speechRecognitionContainer.setBackgroundColor(toolbarColor)
 
-        binding.toolbar.setTitleTextAppearance(activity, MainActivity.fontStyleId)
+        binding.editTextTitle.setTextColor(fontColor)
+        binding.editTextContent.setTextColor(fontColor)
+
+        binding.editTextTitle.adjustDialogInputTextSize(fontId, 4f)
+        binding.editTextContent.adjustDialogInputTextSize(fontId, 4f)
+
+        binding.toolbar.setTitleTextAppearance(activity, fontStyleId)
         binding.toolbar.invalidate()
-        binding.editTextTitle.typeface = MainActivity.font
-        binding.editTextContent.typeface = MainActivity.font
-        binding.textViewSpeechRecognitionFinish.typeface = MainActivity.font
+        binding.editTextTitle.typeface = font
+        binding.editTextContent.typeface = font
+        binding.textViewSpeechRecognitionFinish.typeface = font
 
-        binding.imageView.setOnClickListener { startPhotoFragment() }
+        binding.imageView.setOnClickListener {
+            startPhotoFragment()
+        }
 
         binding.bottomNavigationView.setOnNavigationItemSelectedListener {
             when (it.itemId) {
@@ -470,22 +499,22 @@ class WriteFragment : Fragment() {
         if (alertTitleId > 0) {
             val titleTextView = dialog.findViewById<TextView>(alertTitleId)!!
 
-            titleTextView.setTextColor(MainActivity.toolbarColor)
-            okButton.setTextColor(MainActivity.toolbarColor)
-            cancelButton.setTextColor(MainActivity.toolbarColor)
-            keepWritingButton.setTextColor(MainActivity.toolbarColor)
+            titleTextView.setTextColor(toolbarColor)
+            okButton.setTextColor(toolbarColor)
+            cancelButton.setTextColor(toolbarColor)
+            keepWritingButton.setTextColor(toolbarColor)
 
-            titleTextView.adjustDialogTitleTextSize(MainActivity.fontId)
-            messageTextView.adjustDialogItemTextSize(MainActivity.fontId)
-            okButton.adjustDialogButtonTextSize(MainActivity.fontId)
-            cancelButton.adjustDialogButtonTextSize(MainActivity.fontId)
-            keepWritingButton.adjustDialogButtonTextSize(MainActivity.fontId)
+            titleTextView.adjustDialogTitleTextSize(fontId)
+            messageTextView.adjustDialogItemTextSize(fontId)
+            okButton.adjustDialogButtonTextSize(fontId)
+            cancelButton.adjustDialogButtonTextSize(fontId)
+            keepWritingButton.adjustDialogButtonTextSize(fontId)
 
-            titleTextView.typeface = MainActivity.font
-            messageTextView.typeface = MainActivity.font
-            okButton.typeface = MainActivity.font
-            cancelButton.typeface = MainActivity.font
-            keepWritingButton.typeface = MainActivity.font
+            titleTextView.typeface = font
+            messageTextView.typeface = font
+            okButton.typeface = font
+            cancelButton.typeface = font
+            keepWritingButton.typeface = font
         }
     }
 
@@ -508,19 +537,19 @@ class WriteFragment : Fragment() {
         if (alertTitleId > 0) {
             val titleTextView = dialog.findViewById<TextView>(alertTitleId)!!
 
-            titleTextView.setTextColor(MainActivity.toolbarColor)
-            okButton.setTextColor(MainActivity.toolbarColor)
-            cancelButton.setTextColor(MainActivity.toolbarColor)
+            titleTextView.setTextColor(toolbarColor)
+            okButton.setTextColor(toolbarColor)
+            cancelButton.setTextColor(toolbarColor)
 
-            titleTextView.adjustDialogTitleTextSize(MainActivity.fontId)
-            messageTextView.adjustDialogItemTextSize(MainActivity.fontId)
-            okButton.adjustDialogButtonTextSize(MainActivity.fontId)
-            cancelButton.adjustDialogButtonTextSize(MainActivity.fontId)
+            titleTextView.adjustDialogTitleTextSize(fontId)
+            messageTextView.adjustDialogItemTextSize(fontId)
+            okButton.adjustDialogButtonTextSize(fontId)
+            cancelButton.adjustDialogButtonTextSize(fontId)
 
-            titleTextView.typeface = MainActivity.font
-            messageTextView.typeface = MainActivity.font
-            okButton.typeface = MainActivity.font
-            cancelButton.typeface = MainActivity.font
+            titleTextView.typeface = font
+            messageTextView.typeface = font
+            okButton.typeface = font
+            cancelButton.typeface = font
         }
     }
 

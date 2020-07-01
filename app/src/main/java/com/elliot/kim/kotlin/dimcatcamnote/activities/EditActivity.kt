@@ -50,6 +50,15 @@ import com.elliot.kim.kotlin.dimcatcamnote.dialog_fragments.SetPasswordDialogFra
 import com.elliot.kim.kotlin.dimcatcamnote.fragments.AlarmFragment
 import com.elliot.kim.kotlin.dimcatcamnote.fragments.PhotoFragment
 import com.elliot.kim.kotlin.dimcatcamnote.view_model.MainViewModel
+import com.google.android.gms.ads.AdListener
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.MobileAds
+
+// 만약 알림 설정된 노트의 EditActivity 가 실행 중에 알림이 울리고, 그 다음 EditActivity 의 수정을 완료하는 경우
+// 알림이 재등록되며 캘린더 등록 시간으로 빠져버린다.
+// 허나 그럴 일이 얼마나 있을지 모르니. 우선은 보류하였다.
+// 방법은 리시버를 등록하는 것이 정답인듯.
+// 여기서 종료 동작에 설정하면 더 복잡할 듯
 
 class EditActivity: AppCompatActivity() {
 
@@ -191,6 +200,41 @@ class EditActivity: AppCompatActivity() {
                 return gestureDetector.onTouchEvent(event)
             }
         })
+
+        // Ad
+        MobileAds.initialize(this)
+        binding.adView.loadAd(AdRequest.Builder().build())
+        val adListener = object : AdListener() {
+            override fun onAdImpression() {
+                super.onAdImpression()
+            }
+
+            override fun onAdLeftApplication() {
+                super.onAdLeftApplication()
+            }
+
+            override fun onAdClicked() {
+                super.onAdClicked()
+            }
+
+            override fun onAdFailedToLoad(p0: Int) {
+                super.onAdFailedToLoad(p0)
+            }
+
+            override fun onAdClosed() {
+                super.onAdClosed()
+            }
+
+            override fun onAdOpened() {
+                super.onAdOpened()
+            }
+
+            override fun onAdLoaded() {
+                super.onAdLoaded()
+            }
+        }
+
+        binding.adView.adListener = adListener
     }
 
     override fun onStop() {
@@ -299,6 +343,7 @@ class EditActivity: AppCompatActivity() {
 
                     if (keyboardShown(binding.editTextContent.rootView))
                         MainActivity.hideKeyboard(this, binding.editTextContent)
+                    // binding.adView.visibility = View.VISIBLE
 
                     isEditMode = !isEditMode
                 } else
@@ -351,6 +396,7 @@ class EditActivity: AppCompatActivity() {
         toolbarColor = colorPreferences.getInt(KEY_COLOR_TOOLBAR, defaultToolbarColor)
         backgroundColor = colorPreferences.getInt(KEY_COLOR_BACKGROUND, defaultBackgroundColor)
         inlayColor = colorPreferences.getInt(KEY_COLOR_INLAY, defaultInlayColor)
+        fontColor = colorPreferences.getInt(KEY_COLOR_FONT, getColor(R.color.defaultTextColor))
 
         val fontPreferences = getSharedPreferences(PREFERENCES_FONT,
             Context.MODE_PRIVATE)
@@ -521,6 +567,8 @@ class EditActivity: AppCompatActivity() {
         binding.editTextContent.requestFocus()
         showToast("노트를 수정하세요.")
 
+        // binding.adView.visibility = View.GONE
+
         if (!keyboardShown(binding.editTextContent.rootView)) {
             MainActivity.showKeyboard(binding.editTextContent.context, binding.editTextContent)
         }
@@ -613,6 +661,9 @@ class EditActivity: AppCompatActivity() {
         binding.editTextContent.setBackgroundColor(inlayColor)
         binding.viewLock.setBackgroundColor(backgroundColor)
 
+        binding.textViewTime.setTextColor(fontColor)
+        binding.editTextContent.setTextColor(fontColor)
+
         // Set font
         binding.textViewTime.adjustDialogItemTextSize(fontId, true)
         binding.editTextContent.adjustDialogInputTextSize(fontId, 4f)
@@ -673,6 +724,7 @@ class EditActivity: AppCompatActivity() {
 
         var font: Typeface? = null
         var fontId = 0
+        var fontColor = 0
         var fontStyleId = 0
         var toolbarColor = 0
         var backgroundColor = 0

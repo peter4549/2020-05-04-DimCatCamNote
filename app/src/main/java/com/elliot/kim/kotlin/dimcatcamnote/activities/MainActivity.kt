@@ -8,7 +8,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
-import android.content.pm.ResolveInfo
 import android.content.res.ColorStateList
 import android.content.res.Configuration
 import android.graphics.Color
@@ -58,6 +57,9 @@ import com.elliot.kim.kotlin.dimcatcamnote.item_touch_helper.RecyclerViewTouchHe
 import com.elliot.kim.kotlin.dimcatcamnote.item_touch_helper.UnderlayButton
 import com.elliot.kim.kotlin.dimcatcamnote.item_touch_helper.UnderlayButtonClickListener
 import com.elliot.kim.kotlin.dimcatcamnote.view_model.MainViewModel
+import com.google.android.gms.ads.AdListener
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.MobileAds
 import com.google.android.material.snackbar.Snackbar
 import java.io.File
 import java.text.SimpleDateFormat
@@ -141,6 +143,41 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         setSupportActionBar(binding.toolbar)
         supportActionBar!!.setDisplayShowTitleEnabled(false)
 
+        // Ad
+        MobileAds.initialize(this)
+        binding.adView.loadAd(AdRequest.Builder().build())
+        val adListener = object : AdListener() {
+            override fun onAdImpression() {
+                super.onAdImpression()
+            }
+
+            override fun onAdLeftApplication() {
+                super.onAdLeftApplication()
+            }
+
+            override fun onAdClicked() {
+                super.onAdClicked()
+            }
+
+            override fun onAdFailedToLoad(p0: Int) {
+                super.onAdFailedToLoad(p0)
+            }
+
+            override fun onAdClosed() {
+                super.onAdClosed()
+            }
+
+            override fun onAdOpened() {
+                super.onAdOpened()
+            }
+
+            override fun onAdLoaded() {
+                super.onAdLoaded()
+            }
+        }
+
+        binding.adView.adListener = adListener
+
         initSortingCriteria()
         initColor()
         initFont()
@@ -209,7 +246,7 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
 
     private fun createUnderlayButtons(recyclerView: RecyclerView) {
         recyclerViewTouchHelper = object: RecyclerViewTouchHelper(this,
-            recyclerView, 240, 640, noteAdapter) {
+            recyclerView, 200, 640, noteAdapter) {
             override fun instantiateRightUnderlayButton(
                 viewHolder: RecyclerView.ViewHolder,
                 rightButtonBuffer: MutableList<UnderlayButton>
@@ -679,6 +716,7 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
     private fun initRecyclerView(notes: MutableList<Note>) {
         noteAdapter = NoteAdapter(this, notes)
         noteAdapter.sortingCriteria = sortingCriteria
+        noteAdapter.setFontColor(fontColor)
 
         val layoutAnimationController = android.view.animation.AnimationUtils
             .loadLayoutAnimation(this,
@@ -724,6 +762,7 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
         val defaultInlayColor = getColor(R.color.defaultColorInlay)
         val defaultAppWidgetTitleColor = getColor(R.color.defaultColorAppWidgetTitle)
         val defaultAppWidgetBackgroundColor = getColor(R.color.defaultColorAppWidgetBackground)
+        val defaultFontColor = getColor(R.color.defaultTextColor)
 
         val preferences = getSharedPreferences(
             PREFERENCES_SET_COLOR,
@@ -738,6 +777,7 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
             preferences.getInt(KEY_COLOR_APP_WIDGET_TITLE, defaultAppWidgetTitleColor)
         appWidgetBackgroundColor =
             preferences.getInt(KEY_COLOR_APP_WIDGET_BACKGROUND, defaultAppWidgetBackgroundColor)
+        fontColor = preferences.getInt(KEY_COLOR_FONT, defaultFontColor)
 
         binding.mainContainer.setBackgroundColor(backgroundColor)
         binding.sortContainer.setBackgroundColor(toolbarColor)
@@ -833,14 +873,11 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
             cameraFragment.reopenCamera()
     }
 
-    fun hideKeyboardInDrawerLayout() {
-        hideKeyboard(this, binding.drawerLayout)
-    }
-
     companion object {
         var font: Typeface? = null
         var fontId = 0
         var fontStyleId = 0
+        var fontColor = 0
         var toolbarColor = 0
         var backgroundColor = 0
         var noteColor = 0

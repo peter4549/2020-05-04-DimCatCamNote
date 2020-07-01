@@ -5,7 +5,7 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.elliot.kim.kotlin.dimcatcamnote.data.Note
 
-@Database(entities = [Note::class], version = 1)
+@Database(entities = [Note::class], version = 1, exportSchema = false)
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun dao(): NoteDao

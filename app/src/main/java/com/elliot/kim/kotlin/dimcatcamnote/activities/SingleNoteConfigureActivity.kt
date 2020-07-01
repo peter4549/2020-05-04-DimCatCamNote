@@ -88,6 +88,7 @@ class SingleNoteConfigureActivity : AppCompatActivity() {
                 this@SingleNoteConfigureActivity, notes,
                 true, appWidgetId
             )
+            noteAdapter.setFontColor(fontColor)
 
             binding.recyclerView.apply {
                 setHasFixedSize(true)
@@ -118,6 +119,9 @@ class SingleNoteConfigureActivity : AppCompatActivity() {
             resources.getFont(fontId)
         else
             ResourcesCompat.getFont(this, fontId)
+        fontColor = colorPreferences.getInt(KEY_COLOR_FONT, getColor(R.color.defaultTextColor))
+        inlayColor = colorPreferences.getInt(KEY_COLOR_INLAY, getColor(R.color.defaultColorInlay))
+        fontStyleId = colorPreferences.getInt(KEY_FONT_STYLE_ID, R.style.FontNanumGothic)
     }
 
     private fun applyDesign() {
@@ -217,6 +221,7 @@ class SingleNoteConfigureActivity : AppCompatActivity() {
                 CurrentFragment.EDIT_FRAGMENT -> super.onBackPressed()
                 CurrentFragment.PHOTO_FRAGMENT -> super.onBackPressed()
                 CurrentFragment.WRITE_FRAGMENT -> writeFragment.finish(WriteFragment.BACK_PRESSED)
+                else -> super.onBackPressed()
             }
         }
     }
@@ -231,5 +236,8 @@ class SingleNoteConfigureActivity : AppCompatActivity() {
         var noteColor = 0
         var font: Typeface? = null
         var fontId = 0
+        var fontColor = 0
+        var inlayColor = 0
+        var fontStyleId = 0
     }
 }

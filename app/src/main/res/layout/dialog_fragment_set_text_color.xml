@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="240dp"
+    android:layout_height="wrap_content">
+
+    <TextView
+        android:id="@+id/text_view"
+        android:layout_width="match_parent"
+        android:layout_height="42dp"
+        android:background="@color/defaultColorToolbar"
+        android:gravity="center"
+        android:text="색상 선택"
+        android:textColor="@android:color/white"
+        android:textSize="@dimen/text_size_middle_large"
+        android:textStyle="bold"/>
+
+    <ScrollView
+        android:id="@+id/scroll_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fillViewport="true"
+        android:layout_below="@id/text_view">
+
+        <RadioGroup
+            android:id="@+id/radio_group"
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <RadioButton
+                android:id="@+id/radio_button_set_in_black"
+                style="@style/ColorSelectionRadioButtonTheme"
+                android:drawableEnd="@drawable/ic_square_white_32px"
+                android:drawableTint="@color/colorTextBlack"
+                android:text="Black" />
+
+            <RadioButton
+                android:id="@+id/radio_button_set_in_red"
+                style="@style/ColorSelectionRadioButtonTheme"
+                android:drawableEnd="@drawable/ic_square_white_32px"
+                android:drawableTint="@color/colorTextRed"
+                android:text="Red" />
+
+            <RadioButton
+                android:id="@+id/radio_button_set_in_pink"
+                style="@style/ColorSelectionRadioButtonTheme"
+                android:drawableEnd="@drawable/ic_square_white_32px"
+                android:drawableTint="@color/colorTextPink"
+                android:text="Pink" />
+
+            <RadioButton
+                android:id="@+id/radio_button_set_in_purple"
+                style="@style/ColorSelectionRadioButtonTheme"
+                android:drawableEnd="@drawable/ic_square_white_32px"
+                android:drawableTint="@color/colorTextPurple"
+                android:text="Purple" />
+
+            <RadioButton
+                android:id="@+id/radio_button_set_in_deep_purple"
+                style="@style/ColorSelectionRadioButtonTheme"
+                android:drawableEnd="@drawable/ic_square_white_32px"
+                android:drawableTint="@color/colorTextDeepPurple"
+                android:text="Deep Purple" />
+
+            <RadioButton
+                android:id="@+id/radio_button_set_in_indigo"
+                style="@style/ColorSelectionRadioButtonTheme"
+                android:drawableEnd="@drawable/ic_square_white_32px"
+                android:drawableTint="@color/colorTextIndigo"
+                android:text="Indigo" />
+
+            <RadioButton
+                android:id="@+id/radio_button_set_in_blue"
+                style="@style/ColorSelectionRadioButtonTheme"
+                android:drawableEnd="@drawable/ic_square_white_32px"
+                android:drawableTint="@color/colorTextBlue"
+                android:text="Blue" />
+
+            <RadioButton
+                android:id="@+id/radio_button_set_in_light_blue"
+                style="@style/ColorSelectionRadioButtonTheme"
+                android:drawableEnd="@drawable/ic_square_white_32px"
+                android:drawableTint="@color/colorTextLightBlue"
+                android:text="Light Blue" />
+
+            <RadioButton
+                android:id="@+id/radio_button_set_in_cyan"
+                style="@style/ColorSelectionRadioButtonTheme"
+                android:drawableEnd="@drawable/ic_square_white_32px"
+                android:drawableTint="@color/colorTextCyan"
+                android:text="Cyan" />
+
+            <RadioButton
+                android:id="@+id/radio_button_set_in_teal"
+                style="@style/ColorSelectionRadioButtonTheme"
+                android:drawableEnd="@drawable/ic_square_white_32px"
+                android:drawableTint="@color/colorTextTeal"
+                android:text="Teal" />
+
+            <RadioButton
+                android:id="@+id/radio_button_set_in_green"
+                style="@style/ColorSelectionRadioButtonTheme"
+                android:drawableEnd="@drawable/ic_square_white_32px"
+                android:drawableTint="@color/colorTextGreen"
+                android:text="Green" />
+
+            <RadioButton
+                android:id="@+id/radio_button_set_in_light_green"
+                style="@style/ColorSelectionRadioButtonTheme"
+                android:drawableEnd="@drawable/ic_square_white_32px"
+                android:drawableTint="@color/colorTextLightGreen"
+                android:text="Light Green" />
+
+            <RadioButton
+                android:id="@+id/radio_button_set_in_lime"
+                style="@style/ColorSelectionRadioButtonTheme"
+                android:drawableEnd="@drawable/ic_square_white_32px"
+                android:drawableTint="@color/colorTextLime"
+                android:text="Lime" />
+
+            <RadioButton
+                android:id="@+id/radio_button_set_in_yellow"
+                style="@style/ColorSelectionRadioButtonTheme"
+                android:drawableEnd="@drawable/ic_square_white_32px"
+                android:drawableTint="@color/colorTextYellow"
+                android:text="Yellow" />
+
+            <RadioButton
+                android:id="@+id/radio_button_set_in_amber"
+                style="@style/ColorSelectionRadioButtonTheme"
+                android:drawableEnd="@drawable/ic_square_white_32px"
+                android:drawableTint="@color/colorTextAmber"
+                android:text="Amber" />
+
+            <RadioButton
+                android:id="@+id/radio_button_set_in_orange"
+                style="@style/ColorSelectionRadioButtonTheme"
+                android:drawableEnd="@drawable/ic_square_white_32px"
+                android:drawableTint="@color/colorTextOrange"
+                android:text="Orange" />
+
+            <RadioButton
+                android:id="@+id/radio_button_set_in_deep_orange"
+                style="@style/ColorSelectionRadioButtonTheme"
+                android:drawableEnd="@drawable/ic_square_white_32px"
+                android:drawableTint="@color/colorTextDeepOrange"
+                android:text="Deep Orange" />
+
+            <RadioButton
+                android:id="@+id/radio_button_set_in_brown"
+                style="@style/ColorSelectionRadioButtonTheme"
+                android:drawableEnd="@drawable/ic_square_white_32px"
+                android:drawableTint="@color/colorTextBrown"
+                android:text="Brown" />
+
+            <RadioButton
+                android:id="@+id/radio_button_set_in_grey"
+                style="@style/ColorSelectionRadioButtonTheme"
+                android:drawableEnd="@drawable/ic_square_white_32px"
+                android:drawableTint="@color/colorTextGrey"
+                android:text="Grey" />
+
+            <RadioButton
+                android:id="@+id/radio_button_set_in_blue_grey"
+                style="@style/ColorSelectionRadioButtonTheme"
+                android:drawableEnd="@drawable/ic_square_white_32px"
+                android:drawableTint="@color/colorTextBlueGrey"
+                android:text="Blue Grey" />
+
+        </RadioGroup>
+
+    </ScrollView>
+
+</RelativeLayout>

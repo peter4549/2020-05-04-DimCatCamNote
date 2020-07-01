@@ -74,6 +74,7 @@ class AlarmedNoteSelectionFragment : Fragment() {
             startWriteFragment()
         }
 
+        alarmedNoteAdapter.setFontColor(MainActivity.fontColor)
         binding.recyclerView.apply {
             setHasFixedSize(true)
             adapter = alarmedNoteAdapter

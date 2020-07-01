@@ -11,14 +11,14 @@
     <TextView
         android:id="@+id/text_view"
         android:layout_width="match_parent"
-        android:layout_height="40dp"
+        android:layout_height="38dp"
         android:layout_margin="4dp"
         android:textStyle="bold"/>
 
     <ImageView
         android:id="@+id/image_view"
-        android:layout_width="16dp"
-        android:layout_height="16dp"
+        android:layout_width="10dp"
+        android:layout_height="10dp"
         android:layout_below="@id/text_view"
         android:layout_margin="4dp"
         android:src="@drawable/ic_square_white_32px"

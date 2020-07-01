@@ -41,6 +41,7 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
     var selectedNote: Note? = null
     var sortingCriteria = SortingCriteria.EDIT_TIME.index
     var isFirstBinding = true
+    private var noteFontColor = 0
 
     private var noteColor = 0
 
@@ -82,13 +83,12 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
         val alarmTime: Long? = note.alarmTime
 
         val time: String = if (editTime == creationTime)
-            "${context?.getString(R.string.creation_time)}: ${MainActivity.longTimeToString(creationTime,
+            MainActivity.longTimeToString(creationTime,
                 PATTERN_UP_TO_MINUTES
-            )}"
+            )
         else
-            "${context?.getString(R.string.edit_time)}: ${MainActivity.longTimeToString(editTime,
-                PATTERN_UP_TO_MINUTES
-            )}"
+            MainActivity.longTimeToString(editTime,
+                PATTERN_UP_TO_MINUTES)
 
         // Apply design
         if (context is MainActivity) {
@@ -119,6 +119,11 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
             holder.binding.textViewContent.typeface = SingleNoteConfigureActivity.font
         }
 
+        holder.binding.textViewTitle.setTextColor(noteFontColor)
+        holder.binding.textViewTime.setTextColor(noteFontColor)
+        holder.binding.textViewAlarmTime.setTextColor(noteFontColor)
+        holder.binding.textViewContent.setTextColor(noteFontColor)
+
         holder.binding.textViewTitle.text = title
         holder.binding.textViewTime.text = time
         holder.binding.textViewContent.text = content
@@ -137,26 +142,26 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
         }
 
         if (note.alarmTime == null) {
-            holder.binding.textViewAlarmTime.visibility = View.GONE
+            holder.binding.alarmTimeContainer.visibility = View.GONE
+            // holder.binding.textViewAlarmTime.visibility = View.GONE
             holder.binding.imageViewAlarm.visibility = View.GONE
         } else {
             holder.binding.imageViewAlarm.visibility = View.VISIBLE
 
             currentTime = MainActivity.getCurrentTime()
-            var text = context?.getString(R.string.alarm_time)
             holder.binding.imageViewAlarm
                 .setImageDrawable(context!!.getDrawable(R.drawable.ic_alarm_on_white_24dp))
             if (note.alarmTime!! < currentTime) {
-                text = "캘린더 등록시간"
                 holder.binding.imageViewAlarm
-                    .setImageDrawable(context!!.getDrawable(R.drawable.ic_today_white_24dp))
+                    .setImageDrawable(context.getDrawable(R.drawable.ic_today_white_24dp))
             }
 
             val alarmTimeText =
-                "$text: ${MainActivity.longTimeToString(alarmTime,
+                MainActivity.longTimeToString(alarmTime,
                     PATTERN_UP_TO_MINUTES
-                )}"
-            holder.binding.textViewAlarmTime.visibility = View.VISIBLE
+                )
+            holder.binding.alarmTimeContainer.visibility = View.VISIBLE
+            // holder.binding.textViewAlarmTime.visibility = View.VISIBLE
             holder.binding.textViewAlarmTime.text = alarmTimeText
         }
 
@@ -170,7 +175,7 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
             holder.binding.textViewContent.paintFlags = holder.binding.textViewContent.paintFlags or
                     Paint.STRIKE_THRU_TEXT_FLAG
             holder.binding.imageViewDone.visibility = View.VISIBLE
-            holder.binding.colorContainer.background.setColorFilter(Color.rgb(225, 225, 225), Mode.MULTIPLY)
+            holder.binding.colorContainer.background.setColorFilter(Color.rgb(220, 220, 220), Mode.MULTIPLY)
         } else {
             holder.binding.textViewTitle.paintFlags = 0
             holder.binding.textViewTime.paintFlags = 0
@@ -456,5 +461,9 @@ class NoteAdapter(private val context: Context?, private val notes: MutableList<
 
     fun setSelectedNoteByCreationTime(creationTime: Long) {
         selectedNote = notes.filter { it.creationTime == creationTime }[0]
+    }
+
+    fun setFontColor(color: Int) {
+        noteFontColor = color
     }
 }

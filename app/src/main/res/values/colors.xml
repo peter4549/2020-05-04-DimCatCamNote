@@ -78,7 +78,7 @@
     <color name="backgroundColorOrange">#fff3e0</color>
     <color name="backgroundColorDeepOrange">#fbe9e7</color>
 
-    <!-- Toolbar -->
+    <!-- Toolbar 200 -->
     <color name="colorToolbarRed">#ef9a9a</color>
     <color name="colorToolbarPink">#f48fb1</color>
     <color name="colorToolbarPurple">#ce93d8</color>
@@ -96,28 +96,50 @@
     <color name="colorToolbarOrange">#ffcc80</color>
     <color name="colorToolbarDeepOrange">#ffab91</color>
 
-    <!-- Note -->
-    <color name="colorNoteRed">#ffcdd2</color>
-    <color name="colorNotePink">#f8bbd0</color>
-    <color name="colorNotePurple">#e1bee7</color>
-    <color name="colorNoteDeepPurple">#d1c4e9</color>
-    <color name="colorNoteIndigo">#c5cae9</color>
-    <color name="colorNoteBlue">#bbdefb</color>
-    <color name="colorNoteLightBlue">#b3e5fc</color>
-    <color name="colorNoteCyan">#b2ebf2</color>
-    <color name="colorNoteTeal">#b2dfdb</color>
-    <color name="colorNoteGreen">#c8e6c9</color>
-    <color name="colorNoteLightGreen">#dcedc8</color>
-    <color name="colorNoteLime">#f0f4c3</color>
-    <color name="colorNoteYellow">#fff9c4</color>
-    <color name="colorNoteAmber">#ffecb3</color>
-    <color name="colorNoteOrange">#ffe0b2</color>
-    <color name="colorNoteDeepOrange">#ffccbc</color>
+    <!-- Note 100 -->
+    <color name="colorNoteRed">#ccffcdd2</color>
+    <color name="colorNotePink">#ccf8bbd0</color>
+    <color name="colorNotePurple">#cce1bee7</color>
+    <color name="colorNoteDeepPurple">#ccd1c4e9</color>
+    <color name="colorNoteIndigo">#ccc5cae9</color>
+    <color name="colorNoteBlue">#ccbbdefb</color>
+    <color name="colorNoteLightBlue">#ccb3e5fc</color>
+    <color name="colorNoteCyan">#ccb2ebf2</color>
+    <color name="colorNoteTeal">#ccb2dfdb</color>
+    <color name="colorNoteGreen">#ccc8e6c9</color>
+    <color name="colorNoteLightGreen">#ccdcedc8</color>
+    <color name="colorNoteLime">#ccf0f4c3</color>
+    <color name="colorNoteYellow">#ccfff9c4</color>
+    <color name="colorNoteAmber">#ccffecb3</color>
+    <color name="colorNoteOrange">#ccffe0b2</color>
+    <color name="colorNoteDeepOrange">#ccffccbc</color>
+
+    <!-- Text 700 -->
+    <color name="colorTextBlack">@color/defaultTextColor</color>
+    <color name="colorTextRed">#d32f2f</color>
+    <color name="colorTextPink">#c2185b</color>
+    <color name="colorTextPurple">#7b1fa2</color>
+    <color name="colorTextDeepPurple">#512da8</color>
+    <color name="colorTextIndigo">#303f9f</color>
+    <color name="colorTextBlue">#1976d2</color>
+    <color name="colorTextLightBlue">#0288d1</color>
+    <color name="colorTextCyan">#0097a7</color>
+    <color name="colorTextTeal">#00796b</color>
+    <color name="colorTextGreen">#388e3c</color>
+    <color name="colorTextLightGreen">#689f38</color>
+    <color name="colorTextLime">#afb42b</color>
+    <color name="colorTextYellow">#fbc02d</color>
+    <color name="colorTextAmber">#ffa000</color>
+    <color name="colorTextOrange">#f57c00</color>
+    <color name="colorTextDeepOrange">#e64a19</color>
+    <color name="colorTextBrown">#5d4037</color>
+    <color name="colorTextGrey">#616161</color>
+    <color name="colorTextBlueGrey">#455a64</color>
 
     <!-- Default Colors -->
     <color name="defaultColorToolbar">#ce93d8</color> <!-- Purple -->
     <color name="defaultColorBackground">#f3e5f5</color> <!-- Purple -->
-    <color name="defaultColorNote">#fff9c4</color>  <!-- Yellow -->
+    <color name="defaultColorNote">#ccfff9c4</color>  <!-- Yellow -->
     <color name="defaultColorInlay">#fff8e1</color> <!-- Amber -->
     <color name="defaultColorAppWidgetTitle">#fff9c4</color>  <!-- Yellow -->
     <color name="defaultColorAppWidgetBackground">#fffde7</color>  <!-- Yellow -->

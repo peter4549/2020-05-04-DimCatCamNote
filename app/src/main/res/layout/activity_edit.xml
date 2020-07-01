@@ -52,6 +52,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_below="@id/image_view"
+            android:layout_above="@id/ad_view"
             android:layout_marginTop="2dp"
             android:padding="8dp"
             android:gravity="top"
@@ -66,12 +67,22 @@
             android:enabled="true"
             android:inputType="textMultiLine" />
 
+        <com.google.android.gms.ads.AdView
+            xmlns:ads="http://schemas.android.com/apk/res-auto"
+            android:id="@+id/ad_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_centerInParent="true"
+            ads:adSize="BANNER"
+            ads:adUnitId="@string/banner_ad_unit_id"/>
+
         <View
             android:id="@+id/view_lock"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="@color/defaultColorBackground"
-            android:visibility="visible"
+            android:visibility="gone"
             android:clickable="true"
             android:focusable="true" />
 

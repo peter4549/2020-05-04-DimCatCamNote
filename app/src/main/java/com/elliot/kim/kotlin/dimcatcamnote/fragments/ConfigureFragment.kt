@@ -64,6 +64,10 @@ class ConfigureFragment : Fragment(), VersionAndLicenseFragment.OnFragmentFinish
             (activity as MainActivity).showDialogFragment(DialogFragments.SET_FONT, binding.toolbar)
         }
 
+        binding.textViewSetFontColor.setOnClickListener {
+            (activity as MainActivity).showDialogFragment(DialogFragments.SET_FONT_COLOR)
+        }
+
         binding.textViewClear.setOnClickListener {
             (activity as MainActivity).showDialogFragment(DialogFragments.CONFIRM_CLEAR)
         }
@@ -88,10 +92,13 @@ class ConfigureFragment : Fragment(), VersionAndLicenseFragment.OnFragmentFinish
         binding.seekBar.progressTintList = ColorStateList.valueOf(requireContext().getColor(R.color.colorStatusIcon))
         binding.seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                val text = "${progress}%"
+                var temp = progress
+                if (temp < 10)
+                    temp = 10
+                val text = "${temp}%"
                 binding.textViewOpacity.text = text
-                seekBarProgress = progress
-                hexStringOpacity = percentageToHexString(progress)
+                seekBarProgress = temp
+                hexStringOpacity = percentageToHexString(temp)
             }
 
             override fun onStartTrackingTouch(seekBar: SeekBar?) {

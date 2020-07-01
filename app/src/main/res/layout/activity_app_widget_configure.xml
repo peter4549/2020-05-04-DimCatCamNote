@@ -17,7 +17,7 @@
             android:layout_width="300dp"
             android:layout_height="540dp"
             android:orientation="vertical"
-            android:background="@android:color/white"
+            android:background="#B3FFFFFF"
             android:layout_gravity="center"
             android:clickable="true"
             android:focusable="true">
@@ -64,7 +64,8 @@
             <TextView
                 android:id="@+id/text_view_empty_message"
                 android:layout_width="match_parent"
-                android:layout_height="36dp"
+                android:layout_height="32dp"
+                android:background="@android:color/white"
                 android:gravity="center"
                 android:text="작성된 노트가 없습니다."
                 android:textColor="@color/colorStatusIcon"
@@ -75,7 +76,8 @@
                 android:id="@+id/recycler_view"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:scrollbars="vertical" />
+                android:scrollbars="vertical"
+                android:background="@android:color/transparent"/>
 
         </LinearLayout>
 
